@@ -5,6 +5,7 @@ import Animated, {
   Easing,
   FadeIn,
   FadeOut,
+  useAnimatedReaction,
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
@@ -13,6 +14,7 @@ import Animated, {
   withTiming,
   type SharedValue,
 } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
 import * as Haptics from "expo-haptics";
 import { Touch } from "./ui/Touch";
 import { theme } from "../theme";
@@ -59,18 +61,13 @@ export function StreakFlame({
   const inner = useDerivedValue(() =>
     litValue.get() > 0.5 ? streakColors.core : streakColors.dimCore,
   );
+  // Scale about the flame's base; `origin` handles the pivot, so the transform
+  // holds only the scales (a manual translate pair here double-applied the pivot).
   const transform = useDerivedValue(() => {
     const p = progress?.get() ?? 0;
     const sx = p < 0 ? 1 + -p * 0.45 : 1 - p * 0.18;
     const sy = p < 0 ? 1 + p * 0.62 : 1 + p * 0.3;
-    return [
-      { translateX: 50 },
-      { translateY: 82 },
-      { scaleX: sx },
-      { scaleY: sy },
-      { translateX: -50 },
-      { translateY: -82 },
-    ];
+    return [{ scaleX: sx }, { scaleY: sy }];
   });
   return (
     <Canvas style={{ width: size, height: size }}>
@@ -226,51 +223,68 @@ export function StreakCelebration({
   useEffect(() => {
     if (reduced) return;
     const ms = (frames: number) => Math.round((frames / 30) * 1000);
+    const HOLD = 19;
+    const SQUASH = 4;
+    const BEAD = 8;
+    const POP = 1;
+    const HOLD2 = 8;
+    const STRETCH = 2;
+    const burstAt = HOLD + SQUASH + BEAD + POP + HOLD2 + STRETCH;
     shape.set(
       withDelay(
-        ms(33),
+        ms(HOLD),
         withSequence(
-          withTiming(-1, { duration: ms(6), easing: Easing.in(Easing.quad) }),
-          withTiming(-0.85, { duration: ms(6) }),
-          withTiming(0, { duration: ms(1) }),
-          withTiming(0, { duration: ms(5) }),
-          withTiming(1, { duration: ms(3), easing: Easing.out(Easing.quad) }),
-          withTiming(-0.35, { duration: ms(1) }),
-          withTiming(0.08, { duration: ms(5) }),
-          withTiming(0, { duration: ms(4) }),
+          withTiming(-1, {
+            duration: ms(SQUASH),
+            easing: Easing.in(Easing.quad),
+          }),
+          withTiming(-0.85, { duration: ms(BEAD) }),
+          withTiming(0, { duration: ms(POP) }),
+          withTiming(0, { duration: ms(HOLD2) }),
+          withTiming(1, {
+            duration: ms(STRETCH),
+            easing: Easing.out(Easing.quad),
+          }),
+          withTiming(-0.3, { duration: ms(1) }),
+          withTiming(0.06, { duration: ms(4) }),
+          withTiming(0, { duration: ms(3) }),
         ),
       ),
     );
-    lit.set(withDelay(ms(33 + 6), withTiming(1, { duration: ms(1) })));
-    fire.set(
-      withDelay(ms(33 + 6 + 6 + 1 + 5 + 3), withTiming(1, { duration: ms(8) })),
+    lit.set(
+      withDelay(ms(HOLD + SQUASH + 2), withTiming(1, { duration: ms(1) })),
     );
-    flip.set(
-      withDelay(ms(33 + 6 + 6 + 1 + 5 + 3), withTiming(1, { duration: ms(3) })),
-    );
-    const pop = setTimeout(
-      () => void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium),
-      ms(33 + 6 + 6),
-    );
-    const burst = setTimeout(
-      () => {
-        void Haptics.notificationAsync(
-          Haptics.NotificationFeedbackType.Success,
-        );
-        setHeadline(true);
-      },
-      ms(33 + 6 + 6 + 1 + 5 + 3),
-    );
-    const done = setTimeout(
-      () => setReady(true),
-      ms(33 + 6 + 6 + 1 + 5 + 3 + 1 + 8 + 9),
-    );
-    return () => {
-      clearTimeout(pop);
-      clearTimeout(burst);
-      clearTimeout(done);
-    };
+    fire.set(withDelay(ms(burstAt), withTiming(1, { duration: ms(13) })));
+    flip.set(withDelay(ms(burstAt), withTiming(1, { duration: ms(3) })));
+    // Haptics, headline and the button follow the UI-thread clock (reactions
+    // below), not JS timers, so a stalled JS thread cannot pull them apart.
   }, [reduced, shape, lit, fire, flip]);
+  // Plain JS callbacks: a worklet may only hand scheduleOnRN a function it
+  // captured from JS. Building the arrow inside the reaction would capture the
+  // Haptics module, which cannot cross to the UI runtime and aborts the app.
+  const buzz = () => void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  const land = () => {
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setHeadline(true);
+  };
+  useAnimatedReaction(
+    () => lit.get() > 0.5,
+    (on, was) => {
+      if (on && !was) scheduleOnRN(buzz);
+    },
+  );
+  useAnimatedReaction(
+    () => flip.get() > 0,
+    (on, was) => {
+      if (on && !was) scheduleOnRN(land);
+    },
+  );
+  useAnimatedReaction(
+    () => fire.get() >= 1,
+    (on, was) => {
+      if (on && !was) scheduleOnRN(setReady, true);
+    },
+  );
   const days = ["M", "T", "W", "T", "F", "S", "S"];
   const todayIndex = (new Date().getDay() + 6) % 7;
   return (

@@ -37,17 +37,16 @@ async def main(d):
     await d.tap("Retake meal photo", wait=0.3)
     await d.find("Take dinner photo")
     assert len(diary()["meals"]) == 32
-    await d.tap("Close sample camera", wait=0.6)
+    await d.tap("Close camera", wait=0.6)
     await d.find("Log a meal")
     assert len(diary()["meals"]) == 32
     report["cameraRetakeAndCancelDoNotLog"] = True
     await d.tap("Log a meal")
     await d.tap("Try a sample meal", wait=0.8)
     await d.tap("Take dinner photo", wait=0.35)
-    await d.tap("Use meal photo", wait=1.2)
-    await d.find("Log as dinner")
-    await d.shot("qa-choices")
-    await d.tap("Log as dinner", wait=1)
+    # The meal is chosen in the camera; the receipt follows the photo directly.
+    await d.tap("Use meal photo", wait=2.2)
+    await d.shot("qa-receipt")
     assert (
         sum(
             m["kcal"]

@@ -54,6 +54,19 @@ name: First launch onboarding, computed guide and profile sheet
 - tapOn: "Steady, 0.5 kilograms a week"
 - assertVisible: "About 12 weeks.*"
 - tapOn: "Continue"
+# The account step: e-mail into the profile, the password into the keychain.
+- assertVisible: "Keep your diary yours"
+- tapOn: "E-mail"
+- inputText: "mia@example.com"
+- tapOn: "Next"
+- inputText: "lemonade8"
+- tapOn: "Show password"
+- assertVisible: "lemonade8"
+- tapOn: "Done"
+- extendedWaitUntil:
+    notVisible: "Previous"
+    timeout: 5000
+- tapOn: "Continue"
 # Four plan items at 1.5 s each, then the reveal.
 - assertVisible: "Working it out…"
 - extendedWaitUntil:
@@ -62,12 +75,17 @@ name: First launch onboarding, computed guide and profile sheet
 # The final button is hold-to-commit (1.3 s); Maestro's long press holds longer than that.
 - longPressOn: "Start logging"
 # The greeting is one two-line text; (?s) lets the regex span the line break.
-- assertVisible: "(?s)Good .*Mia\\..*"
+# The greeting is "Good morning/afternoon/evening" or "Still up" after midnight.
+- assertVisible: "(?s)(Good|Still up).*Mia\\..*"
 - tapOn: "Your profile"
 - assertVisible: "32 years · Lose weight"
 - assertVisible: "0 day logging streak, 0 of 7 days this week"
 - assertVisible: "Just getting started."
-# The streak band pushes the plan rows below the fold.
+# The streak band pushes the account and plan rows below the fold.
+- scrollUntilVisible:
+    element: "E-mail: mia@example.com. Edit"
+    direction: DOWN
+- assertVisible: "Password: ••••••••. Edit"
 - scrollUntilVisible:
     element: "Goal: Lose weight. Edit"
     direction: DOWN
@@ -80,7 +98,7 @@ name: First launch onboarding, computed guide and profile sheet
 - stopApp
 - launchApp
 - extendedWaitUntil:
-    visible: "(?s)Good .*Mia\\..*"
+    visible: "(?s)(Good|Still up).*Mia\\..*"
     timeout: 10000
 - assertNotVisible: "What should I call you?"
 # The first logged meal of a day plays the streak celebration.
@@ -90,11 +108,8 @@ name: First launch onboarding, computed guide and profile sheet
     visible: "Take dinner photo"
     timeout: 10000
 - tapOn: "Take dinner photo"
+# The meal was picked in the camera; no question follows the photo.
 - tapOn: "Use meal photo"
-- extendedWaitUntil:
-    visible: "Log as dinner"
-    timeout: 10000
-- tapOn: "Log as dinner"
 - extendedWaitUntil:
     visible: "day streak!"
     timeout: 10000

@@ -11,20 +11,20 @@ name: Sample meal, protein answer and calendar
 - tapOn:
     text: "Open|Öffnen"
     optional: true
-- assertVisible: "Good .*,.*"
+- assertVisible: "(Good|Still up).*,.*"
 - tapOn: "Log a meal"
 - tapOn: "Try a sample meal"
 - extendedWaitUntil:
     visible: "Take dinner photo"
     timeout: 10000
+# The meal is picked under the viewfinder; the shutter names it.
+- tapOn: "Lunch"
+- assertVisible: "Take lunch photo"
+- tapOn: "Dinner"
 - tapOn: "Take dinner photo"
 - tapOn: "Retake meal photo"
 - tapOn: "Take dinner photo"
 - tapOn: "Use meal photo"
-- extendedWaitUntil:
-    visible: "Log as dinner"
-    timeout: 10000
-- tapOn: "Log as dinner"
 - extendedWaitUntil:
     visible: "Edit Pasta & garlic bread, 1120 estimated kilocalories"
     timeout: 10000

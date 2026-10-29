@@ -34,6 +34,20 @@
           }
         }
       ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Take a photo of your meal to log it with Zest.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": false
+        }
+      ],
       "./plugins/with-quoted-ios-paths",
       "expo-localization"
     ],

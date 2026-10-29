@@ -19,6 +19,11 @@ const artwork = {
 };
 export type StickerKind = MealType | "Protein";
 
+/** The artwork for one kind, for places that draw the sticker inline (chips) without the wrapper view. */
+export function stickerSource(kind: MealType) {
+  return artwork[kind];
+}
+
 export function MealSticker({
   meal,
   size = 100,

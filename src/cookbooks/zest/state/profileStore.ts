@@ -19,6 +19,8 @@ export type WeightEntry = { date: string; kg: number };
 export type Profile = {
   onboarded: boolean;
   name: string;
+  /** Account e-mail; the password lives in the keychain (state/secrets.ts), never here. */
+  email: string;
   sex: Sex;
   birthYear: number;
   heightCm: number;
@@ -46,6 +48,7 @@ export type ProfileState = Profile & {
 export const defaultProfile: Profile = {
   onboarded: false,
   name: "",
+  email: "",
   sex: "unspecified",
   birthYear: new Date().getFullYear() - 30,
   heightCm: 170,

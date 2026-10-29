@@ -12,6 +12,7 @@ import Animated, {
   FadeIn,
   FadeInRight,
   FadeOut,
+  LinearTransition,
   useAnimatedStyle,
   useSharedValue,
   withSequence,
@@ -55,11 +56,19 @@ import {
   type Units,
 } from "../data/nutrition";
 import { type Profile } from "../state/profileStore";
+import { validEmail } from "../data/diary";
 import { theme } from "../theme";
 import type { Scene } from "../hooks/useScene";
 
 export type OnboardingStep =
-  "name" | "goal" | "body" | "target" | "activity" | "pace" | "plan";
+  | "name"
+  | "goal"
+  | "body"
+  | "target"
+  | "activity"
+  | "pace"
+  | "account"
+  | "plan";
 
 const order: OnboardingStep[] = [
   "name",
@@ -68,8 +77,12 @@ const order: OnboardingStep[] = [
   "target",
   "activity",
   "pace",
+  "account",
   "plan",
 ];
+
+/** Eight characters, as the references ask; the lemon says so plainly. */
+const PASSWORD_MIN = 8;
 
 function stepsFor(goal: Goal): OnboardingStep[] {
   return goal === "lose" || goal === "gain"
@@ -103,7 +116,8 @@ export function Onboarding({
   startAt?: OnboardingStep;
   /** Editing one step from the profile: save and close after that step. */
   editing?: boolean;
-  onDone: (fields: Partial<Profile>) => void;
+  /** The password travels beside the profile; it is kept in the keychain, not the store. */
+  onDone: (fields: Partial<Profile>, secrets?: { password?: string }) => void;
   onCancel?: () => void;
   /** The lemon is still hidden behind the sheet; no bubble yet. */
   revealing?: boolean;
@@ -113,6 +127,8 @@ export function Onboarding({
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   const [draft, setDraft] = useState<Profile>(profile);
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [step, setStep] = useState<OnboardingStep>(startAt ?? "name");
   const steps = useMemo(() => stepsFor(draft.goal), [draft.goal]);
   const index = Math.max(0, steps.indexOf(step));
@@ -189,14 +205,15 @@ export function Onboarding({
     if (now - lastGo.current < 400) return;
     lastGo.current = now;
     Keyboard.dismiss();
+    const secrets = { password: password || undefined };
     if (editing) {
       if (direction === -1) onCancel?.();
-      else onDone(draft);
+      else onDone(draft, secrets);
       return;
     }
     const next = steps[index + direction];
     if (!next) {
-      if (direction === 1) onDone(draft);
+      if (direction === 1) onDone(draft, secrets);
       else onCancel?.();
       return;
     }
@@ -229,7 +246,9 @@ export function Onboarding({
               ? "Honest answers make better guides."
               : step === "pace"
                 ? "Steady wins. I’m patient."
-                : preparing
+                : step === "account"
+                  ? "Your diary, your key."
+                  : preparing
                   ? "Working it out…"
                   : firstName
                     ? `Here’s your guide, ${firstName}.`
@@ -239,6 +258,12 @@ export function Onboarding({
     switch (step) {
       case "name":
         return draft.name.trim().length > 0;
+      case "account":
+        return (
+          validEmail(draft.email) &&
+          (password.length >= PASSWORD_MIN ||
+            (editing && password.length === 0))
+        );
       case "body":
         return (
           draft.heightCm >= limits.heightCm.min &&
@@ -351,6 +376,7 @@ export function Onboarding({
                 }}
               >
                 <Animated.View
+                  layout={scene.reduced ? undefined : LinearTransition.duration(320)}
                   style={{
                     width: `${editing ? 100 : ((index + 1) / steps.length) * 100}%`,
                     height: "100%",
@@ -376,6 +402,7 @@ export function Onboarding({
               <Animated.View
                 key={`${step}-${interlude ? "hello" : "ask"}`}
                 entering={scene.reduced ? undefined : FadeInRight.duration(280)}
+                exiting={scene.reduced ? undefined : FadeOut.duration(120)}
               >
                 {interlude && step === "goal" && (
                   <Question
@@ -564,6 +591,43 @@ export function Onboarding({
                     onChange={(pace) => update({ pace })}
                   />
                 )}
+                {step === "account" && (
+                  <Question
+                    title="Keep your diary yours"
+                    detail="An e-mail and a password, so your guide can follow you to another phone later. Both stay on this device for now."
+                  >
+                    <TextField
+                      label="E-mail"
+                      value={draft.email}
+                      onChange={(email) => set({ email })}
+                      keyboardType="email-address"
+                      textContentType="emailAddress"
+                      autoComplete="email"
+                      autoFocus={!editing || !draft.email}
+                    />
+                    <TextField
+                      label="Password"
+                      value={password}
+                      onChange={setPassword}
+                      placeholder={editing ? "Unchanged" : `${PASSWORD_MIN}+ characters`}
+                      secure={!showPassword}
+                      textContentType="none"
+                      autoComplete="off"
+                      trailing={{
+                        icon: showPassword ? "eye.slash" : "eye",
+                        label: showPassword ? "Hide password" : "Show password",
+                        onPress: () => setShowPassword((v) => !v),
+                      }}
+                    />
+                    {password.length > 0 && password.length < PASSWORD_MIN && (
+                      <Text
+                        style={{ color: theme.muted, fontSize: 13, marginTop: 2 }}
+                      >
+                        {PASSWORD_MIN - password.length} more to go.
+                      </Text>
+                    )}
+                  </Question>
+                )}
                 {step === "plan" && (
                   <PlanStep
                     draft={draft}
@@ -578,31 +642,14 @@ export function Onboarding({
                 {step === "plan" && !editing && !preparing ? (
                   <HoldToStart reduced={scene.reduced} onCommit={() => go(1)} />
                 ) : (
-                  <Touch
+                  <ContinueButton
                     label={
                       step === "plan" ? "Save" : editing ? "Save" : "Continue"
                     }
+                    ready={ready}
+                    reduced={scene.reduced}
                     onPress={() => go(1)}
-                    disabled={!ready}
-                    style={{
-                      height: 52,
-                      borderRadius: 26,
-                      backgroundColor: theme.heavy,
-                      justifyContent: "center",
-                      alignItems: "center",
-                      opacity: ready ? 1 : 0.35,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 16,
-                        fontWeight: "600",
-                        color: "white",
-                      }}
-                    >
-                      {step === "plan" ? "Save" : editing ? "Save" : "Continue"}
-                    </Text>
-                  </Touch>
+                  />
                 )}
               </View>
             </KeyboardAwareScrollView>
@@ -628,6 +675,140 @@ export function Onboarding({
           },
         }}
       />
+    </View>
+  );
+}
+
+/** The primary button settles between dim and ready over 220 ms rather than snapping. */
+function ContinueButton({
+  label,
+  ready,
+  reduced,
+  onPress,
+}: {
+  label: string;
+  ready: boolean;
+  reduced: boolean;
+  onPress: () => void;
+}) {
+  const enabled = useSharedValue(ready ? 1 : 0);
+  useEffect(() => {
+    enabled.set(
+      reduced ? (ready ? 1 : 0) : withTiming(ready ? 1 : 0, { duration: 220 }),
+    );
+  }, [ready, reduced, enabled]);
+  const fade = useAnimatedStyle(() => ({
+    opacity: 0.35 + enabled.get() * 0.65,
+  }));
+  return (
+    <Animated.View style={fade}>
+      <Touch
+        label={label}
+        onPress={onPress}
+        disabled={!ready}
+        style={{
+          height: 52,
+          borderRadius: 26,
+          backgroundColor: theme.heavy,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Text style={{ fontSize: 16, fontWeight: "600", color: "white" }}>
+          {label}
+        </Text>
+      </Touch>
+    </Animated.View>
+  );
+}
+
+/** A labelled text row in the same hairline style as the number fields. */
+function TextField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  secure = false,
+  autoFocus = false,
+  keyboardType,
+  textContentType,
+  autoComplete,
+  trailing,
+}: {
+  label: string;
+  value: string;
+  onChange: (text: string) => void;
+  placeholder?: string;
+  secure?: boolean;
+  autoFocus?: boolean;
+  keyboardType?: React.ComponentProps<typeof TextInput>["keyboardType"];
+  textContentType?: React.ComponentProps<typeof TextInput>["textContentType"];
+  autoComplete?: React.ComponentProps<typeof TextInput>["autoComplete"];
+  trailing?: { icon: "eye" | "eye.slash"; label: string; onPress: () => void };
+}) {
+  const input = useRef<TextInput>(null);
+  return (
+    // The eye toggle is a sibling of the focusing row, not a child: a Touch
+    // inside the row's Pressable never received its tap.
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        borderBottomWidth: 0.5,
+        borderColor: theme.line,
+        minHeight: 56,
+      }}
+    >
+      <Pressable
+        accessible={false}
+        onPress={() => input.current?.focus()}
+        style={{ flex: 1, flexDirection: "row", alignItems: "center" }}
+      >
+        <Text
+          accessible={false}
+          style={{ width: 104, fontSize: 15, color: theme.muted }}
+        >
+          {label}
+        </Text>
+        <TextInput
+          ref={input}
+          accessibilityLabel={label}
+          value={value}
+          onChangeText={onChange}
+          placeholder={placeholder}
+          placeholderTextColor={theme.faint}
+          secureTextEntry={secure}
+          autoFocus={autoFocus}
+          autoCapitalize="none"
+          autoCorrect={false}
+          spellCheck={false}
+          keyboardType={keyboardType}
+          textContentType={textContentType}
+          autoComplete={autoComplete}
+          returnKeyType="next"
+          style={{
+            flex: 1,
+            fontSize: 19,
+            fontWeight: "500",
+            color: theme.ink,
+            paddingVertical: 8,
+          }}
+        />
+      </Pressable>
+      {trailing && (
+        <Touch
+          label={trailing.label}
+          onPress={trailing.onPress}
+          style={{
+            width: 40,
+            height: 44,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Symbol name={trailing.icon} size={16} color={theme.muted} />
+        </Touch>
+      )}
     </View>
   );
 }

@@ -46,6 +46,7 @@ export function ProfileSheet({
   meals,
   profile,
   apiConfigured,
+  passwordSet,
   onClose,
   onEdit,
   onName,
@@ -58,6 +59,8 @@ export function ProfileSheet({
   meals: Meal[];
   profile: ProfileData;
   apiConfigured: boolean;
+  /** A password sits in the keychain (never shown, only whether it exists). */
+  passwordSet: boolean;
   onClose: () => void;
   onEdit: (step: OnboardingStep) => void;
   onName: (name: string) => void;
@@ -350,6 +353,25 @@ export function ProfileSheet({
                   </View>
                 </Card>
               )}
+
+              <Card title="Account">
+                <Row
+                  label="Name"
+                  value={profile.name.trim() || "Add"}
+                  onPress={promptName}
+                />
+                <Row
+                  label="E-mail"
+                  value={profile.email.trim() || "Add"}
+                  onPress={() => onEdit("account")}
+                />
+                <Row
+                  label="Password"
+                  value={passwordSet ? "••••••••" : "Set"}
+                  onPress={() => onEdit("account")}
+                  last
+                />
+              </Card>
 
               <Card title="Your plan">
                 <Row

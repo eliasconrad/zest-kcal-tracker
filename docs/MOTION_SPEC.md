@@ -99,18 +99,23 @@ Reduce Motion suppresses gaze drift and blinking and removes the calendar's long
 
 ## Streak
 
-The streak brings people back to log one plate a day. Its design and motion follow Duolingo's streak reveal and streak screen, read frame by frame from the Appllama recording (30 fps, 8,602 frames; the reveal sits at 226-231 s) and the Streak, Feed and Profile screens, recoloured to Zest's gold.
+The streak brings people back to log one plate a day. Its design and motion follow Duolingo's streak reveal and streak screen, read frame by frame from the Appllama recording (30 fps, 8,602 frames; the reveal sits at 226-229 s). The counts below come from a per-frame bounding-box measurement of the flame (height, width, colour) run on both the reference clip and Zest's own simulator recording, so the two can be compared like for like and the Streak, Feed and Profile screens, recoloured to Zest's gold.
 
-| Beat | Duolingo (frames at 30 fps) | Zest |
+| Beat | Duolingo (frames at 30 fps, measured per frame with a bounding-box script on the recording) | Zest |
 | --- | --- | --- |
-| Reveal | grey outline flame with a grey "0", held 33 frames (1.1 s) | `StreakFlame` dim, `Counter` shows the old number |
-| Squash | ears retract and the flame flattens into a grey bead, 6 frames | `shape` to -1 over 6 frames |
-| Bead | the bead turns gold and stretches sideways, 6 frames (anticipation) | `lit` flips at frame 39, `shape` -0.85 |
-| Pop | full flame in 1 frame, held 5 | `shape` 0 in 1 frame, medium haptic |
-| Stretch | flame stretches tall, 3 frames | `shape` 1 |
-| Burst | sparks fly, the "0" squashes and the "1" rises, 1 frame; sparks fade over 8 | `fire` 0→1 over 8 frames, `flip` over 3, success haptic, headline appears |
-| Settle | 9 frames, then the button | `ready` after 9 frames; "Keep it going" |
+| Reveal | grey outline flame with a grey "0" fades in over 6 frames, then holds 19 frames (0.63 s) | 0.2 s fade, `StreakFlame` dim, `Counter` shows the old number, hold 19 |
+| Squash | ears retract and the flame flattens into a grey bead, 4 frames | `shape` to -1 over 4 frames |
+| Bead | the bead holds 8 frames; it turns gold 2 frames in (anticipation) | `shape` -0.85 for 8, `lit` flips after 2 |
+| Pop | full flame in 1 frame | `shape` 0 in 1 frame, medium haptic (UI-clock reaction) |
+| Hold | 10 frames, a tall stretch in the last 2 | `shape` 0 for 8, 1 for 2 |
+| Burst | the "0" squashes and the "1" rises over 3 frames; sparks fly 13 frames | `flip` over 3, `fire` 0→1 over 13, success haptic + headline (UI-clock reaction) |
+| Settle | the flame overshoots flat for 1 frame and settles over 7 | `shape` -0.3, 0.06, 0 |
+| Button | after the sparks | `ready` when `fire` reaches 1 |
 | Streak screen | orange band with the number, "day streak!", a flame-in-circle badge, a month calendar with orange dots, "Day practiced" and "Freezes used" tiles | `StreakBand` in the profile: gold band, number, word, flame badge, Monday-first week strip; the calendar sheet already marks logged days |
 | Feed card | orange card with a flame and four check dots: "Complete a lesson every day to maintain your streak!" | the lemon's home line carries the streak count |
 
 Zest's flame is gold (`theme.soft`) with a pale core; unlit it is warm grey on paper. The celebration plays once per day, 0.7 s after the first saved meal of that day (Duolingo waits about that long after "Learning legend!"), and never on the showcase diary. Reduce Motion shows the final state at once.
+
+## Camera
+
+Zest's own camera replaces the system picker (October 30, 2026), after reading the food-camera screens of Cal AI, Cal Scanner, YAZIO, BitePal, SnapCalorie, Lean, Fitia and MyNetDiary in Appllama: every one of them is a dark full-bleed finder with a centred frame, a gallery shortcut bottom-left, a large shutter and a mode row; Cal AI, Cal Scanner and BitePal put the meal picker ("Lunch ▾") in the top bar, YAZIO and MyNetDiary explain the framing in words ("Put the barcode inside the frame", "A few tips"). Zest keeps the paper chrome of its other sheets and makes the finder itself the dark card: a 1.5 pt white plate ring at 68 % of the finder breathes between 55 % and 100 % opacity and ±1.8 % scale on a 2.2 s ease-in-out cycle until the shutter, four gold ticks mark the compass points, the hint "Centre the plate, then tap the shutter." fades in 300 ms after the feed is ready. The meal chips sit under the finder instead of in the top bar so the thumb reaches them, with the sticker of each meal; the clock pre-selects one. Shutter: 76 pt ink ring, 0.94 press scale, a white flash of 55 ms up and 130 ms down with a medium haptic (unchanged from the template's sample camera). The review state swaps the ring overlay out in 160 ms and shows "Retake" and "Log dinner" (the chosen meal by name), and the receipt follows without a question.

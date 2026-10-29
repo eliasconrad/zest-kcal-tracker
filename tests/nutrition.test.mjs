@@ -98,3 +98,19 @@ test("week strip is Monday-first and marks only this week's logged days", () => 
   assert.deepEqual(strip, [true, false, false, true, false, false, true]);
   assert.deepEqual(loggedThisWeek([], thursday), [false, false, false, false, false, false, false]);
 });
+
+test("camera pre-selects the meal from the clock and the e-mail check is lenient but real", async () => {
+  const { defaultMealType, validEmail } = await import("../src/cookbooks/zest/data/diary.ts");
+  assert.equal(defaultMealType(new Date(2026, 9, 29, 8, 30)), "Breakfast");
+  assert.equal(defaultMealType(new Date(2026, 9, 29, 12, 0)), "Lunch");
+  assert.equal(defaultMealType(new Date(2026, 9, 29, 16, 0)), "Snack");
+  assert.equal(defaultMealType(new Date(2026, 9, 29, 19, 45)), "Dinner");
+  assert.equal(validEmail("mia@example.com"), true);
+  assert.equal(validEmail(" mia@example.de "), true);
+  assert.equal(validEmail("mia@example"), false);
+  assert.equal(validEmail("mia.example.com"), false);
+  const storage = memoryStorage();
+  const store = createProfileStore(storage);
+  store.getState().save({ email: "mia@example.com" });
+  assert.equal(createProfileStore(storage).getState().email, "mia@example.com");
+});

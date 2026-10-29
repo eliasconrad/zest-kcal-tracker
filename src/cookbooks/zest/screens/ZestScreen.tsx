@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert, Keyboard, Linking, Pressable, Text, View } from "react-native";
+import { Alert, Keyboard, Pressable, Text, View } from "react-native";
 import {
   KeyboardController,
   KeyboardEvents,
@@ -44,7 +44,8 @@ import {
 } from "../data/diary";
 import { theme } from "../theme";
 import { MealPhotosProvider } from "../data/photos";
-import { DemoCamera } from "../components/DemoCamera";
+import { MealCamera } from "../components/MealCamera";
+import { clearPassword, hasPassword, savePassword } from "../state/secrets";
 import { ZestChatScroll } from "../components/ChatScroll";
 import { CHOICE_RETIRE_MS } from "../components/MealReply";
 
@@ -124,7 +125,12 @@ export function ZestScreen({
     editing: boolean;
   } | null>(() => (!profile.onboarded && !demo ? { editing: false } : null));
   const [photoMenu, setPhotoMenu] = useState(false);
-  const [sampleCamera, setSampleCamera] = useState(false);
+  /** The branded camera: live feed, or the bundled plate for the demo and simulators. */
+  const [camera, setCamera] = useState<"live" | "sample" | null>(null);
+  const [passwordSet, setPasswordSet] = useState(false);
+  useEffect(() => {
+    void hasPassword().then(setPasswordSet);
+  }, []);
   const [editor, setEditor] = useState<EditRequest | null>(null);
   const [focused, setFocused] = useState(false);
   const [inputHeight, setInputHeight] = useState(108);
@@ -319,9 +325,16 @@ export function ZestScreen({
       }),
     );
   };
-  const finishSetup = (fields: Partial<Profile>) => {
+  const finishSetup = (
+    fields: Partial<Profile>,
+    secrets?: { password?: string },
+  ) => {
     const store = useProfile.getState();
     store.save(fields);
+    if (secrets?.password) {
+      setPasswordSet(true);
+      void savePassword(secrets.password);
+    }
     if (!setup?.editing) store.finishOnboarding();
     // The diary's guide follows the plan unless a manual guide is set.
     const next = profilePlan(useProfile.getState());
@@ -382,7 +395,7 @@ export function ZestScreen({
     Keyboard.dismiss();
     setPhotoMenu((old) => !old);
   };
-  const attach = (photo: MealPhoto) => {
+  const attach = (photo: MealPhoto, preset?: MealType) => {
     if (active.current) return;
     Keyboard.dismiss();
     setPhotoMenu(false);
@@ -401,14 +414,23 @@ export function ZestScreen({
     ]);
     later(() => {
       list.current?.prepareForLayoutAnimationRender();
+      const question: Turn = {
+        id: `${id}-question`,
+        role: "assistant",
+        kind: "question",
+        photo,
+        state: "choosing",
+        text: preset ? `For ${preset.toLowerCase()}.` : undefined,
+      };
       setTurns((old) =>
         old.map((turn) =>
           turn.id === `${id}-question`
             ? {
                 ...turn,
                 state: "choosing",
-                text:
-                  photo.asset === "dinner"
+                text: preset
+                  ? question.text
+                  : photo.asset === "dinner"
                     ? "For dinner?"
                     : photo.asset === "lunch"
                       ? "For lunch?"
@@ -420,37 +442,19 @@ export function ZestScreen({
         ),
       );
       activity(false);
+      // The camera already named the meal: no question, straight to the receipt.
+      if (preset) chooseType(question, preset);
     }, 900);
   };
-  const choosePhoto = async (camera: boolean) => {
+  const chooseFromLibrary = async () => {
     setPhotoMenu(false);
     Keyboard.dismiss();
     try {
-      if (camera) {
-        const permission = await ImagePicker.requestCameraPermissionsAsync();
-        if (!permission.granted) {
-          Alert.alert(
-            "Camera access",
-            "Allow camera access in Settings, or choose a photo from your library.",
-            [
-              { text: "Not now", style: "cancel" },
-              {
-                text: "Open Settings",
-                onPress: () => void Linking.openSettings(),
-              },
-            ],
-          );
-          return;
-        }
-      }
-      const options: ImagePicker.ImagePickerOptions = {
+      const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ["images"],
         allowsEditing: false,
         quality: 0.85,
-      };
-      const result = camera
-        ? await ImagePicker.launchCameraAsync(options)
-        : await ImagePicker.launchImageLibraryAsync(options);
+      });
       if (result.canceled || !result.assets[0]) return;
       const asset = result.assets[0];
       const source = new File(asset.uri);
@@ -463,14 +467,9 @@ export function ZestScreen({
       attach({ uri: local.uri, sample: false });
     } catch {
       Alert.alert(
-        camera ? "Camera unavailable" : "Photo unavailable",
-        camera
-          ? "Choose a meal from your photo library on this device."
-          : "That photo couldn’t be opened. Try another one.",
-        [
-          { text: "Cancel", style: "cancel" },
-          { text: "Photo library", onPress: () => void choosePhoto(false) },
-        ],
+        "Photo unavailable",
+        "That photo couldn’t be opened. Try another one.",
+        [{ text: "OK", style: "cancel" }],
       );
     }
   };
@@ -827,7 +826,7 @@ export function ZestScreen({
     Keyboard.dismiss();
     setTurns([]);
     setPhotoMenu(false);
-    setSampleCamera(false);
+    setCamera(null);
     closeCalendar();
   };
   const look = (x: number, y: number) => {
@@ -909,11 +908,22 @@ export function ZestScreen({
               justifyContent: "space-between",
             }}
           >
-            <GlassButton
-              name="person.crop.circle"
-              label="Your profile"
-              onPress={profileOpen ? closeProfile : openProfile}
-            />
+            {/* No account or new-conversation controls while the questions run:
+                the sheet is the whole screen until the guide is saved. */}
+            {setup ? (
+              <View style={{ width: 44 }} />
+            ) : (
+              <Animated.View
+                entering={scene.reduced ? undefined : FadeIn.duration(260)}
+                exiting={scene.reduced ? undefined : FadeOut.duration(160)}
+              >
+                <GlassButton
+                  name="person.crop.circle"
+                  label="Your profile"
+                  onPress={profileOpen ? closeProfile : openProfile}
+                />
+              </Animated.View>
+            )}
             <View style={{ alignItems: "center" }}>
               <Text
                 style={{
@@ -926,11 +936,20 @@ export function ZestScreen({
                 Zest
               </Text>
             </View>
-            <GlassButton
-              name="square.and.pencil"
-              label="New Zest conversation"
-              onPress={fresh}
-            />
+            {setup ? (
+              <View style={{ width: 44 }} />
+            ) : (
+              <Animated.View
+                entering={scene.reduced ? undefined : FadeIn.duration(260)}
+                exiting={scene.reduced ? undefined : FadeOut.duration(160)}
+              >
+                <GlassButton
+                  name="square.and.pencil"
+                  label="New Zest conversation"
+                  onPress={fresh}
+                />
+              </Animated.View>
+            )}
           </View>
           <Animated.View
             pointerEvents={
@@ -1076,6 +1095,7 @@ export function ZestScreen({
             profile={profile}
             apiConfigured={apiConfigured}
             onClose={closeProfile}
+            passwordSet={passwordSet}
             onEdit={(step) => setSetup({ step, editing: true })}
             onName={(name) => useProfile.getState().save({ name })}
             onGuide={(manualGuide) => {
@@ -1090,6 +1110,8 @@ export function ZestScreen({
             onReset={() => {
               useDiary.getState().reset();
               useProfile.getState().reset();
+              setPasswordSet(false);
+              void clearPassword();
               setProfileOpen(false);
               fresh();
               setSetup({ editing: false });
@@ -1215,13 +1237,14 @@ export function ZestScreen({
                     key={item.label}
                     label={item.label}
                     onPress={() => {
-                      if (
-                        item.mode === "sample" ||
-                        (demo && item.mode === "camera")
-                      ) {
+                      if (item.mode === "library") void chooseFromLibrary();
+                      else {
                         setPhotoMenu(false);
-                        setSampleCamera(true);
-                      } else void choosePhoto(item.mode === "camera");
+                        Keyboard.dismiss();
+                        setCamera(
+                          item.mode === "sample" || demo ? "sample" : "live",
+                        );
+                      }
                     }}
                     style={{
                       height: 52,
@@ -1240,17 +1263,18 @@ export function ZestScreen({
               </GlassSurface>
             </View>
           )}
-          {sampleCamera && (
-            <DemoCamera
-              onClose={() => setSampleCamera(false)}
-              onUse={(photo) => {
-                setSampleCamera(false);
-                attach(photo);
+          {camera && (
+            <MealCamera
+              source={camera}
+              onClose={() => setCamera(null)}
+              onUse={(photo, type) => {
+                setCamera(null);
+                attach(photo, type);
               }}
               onLibrary={() => {
-                setSampleCamera(false);
+                setCamera(null);
                 later(() => {
-                  void choosePhoto(false);
+                  void chooseFromLibrary();
                 }, 400);
               }}
             />

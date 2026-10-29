@@ -10,7 +10,7 @@ Validated October 6, 2026 with a bundled Release build in a fresh isolated iPhon
 | --- | --- |
 | Independent `npm ci` | Passed with the project's own lockfile and dependencies. |
 | Strict TypeScript and Expo ESLint | Passed. |
-| Node regression suite | 30 passing checks (October 29, 2026: streaming reply parsing, diary context, nutrition math, profile persistence added): local dates/leap years, totals, partial protein, supportive guide answers, sample identity, reactions, duplicate confirmation, edit/delete/persistence, storage isolation, actual router parser, malformed URI handling, native-tool UUIDs, assets, routes and documentation links. |
+| Node regression suite | 33 passing checks (October 30, 2026: clock-based camera meal default, e-mail check, e-mail persistence added) (October 29, 2026: streaming reply parsing, diary context, nutrition math, profile persistence added): local dates/leap years, totals, partial protein, supportive guide answers, sample identity, reactions, duplicate confirmation, edit/delete/persistence, storage isolation, actual router parser, malformed URI handling, native-tool UUIDs, assets, routes and documentation links. |
 | `npx expo-doctor` | 21/21 checks passed. |
 | iOS JavaScript export | Passed; all bundled food artwork resolves. |
 | Real model round trip | October 29, 2026: a bundled sample photo sent through the local Worker to OpenRouter (qwen/qwen2.5-vl-72b-instruct) streamed `Avocado toast eggs \| 450 \| 20 \| 30 \| 25` plus a note; the reply opened with a blank line, which `parseEstimate` now skips (covered by a test). An open question streamed a three-sentence answer with three follow-ups. |
