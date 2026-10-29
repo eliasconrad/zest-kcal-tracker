@@ -9,8 +9,8 @@ import {
 } from "react-native";
 import Animated, {
   FadeIn,
+  FadeInRight,
   FadeOut,
-  ZoomIn,
   withSequence,
   withTiming,
 } from "react-native-reanimated";
@@ -118,9 +118,20 @@ export function Onboarding({
     void Haptics.selectionAsync();
   };
 
-  // The lemon narrates: a small hop on every step, a longer "working it out"
-  // beat before the plan, and a double hop when the guide is revealed.
+  // Timings measured frame by frame from the YAZIO and BitePal onboarding
+  // recordings (docs/MOTION_SPEC.md): a greeting interlude of 1.3 s, a plan
+  // computation of four items at 1.5 s each, a 0.3 s push between questions.
+  const GREETING_MS = 1300;
+  const PLAN_ITEM_MS = 1500;
+  const planItems = [
+    "Resting energy",
+    "Daily activity",
+    draft.goal === "lose" || draft.goal === "gain" ? "Your pace" : "Your goal",
+    "Macro split",
+  ];
+  const [interlude, setInterlude] = useState(false);
   const [preparing, setPreparing] = useState(false);
+  const [doneItems, setDoneItems] = useState(0);
   const hop = (times = 1) =>
     scene.hop.set(
       times === 2
@@ -135,14 +146,29 @@ export function Onboarding({
             withTiming(0, { duration: 190 }),
           ),
     );
-  // The "working it out" beat ends on a timer; it starts in the step handler.
+  // The greeting interlude holds, then the first question arrives.
+  useEffect(() => {
+    if (!interlude) return;
+    const timer = setTimeout(() => setInterlude(false), GREETING_MS);
+    return () => clearTimeout(timer);
+  }, [interlude]);
+  // The plan checks off one item per interval; the last one reveals the guide.
   useEffect(() => {
     if (!preparing) return;
-    const timer = setTimeout(() => {
-      setPreparing(false);
-      hop(2);
-    }, 1300);
-    return () => clearTimeout(timer);
+    const timers = planItems.map((_, i) =>
+      setTimeout(() => setDoneItems(i + 1), PLAN_ITEM_MS * (i + 1)),
+    );
+    const finish = setTimeout(
+      () => {
+        setPreparing(false);
+        hop(2);
+      },
+      PLAN_ITEM_MS * planItems.length + 400,
+    );
+    return () => {
+      timers.forEach(clearTimeout);
+      clearTimeout(finish);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [preparing]);
   const go = (direction: 1 | -1) => {
@@ -160,8 +186,13 @@ export function Onboarding({
     }
     setStep(next);
     if (!scene.reduced) {
-      if (next === "plan" && direction === 1) setPreparing(true);
-      else hop(1);
+      if (next === "plan" && direction === 1) {
+        setDoneItems(0);
+        setPreparing(true);
+      } else if (next === "goal" && direction === 1) {
+        setInterlude(true);
+        hop(1);
+      } else hop(1);
     }
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
@@ -183,7 +214,7 @@ export function Onboarding({
               : step === "pace"
                 ? "Steady wins. I’m patient."
                 : preparing
-                  ? ""
+                  ? "Working it out…"
                   : firstName
                     ? `Here’s your guide, ${firstName}.`
                     : "Here’s your guide.";
@@ -232,9 +263,15 @@ export function Onboarding({
       accessibilityViewIsModal
       style={{ position: "absolute", inset: 0, zIndex: 40 }}
     >
+      {step === "plan" && !preparing && !scene.reduced && (
+        <Sparkles
+          top={cardFloor(height) - FIGURE.hero * SCALE.card - 20}
+          right={24}
+        />
+      )}
       <LemonBubble
         text={line}
-        thinking={preparing}
+        thinking={false}
         top={cardFloor(height) - FIGURE.hero * SCALE.card - 8}
         right={118}
         reduced={scene.reduced}
@@ -318,9 +355,23 @@ export function Onboarding({
               }}
             >
               <Animated.View
-                key={step}
-                entering={scene.reduced ? undefined : FadeIn.duration(180)}
+                key={`${step}-${interlude ? "hello" : "ask"}`}
+                entering={scene.reduced ? undefined : FadeInRight.duration(280)}
               >
+                {interlude && step === "goal" && (
+                  <Question
+                    title={
+                      firstName
+                        ? `Nice to meet you, ${firstName}.`
+                        : "Nice to meet you."
+                    }
+                    detail="Three short questions, then a guide that fits you."
+                  >
+                    <View style={{ alignItems: "center", minHeight: 120 }}>
+                      <FoodSticker kind="Breakfast" size={110} angle={-6} />
+                    </View>
+                  </Question>
+                )}
                 {step === "name" && (
                   <Question
                     title="What should I call you?"
@@ -348,7 +399,7 @@ export function Onboarding({
                     />
                   </Question>
                 )}
-                {step === "goal" && (
+                {step === "goal" && !interlude && (
                   <Question
                     title="What are you here for?"
                     detail="This sets your daily guide. You can change it any time."
@@ -494,6 +545,8 @@ export function Onboarding({
                     draft={draft}
                     plan={current}
                     preparing={preparing}
+                    items={planItems}
+                    doneItems={doneItems}
                   />
                 )}
               </Animated.View>
@@ -964,27 +1017,63 @@ function PlanStep({
   draft,
   plan: p,
   preparing,
+  items,
+  doneItems,
 }: {
   draft: Profile;
   plan: ReturnType<typeof plan>;
   preparing: boolean;
+  items: string[];
+  doneItems: number;
 }) {
   if (preparing)
     return (
       <Question
         title="Working it out…"
-        detail="Adding up your days, your pace and your goal."
+        detail="Adding up your body, your days and your goal."
       >
         <View
           style={{
-            minHeight: 120,
-            justifyContent: "center",
-            alignItems: "center",
+            borderRadius: 24,
+            borderCurve: "continuous",
+            backgroundColor: "#FFFFFF",
+            paddingHorizontal: 18,
+            paddingVertical: 8,
           }}
         >
-          <View style={{ opacity: 0.4 }}>
-            <FoodSticker kind="Lunch" size={96} angle={-6} />
-          </View>
+          {items.map((item, i) => {
+            const done = i < doneItems;
+            const active = i === doneItems;
+            return (
+              <View
+                key={item}
+                accessible
+                accessibilityLabel={`${item}: ${done ? "done" : active ? "in progress" : "waiting"}`}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  minHeight: 44,
+                  gap: 12,
+                  opacity: done || active ? 1 : 0.45,
+                }}
+              >
+                <View style={{ width: 28, alignItems: "center" }}>
+                  {done ? (
+                    <Symbol
+                      name="checkmark.circle.fill"
+                      size={18}
+                      color="#85916C"
+                    />
+                  ) : active ? (
+                    <Thinking />
+                  ) : (
+                    <Symbol name="circle" size={16} color={theme.faint} />
+                  )}
+                </View>
+                <Text style={{ fontSize: 15, color: theme.ink }}>{item}</Text>
+              </View>
+            );
+          })}
         </View>
       </Question>
     );
@@ -1110,10 +1199,8 @@ function LemonBubble({
   return (
     <Animated.View
       key={thinking ? "thinking" : text}
-      entering={
-        reduced ? undefined : ZoomIn.springify().damping(18).stiffness(260)
-      }
-      exiting={reduced ? undefined : FadeOut.duration(120)}
+      entering={reduced ? undefined : FadeIn.duration(300)}
+      exiting={reduced ? undefined : FadeOut.duration(200)}
       pointerEvents="none"
       accessibilityLiveRegion="polite"
       accessible
@@ -1168,5 +1255,55 @@ function LemonBubble({
         }}
       />
     </Animated.View>
+  );
+}
+
+/**
+ * Twinkle marks around the lemon when the guide is revealed. The references
+ * reposition their sparkles every ~200 ms for about two seconds; same here.
+ */
+function Sparkles({ top, right }: { top: number; right: number }) {
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    if (tick >= 12) return;
+    const timer = setTimeout(() => setTick((t) => t + 1), 200);
+    return () => clearTimeout(timer);
+  }, [tick]);
+  if (tick >= 12) return null;
+  const spots = [
+    [8, 4],
+    [96, 18],
+    [20, 70],
+    [110, 86],
+    [60, -10],
+  ];
+  return (
+    <View
+      pointerEvents="none"
+      accessibilityElementsHidden
+      style={{ position: "absolute", top, right, width: 130, height: 130 }}
+    >
+      {spots.map(([x, y], i) => {
+        const phase = (tick + i * 2) % 4;
+        const size = phase === 0 ? 0 : phase === 1 ? 10 : phase === 2 ? 15 : 9;
+        return (
+          <View
+            key={i}
+            style={{
+              position: "absolute",
+              left: x + ((tick + i) % 3) * 3,
+              top: y - ((tick + i * 3) % 3) * 2,
+              opacity: size ? 1 : 0,
+            }}
+          >
+            <Symbol
+              name="sparkle"
+              size={Math.max(size, 1)}
+              color={theme.soft}
+            />
+          </View>
+        );
+      })}
+    </View>
   );
 }

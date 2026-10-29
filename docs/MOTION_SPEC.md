@@ -29,7 +29,18 @@ The composer begins at 108 points and grows with measured text up to its support
 
 The lemon moves from its centered welcome to the composer's edge, then to the diary's upper corner. Eyes notice touches first, the head follows, and the body leans last. The low warm light gathers beneath the glass while busy. Calendar opening retains its glass tree, and close removes accessibility only after its exit finishes.
 
-During onboarding the lemon stands on the sheet's upper edge and narrates. A speech bubble to its left pops in (spring) with one short line per step and reacts to the name ("Nice to meet you, Mia!"). Each step change is a small hop; moving to the plan opens a 1.3-second "working it out" beat with thinking dots in the bubble, then a double hop as the guide is revealed, and another double hop when the diary opens for the first time. Below the greeting the lemon keeps one line in its own voice: nothing logged, today's total against the guide, or the logging streak. Reduce Motion removes the bubble spring, the hops and the beat.
+During onboarding the lemon stands on the sheet's upper edge and narrates. The timings come from frame-by-frame reads (5-10 fps strips) of the YAZIO and BitePal onboarding recordings, not from guesses:
+
+| Moment | YAZIO | BitePal | Zest |
+| --- | --- | --- | --- |
+| Question change | 0.3-0.6 s dissolve | 0.3 s push from the right, avatar fixed | 0.28 s push, lemon and bubble fixed |
+| Greeting after the name | 0.3 s in, 1.3 s hold, 0.6 s out | bubble stays beside every question | 1.3 s interlude ("Nice to meet you, Mia."), bubble stays |
+| Plan computation | 7-8 s, four items at ~1.5 s, mascot present | 7 s ring, four items at ~1.8 s, no mascot | four items at 1.5 s (6.4 s), lemon present, dots become checks |
+| Reveal | sticker scales in 0.3 s, sparkles move every ~0.2 s | lid 0.6 s, pop 0.4 s, then still | double hop, five sparkles repositioned every 0.2 s for 2.4 s |
+| Bubble | appears with the screen, no spring | avatar static | 0.3 s fade, 0.2 s fade out |
+| After the first diary | "You're awesome!" tag 1 s after, ~0.8 s | hero scene static | "Let's eat." tag 1 s after, 1.4 s |
+
+Both references keep the mascot itself a still illustration on every screen; the motion is in transitions, particles and copy. The lemon keeps its own gaze and blink on top. Below the greeting the lemon keeps one line in its own voice: nothing logged, today's total against the guide, or the logging streak. Reduce Motion removes the push, the interlude, the computation beat, the hops, the sparkles and the tag.
 
 A blank diary stays neutral. A small logged amount produces a curious expression, values within the guide stay content, and above-guide values produce a playful eyebrow. Copy stays supportive; the character does not prescribe compensation.
 

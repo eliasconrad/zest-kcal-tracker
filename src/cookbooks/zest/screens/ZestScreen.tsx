@@ -10,6 +10,8 @@ import * as Haptics from "expo-haptics";
 import { File, Paths } from "expo-file-system";
 import { FlashList, type FlashListRef } from "@shopify/flash-list";
 import Animated, {
+  FadeIn,
+  FadeOut,
   useAnimatedStyle,
   withSequence,
   withSpring,
@@ -97,6 +99,8 @@ export function ZestScreen({
   const [calendar, setCalendar] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   /** First-launch setup, or one step re-opened from the profile. */
+  /** A two-word tag from the lemon right after setup, like the references' "You're awesome!" */
+  const [tag, setTag] = useState("");
   const [setup, setSetup] = useState<{
     step?: OnboardingStep;
     editing: boolean;
@@ -239,6 +243,12 @@ export function ZestScreen({
     const next = profilePlan(useProfile.getState());
     useDiary.getState().setGuide(next.guide);
     setSetup(null);
+    if (!setup?.editing) {
+      // Measured on the reference diary: the tag appears about a second after
+      // the page settles and stays briefly.
+      later(() => setTag("Let’s eat."), 1000);
+      later(() => setTag(""), 2400);
+    }
     if (!profileOpen)
       pick.set(withSpring(0, { damping: 27, stiffness: 230, mass: 0.85 }));
     scene.hop.set(
@@ -1007,6 +1017,33 @@ export function ZestScreen({
               onDone={finishSetup}
               onCancel={setup.editing ? cancelSetup : undefined}
             />
+          )}
+          {tag !== "" && (
+            <Animated.View
+              pointerEvents="none"
+              entering={scene.reduced ? undefined : FadeIn.duration(220)}
+              exiting={scene.reduced ? undefined : FadeOut.duration(220)}
+              accessible
+              accessibilityLiveRegion="polite"
+              accessibilityLabel={`Zest says: ${tag}`}
+              style={{
+                position: "absolute",
+                top: scene.height * 0.495 - 300,
+                alignSelf: "center",
+                backgroundColor: "#FFFFFF",
+                borderRadius: 18,
+                borderCurve: "continuous",
+                paddingHorizontal: 14,
+                paddingVertical: 9,
+                boxShadow: "0 4px 16px rgba(32, 35, 25, 0.08)",
+              }}
+            >
+              <Text
+                style={{ fontSize: 15, fontWeight: "500", color: theme.ink }}
+              >
+                {tag}
+              </Text>
+            </Animated.View>
           )}
           <Lemon
             scene={scene}
