@@ -181,7 +181,13 @@ export function Onboarding({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [preparing]);
+  // A step change needs 400 ms before the next; a repeated return key or a
+  // double tap must not skip questions.
+  const lastGo = useRef(0);
   const go = (direction: 1 | -1) => {
+    const now = Date.now();
+    if (now - lastGo.current < 400) return;
+    lastGo.current = now;
     Keyboard.dismiss();
     if (editing) {
       if (direction === -1) onCancel?.();
@@ -374,9 +380,14 @@ export function Onboarding({
                 {interlude && step === "goal" && (
                   <Question
                     title={
-                      firstName
-                        ? `Nice to meet you, ${firstName}.`
-                        : "Nice to meet you."
+                      <Typewriter
+                        text={
+                          firstName
+                            ? `Nice to meet you, ${firstName}.`
+                            : "Nice to meet you."
+                        }
+                        reduced={scene.reduced}
+                      />
                     }
                     detail="Three short questions, then a guide that fits you."
                   >
@@ -564,39 +575,35 @@ export function Onboarding({
                 )}
               </Animated.View>
               <View style={{ marginTop: 26 }}>
-                <Touch
-                  label={
-                    step === "plan"
-                      ? editing
-                        ? "Save"
-                        : "Start logging"
-                      : editing
-                        ? "Save"
-                        : "Continue"
-                  }
-                  onPress={() => go(1)}
-                  disabled={!ready}
-                  style={{
-                    height: 52,
-                    borderRadius: 26,
-                    backgroundColor: theme.heavy,
-                    justifyContent: "center",
-                    alignItems: "center",
-                    opacity: ready ? 1 : 0.35,
-                  }}
-                >
-                  <Text
-                    style={{ fontSize: 16, fontWeight: "600", color: "white" }}
+                {step === "plan" && !editing && !preparing ? (
+                  <HoldToStart reduced={scene.reduced} onCommit={() => go(1)} />
+                ) : (
+                  <Touch
+                    label={
+                      step === "plan" ? "Save" : editing ? "Save" : "Continue"
+                    }
+                    onPress={() => go(1)}
+                    disabled={!ready}
+                    style={{
+                      height: 52,
+                      borderRadius: 26,
+                      backgroundColor: theme.heavy,
+                      justifyContent: "center",
+                      alignItems: "center",
+                      opacity: ready ? 1 : 0.35,
+                    }}
                   >
-                    {step === "plan"
-                      ? editing
-                        ? "Save"
-                        : "Start logging"
-                      : editing
-                        ? "Save"
-                        : "Continue"}
-                  </Text>
-                </Touch>
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        fontWeight: "600",
+                        color: "white",
+                      }}
+                    >
+                      {step === "plan" ? "Save" : editing ? "Save" : "Continue"}
+                    </Text>
+                  </Touch>
+                )}
               </View>
             </KeyboardAwareScrollView>
           </View>
@@ -629,7 +636,7 @@ function Question({
   title,
   detail,
   children,
-}: React.PropsWithChildren<{ title: string; detail?: string }>) {
+}: React.PropsWithChildren<{ title: React.ReactNode; detail?: string }>) {
   return (
     <View>
       <Text
@@ -1384,5 +1391,106 @@ function Piece({
     >
       <FoodSticker kind={kind} size={46} />
     </Animated.View>
+  );
+}
+
+/** A title that types in one word every 170 ms, as BitePal's "Let's meet your virtual pet!" does. */
+function Typewriter({ text, reduced }: { text: string; reduced: boolean }) {
+  const words = text.split(" ");
+  const [shown, setShown] = useState(reduced ? words.length : 0);
+  useEffect(() => {
+    if (reduced || shown >= words.length) return;
+    const timer = setTimeout(() => setShown((n) => n + 1), 170);
+    return () => clearTimeout(timer);
+  }, [shown, words.length, reduced]);
+  return (
+    <Text accessibilityLabel={text}>
+      {words.map((word, i) => (
+        <Text key={i} style={{ opacity: i < shown ? 1 : 0 }}>
+          {word}
+          {i < words.length - 1 ? " " : ""}
+        </Text>
+      ))}
+    </Text>
+  );
+}
+
+/**
+ * Hold to commit, YAZIO's closing gesture: a fill grows across the button for
+ * 1.3 s (about 40 frames in the recording) and releases into the diary.
+ * Letting go early springs it back. With Reduce Motion a tap is enough.
+ */
+function HoldToStart({
+  reduced,
+  onCommit,
+}: {
+  reduced: boolean;
+  onCommit: () => void;
+}) {
+  const HOLD_MS = 1300;
+  const fill = useSharedValue(0);
+  const done = useRef(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const start = () => {
+    if (done.current) return;
+    if (reduced) {
+      done.current = true;
+      onCommit();
+      return;
+    }
+    void Haptics.selectionAsync();
+    fill.set(withTiming(1, { duration: HOLD_MS, easing: Easing.linear }));
+    timer.current = setTimeout(() => {
+      done.current = true;
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      onCommit();
+    }, HOLD_MS);
+  };
+  const cancel = () => {
+    if (done.current) return;
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = null;
+    fill.set(withTiming(0, { duration: 220 }));
+  };
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+    },
+    [],
+  );
+  const grow = useAnimatedStyle(() => ({ width: `${fill.get() * 100}%` }));
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="Start logging"
+      accessibilityHint="Touch and hold for a moment"
+      onPressIn={start}
+      onPressOut={cancel}
+      style={{
+        height: 52,
+        borderRadius: 26,
+        backgroundColor: theme.heavy,
+        justifyContent: "center",
+        alignItems: "center",
+        overflow: "hidden",
+      }}
+    >
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          {
+            position: "absolute",
+            left: 0,
+            top: 0,
+            bottom: 0,
+            backgroundColor: theme.soft,
+          },
+          grow,
+        ]}
+      />
+      <Text style={{ fontSize: 16, fontWeight: "600", color: "white" }}>
+        Hold to start logging
+      </Text>
+    </Pressable>
   );
 }

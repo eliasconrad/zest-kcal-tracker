@@ -54,6 +54,26 @@ Frame-level reads at the recordings' native rate (30 fps; BitePal's splash 60 fp
 | BitePal "Got it" | push in 6 frames (0.2 s); hearts drift ~1 px per frame, sparkles blink; 1.4 s hold | push 0.28 s |
 | BitePal plan | summary to loading crossfade 5 frames (0.17 s); ring +1 % every 8 frames | n/a |
 
+Per-frame motion maps of the whole recordings (every frame differenced against the previous one, `#` strong change, `+` small, `.` still; one character per 33 ms) back the numbers above:
+
+```
+YAZIO greeting, frames 405-525 (13.5 s):   ..+#####...............................++##++++++...........
+                                            ....................#....#.....#....#.....#.................
+YAZIO hold-to-commit, frames 645-765:       .............................................###..#.........
+                                            ..............#........#...........+...+++++++...........+..
+BitePal typewriter, frames 450-570:         #.##.....##########+....++####+#+++.+............+.......##.
+                                            ...+.###...##.###.......#############+++....................
+BitePal reveal, frames 960-1110 (32.0 s):   ########+++................++##+######+################+####
+                                            ######+++#+++.++#++##########################+##++......#...
+                                            ##........########+++.........
+YAZIO Quiz Hero, frames 9060-9150:          .............##..#.#.+.......##.#.....#.++.....#..#.#....#.+
+YAZIO diary tag, frames 9285-9357:          ..#...................................+++++++...............
+```
+
+Reading them: the greeting's name screen leaves in 6 frames, 30 still frames follow, the mascot and bubble arrive over 12 frames, and the single `#` ticks during the hold are the mascot's blinks every ~5-6 frames apart in pairs. BitePal's "Let's meet your virtual pet!" types one word every ~5 frames with paw prints fading in between. The reveal's 18 still frames between the lid lift and the pop are the pause; the 50 dense frames after are the pop, the rise and the flying items. The Quiz Hero's sparse single-frame ticks are the repositioning sparkles. The whole-recording motion scan found 263 motion segments in YAZIO (1,757 of 9,357 frames moving) and 150 in BitePal (1,555 of 5,139), so neither mascot ever moves on a question screen: every long segment is a transition, a picker or a particle effect.
+
+Two further patterns from the frame maps are now in Zest: the interlude title types in one word every 170 ms (`Typewriter`), and the final button is hold-to-commit (`HoldToStart`): a fill grows across it for 1.3 s and releases into the diary, letting go early springs it back, Reduce Motion accepts a tap.
+
 Both references keep the mascot itself a still illustration on every screen; the motion is in transitions, particles and copy.
 
 Where the mascots appear, from a full read of both catalogues (YAZIO 84 screens and 2 recordings, BitePal 65 screens and 2 recordings):

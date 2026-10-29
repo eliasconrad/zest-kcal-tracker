@@ -59,7 +59,8 @@ name: First launch onboarding, computed guide and profile sheet
 - extendedWaitUntil:
     visible: "Mia, here’s your guide."
     timeout: 12000
-- tapOn: "Start logging"
+# The final button is hold-to-commit (1.3 s); Maestro's long press holds longer than that.
+- longPressOn: "Start logging"
 # The greeting is one two-line text; (?s) lets the regex span the line break.
 - assertVisible: "(?s)Good .*Mia\\..*"
 - tapOn: "Your profile"
