@@ -154,10 +154,17 @@ export function ZestScreen({
       useProfile.getState().save({ onboarded: true, name: displayName });
   }, [demo, displayName]);
   // The sheet sits where the calendar sits; the lemon climbs onto it the same way.
+  // The sheet appears first; the lemon climbs onto it 0.6 s later, the beat
+  // BitePal's pet reveal uses before its pet pops up (lid 0.6 s, pop 0.4 s).
   useEffect(() => {
-    if (setup)
-      pick.set(withSpring(1, { damping: 26, stiffness: 180, mass: 0.9 }));
-  }, [setup, pick]);
+    if (!setup) return;
+    const delay = setup.editing || scene.reduced ? 0 : 600;
+    const timer = setTimeout(
+      () => pick.set(withSpring(1, { damping: 26, stiffness: 180, mass: 0.9 })),
+      delay,
+    );
+    return () => clearTimeout(timer);
+  }, [setup, pick, scene.reduced]);
   useEffect(() => {
     if (!calendar)
       expression.set(

@@ -40,7 +40,16 @@ During onboarding the lemon stands on the sheet's upper edge and narrates. The t
 | Bubble | appears with the screen, no spring | avatar static | 0.3 s fade, 0.2 s fade out |
 | After the first diary | "You're awesome!" tag 1 s after, ~0.8 s | hero scene static | "Let's eat." tag 1 s after, 1.4 s |
 
-Both references keep the mascot itself a still illustration on every screen; the motion is in transitions, particles and copy. The lemon keeps its own gaze and blink on top. Below the greeting the lemon keeps one line in its own voice: nothing logged, today's total against the guide, or the logging streak. Reduce Motion removes the push, the interlude, the computation beat, the hops, the sparkles and the tag.
+Both references keep the mascot itself a still illustration on every screen; the motion is in transitions, particles and copy.
+
+Where the mascots appear, from a full read of both catalogues (YAZIO 84 screens and 2 recordings, BitePal 65 screens and 2 recordings):
+
+| App | Mascot on | Not on |
+| --- | --- | --- |
+| YAZIO | splash (0.6 s hold, 0.2 s fade; food pieces then pop in every ~0.1 s), greeting bubble, hold-to-commit circle, teal welcome, nine interlude screens with props (food, phone, weights, apple, clipboard), plan computation, paywall and "cancel anytime" card, Quiz Hero on purple, a one-second "You're awesome!" tag on the diary ring, shop banner, activity-tracking icon | every diary, food search, recipe, fasting, measurement, profile and settings screen |
+| BitePal | 0.9 s face-only splash (static, no blink at 10 fps), intro cards, pet reveal (trash can, lid 0.6 s, pop 0.4 s), name entry, a small avatar beside every question, nine interlude screens (hearts, sweat, sleep, rainbow), personal summary, paywall, account creation, home hero scene with name and hearts, "estimating portions" peek, meal result speech bubble ("Nutty goodness! My tummy is so happy."), theme and mascot shop, settings row "Raccoon's name" | plan computation, challenges, stats, calendar, most settings |
+
+Zest follows the union that fits one lemon: the lemon sits beside every question (BitePal), speaks in a bubble (YAZIO), stays for the computation (YAZIO), climbs onto the sheet 0.6 s after it appears (the reveal beat), celebrates with sparkles (YAZIO), keeps a line on the home screen (BitePal hero) and tags the first diary open (YAZIO). The meal note under a receipt is the lemon's own line about the plate, as BitePal's result bubble is the pet's. The lemon keeps its own gaze and blink on top. Below the greeting the lemon keeps one line in its own voice: nothing logged, today's total against the guide, or the logging streak. Reduce Motion removes the push, the interlude, the computation beat, the hops, the sparkles and the tag.
 
 A blank diary stays neutral. A small logged amount produces a curious expression, values within the guide stay content, and above-guide values produce a playful eyebrow. Copy stays supportive; the character does not prescribe compensation.
 
