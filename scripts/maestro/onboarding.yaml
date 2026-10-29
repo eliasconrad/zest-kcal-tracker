@@ -65,8 +65,12 @@ name: First launch onboarding, computed guide and profile sheet
 - assertVisible: "(?s)Good .*Mia\\..*"
 - tapOn: "Your profile"
 - assertVisible: "32 years · Lose weight"
+- assertVisible: "0 day logging streak, 0 of 7 days this week"
 - assertVisible: "Just getting started."
-- assertVisible: "Goal: Lose weight. Edit"
+# The streak band pushes the plan rows below the fold.
+- scrollUntilVisible:
+    element: "Goal: Lose weight. Edit"
+    direction: DOWN
 # Hosted SwiftUI controls may retain their pre-animation AX frame; the close
 # target sits at the top trailing corner, as in diary.yaml.
 - tapOn:
@@ -79,3 +83,24 @@ name: First launch onboarding, computed guide and profile sheet
     visible: "(?s)Good .*Mia\\..*"
     timeout: 10000
 - assertNotVisible: "What should I call you?"
+# The first logged meal of a day plays the streak celebration.
+- tapOn: "Log a meal"
+- tapOn: "Try a sample meal"
+- extendedWaitUntil:
+    visible: "Take dinner photo"
+    timeout: 10000
+- tapOn: "Take dinner photo"
+- tapOn: "Use meal photo"
+- extendedWaitUntil:
+    visible: "Log as dinner"
+    timeout: 10000
+- tapOn: "Log as dinner"
+- extendedWaitUntil:
+    visible: "day streak!"
+    timeout: 10000
+- assertVisible: "This week: 1 of 7 days logged"
+- extendedWaitUntil:
+    visible: "Keep it going"
+    timeout: 6000
+- tapOn: "Keep it going"
+- assertVisible: "Edit Pasta & garlic bread, 1120 estimated kilocalories"

@@ -7,8 +7,9 @@ name: Sample meal, protein answer and calendar
 - assertVisible: "What should I call you?"
 - assertNotVisible: "Back to chat collection"
 - openLink: "zest-kcal-tracker://?demo=1"
+# The deep-link confirmation is localized; match English and German.
 - tapOn:
-    text: Open
+    text: "Open|Öffnen"
     optional: true
 - assertVisible: "Good .*,.*"
 - tapOn: "Log a meal"
@@ -27,9 +28,16 @@ name: Sample meal, protein answer and calendar
 - extendedWaitUntil:
     visible: "Edit Pasta & garlic bread, 1120 estimated kilocalories"
     timeout: 10000
-- tapOn: "Message Zest.*"
+# The composer and its send button are hosted controls whose AX frames can lag
+# a dock animation; tap them by position (composer centre, send at the right).
+- tapOn:
+    point: "50%, 87%"
+- extendedWaitUntil:
+    visible: "Message Zest.*"
+    timeout: 3000
 - inputText: "how much protein"
-- tapOn: "Send message"
+- tapOn:
+    point: "89%, 93%"
 - extendedWaitUntil:
     visible: "70 g protein.*"
     timeout: 10000

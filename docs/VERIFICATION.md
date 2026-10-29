@@ -13,8 +13,9 @@ Validated October 6, 2026 with a bundled Release build in a fresh isolated iPhon
 | Node regression suite | 30 passing checks (October 29, 2026: streaming reply parsing, diary context, nutrition math, profile persistence added): local dates/leap years, totals, partial protein, supportive guide answers, sample identity, reactions, duplicate confirmation, edit/delete/persistence, storage isolation, actual router parser, malformed URI handling, native-tool UUIDs, assets, routes and documentation links. |
 | `npx expo-doctor` | 21/21 checks passed. |
 | iOS JavaScript export | Passed; all bundled food artwork resolves. |
+| Real model round trip | October 29, 2026: a bundled sample photo sent through the local Worker to OpenRouter (qwen/qwen2.5-vl-72b-instruct) streamed `Avocado toast eggs \| 450 \| 20 \| 30 \| 25` plus a note; the reply opened with a blank line, which `parseEstimate` now skips (covered by a test). An open question streamed a three-sentence answer with three follow-ups. |
 | Native Release build | Passed, zero errors and one native build-script warning. Built directly from a checkout whose parent path contains spaces. |
-| Shipped Maestro flows | October 29, 2026, Xcode 26.6 / iOS 26.4 simulator: `diary.yaml` passed (sample camera retake, dinner receipt, protein, calendar navigation, close, retained diary after a new chat; now starting from the onboarding sheet and skipping it via the showcase link). `onboarding.yaml` passed (1 min 56 s, after the measured mascot timings; re-run after the hidden-start reveal with the drawn-frame gate: both flows 3 min 28 s; the bubble follows the title by 2.4 s in Maestro's own timestamps; the last step is confirmed with `longPressOn`, the hold-to-commit button): name with the lemon's greeting bubble, the 1.3 s greeting interlude, goal, body with the keyboard toolbar, target, activity, pace, the four-item "working it out" computation (6.4 s), the computed guide with sparkles, the profile sheet with ring and progress, close, and the profile surviving a relaunch. Both flows together: 3 min 17 s. |
+| Shipped Maestro flows | October 29, 2026, Xcode 26.6 / iOS 26.4 simulator: `diary.yaml` passed (sample camera retake, dinner receipt, protein, calendar navigation, close, retained diary after a new chat; now starting from the onboarding sheet and skipping it via the showcase link). `onboarding.yaml` passed (1 min 56 s, after the measured mascot timings; re-run after the hidden-start reveal with the drawn-frame gate: both flows 3 min 28 s; the bubble follows the title by 2.4 s in Maestro's own timestamps; the last step is confirmed with `longPressOn`, the hold-to-commit button; the flow then logs the first meal of the day and asserts the streak celebration, its week strip and the return to the receipt; both flows 4 min 3 s on the dedicated `Zest iPhone 17 Pro` simulator in en_US): name with the lemon's greeting bubble, the 1.3 s greeting interlude, goal, body with the keyboard toolbar, target, activity, pace, the four-item "working it out" computation (6.4 s), the computed guide with sparkles, the profile sheet with ring and progress, close, and the profile surviving a relaunch. Both flows together: 3 min 17 s. |
 | npm security audit | Not clean: 20 high-severity affected entries from two unpatched transitive tooling advisories. See [dependency notes](DEPENDENCIES.md). |
 
 ## Native interaction results
@@ -35,6 +36,8 @@ npx expo export --platform ios
 npx expo run:ios --configuration Release --device <simulator-udid>
 SIMULATOR_UDID=<booted-device> npm run test:ios
 ```
+
+Use a simulator of your own in `en_US`: a shared one may be driven by another session, and the deep-link confirmation and keyboard are localized.
 
 Maestro needs a Java 17+ runtime on PATH (for example `brew install openjdk@21` and `export PATH="/opt/homebrew/opt/openjdk@21/bin:$PATH"`). `maestro` itself can live in `~/.maestro/bin`.
 

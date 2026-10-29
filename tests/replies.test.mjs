@@ -37,6 +37,11 @@ test("estimate is null until the first line has shape, settled after its newline
   assert.equal(parseEstimate("Not a meal | 0 | ?\nNo food here.")?.notFood, true);
   assert.equal(parseEstimate("Soup | 310 | ?\n")?.protein, undefined);
   assert.equal(parseEstimate("Soup | 310 | 12\n")?.carbs, undefined);
+  // Qwen opened its real reply with a newline; the leading blank line must not count as line one.
+  const led = parseEstimate("\nAvocado toast eggs | 450 | 20 | 30 | 25\nA balanced breakfast.");
+  assert.equal(led?.name, "Avocado toast eggs");
+  assert.equal(led?.kcal, 450);
+  assert.equal(led?.note, "A balanced breakfast.");
 });
 
 test("answer parser hides a half-arrived marker and extracts follow-ups", () => {

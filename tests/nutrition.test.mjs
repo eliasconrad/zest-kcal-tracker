@@ -3,6 +3,7 @@ import { test } from "node:test";
 import {
   cmToFeetInches,
   feetInchesToCm,
+  loggedThisWeek,
   maintenanceEnergy,
   plan,
   restingEnergy,
@@ -88,4 +89,12 @@ test("profile persists, logs weight in order and a manual guide overrides only c
   assert.ok(manual.protein <= auto.protein);
   store.getState().reset();
   assert.deepEqual({ ...store.getState(), save: 0, logWeight: 0, finishOnboarding: 0, reset: 0 }, { ...defaultProfile, save: 0, logWeight: 0, finishOnboarding: 0, reset: 0 });
+});
+
+test("week strip is Monday-first and marks only this week's logged days", () => {
+  // 2026-10-29 is a Thursday; Monday is 10-26.
+  const thursday = new Date(2026, 9, 29, 20);
+  const strip = loggedThisWeek(["2026-10-26", "2026-10-29", "2026-10-25", "2026-11-01"], thursday);
+  assert.deepEqual(strip, [true, false, false, true, false, false, true]);
+  assert.deepEqual(loggedThisWeek([], thursday), [false, false, false, false, false, false, false]);
 });

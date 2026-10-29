@@ -124,7 +124,18 @@ export function ChatTurn({
               complete={turn.state === "complete"}
               total={meal ? totalOn(meals, meal.date) : 0}
               guide={guide}
-              thinking={<Thinking />}
+              thinking={
+                // BitePal's "Hmm, something tasty." while estimating: the
+                // lemon's own line sits beside the dots until the number lands.
+                <View style={{ gap: 4 }}>
+                  <Thinking />
+                  {turn.live && (
+                    <Text style={{ fontSize: 13, color: theme.muted }}>
+                      Hmm, something tasty.
+                    </Text>
+                  )}
+                </View>
+              }
               note={turn.note}
               onChoose={(type) => onChoose(turn, type)}
               onEdit={() => {

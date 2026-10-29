@@ -74,6 +74,14 @@ Reading them: the greeting's name screen leaves in 6 frames, 30 still frames fol
 
 Two further patterns from the frame maps are now in Zest: the interlude title types in one word every 170 ms (`Typewriter`), and the final button is hold-to-commit (`HoldToStart`): a fill grows across it for 1.3 s and releases into the diary, letting go early springs it back, Reduce Motion accepts a tap.
 
+Screen-by-screen read of both catalogues (every screen opened at reading size, six to a sheet):
+
+YAZIO, 84 screens. Mascot present on 20: welcome video and splash (1-2), mascot greeting (10), hold-to-commit icon and "Keep holding!" fill (13-14), "Almost there" teal circle and "Welcome to Yazio" (15-16), "Find your balance" with bread and apple (24), "We've got your back" with phone and food (28), "Think back" with barbell (31), activity-tracking app icon (34), "Setting a goal" with apple (44), paywall with food confetti (54), Pro tab icon on every tab bar, shop banner "Unlock brand-new rewards" (77), and the fasting fox and rabbit as separate tracker mascots (79-80). Absent from the other 64: every question, picker, Health permission sheet, diary, nutrition facts, recipes, filters, grocery list, calendar, fasting, profile, buddies, settings. Second splash recording (52 frames): logo and mascot hold for 18 frames, dissolve over 7 into the food carousel.
+
+BitePal, 65 screens. Mascot present on 34: splash (2), intro hero (3), reveal pair (12-13), "Let's meet" hand (11), name entry with peeking head (15), rating with starry eyes (16), rainbow support (17), eating-habits daydream (19), avatar in the bubble of every question (20-21, 23-26, 29-35), fasting sleep scene (22), hearts "Got it!" (30), personal summary with sweat drop (36), paywall with laughing face (39), home hero with name and hearts (40, 44, 62), "Estimating portions" peek and "Hmm, something tasty." (45, 48), meal-result bubble "Nutty goodness! My tummy is so happy." (49-50), mascot shop faces (62), settings row "Raccoon's name" (63). Absent from the other 31: referral and goal quizzes before the reveal, charts, fasting window picker, water intro, care notice, meal plan, water, nutrition score, challenges, statistics, calendar, streak, most settings. Welcome recording (67 frames at 60 fps): face on lavender for 40 frames (0.67 s), a 5-frame crossfade, then 22 static frames of the hero.
+
+From this full read, one more pattern is in Zest: while a photo is being estimated, the receipt shows the lemon's own line "Hmm, something tasty." beside the dots (BitePal's estimating peek). Patterns read but left out, with the reason: a named mascot and a mascot shop (Zest has one lemon by design), fasting and water mascots (no such features), paywall and account mascots (no paywall, no account).
+
 Both references keep the mascot itself a still illustration on every screen; the motion is in transitions, particles and copy.
 
 Where the mascots appear, from a full read of both catalogues (YAZIO 84 screens and 2 recordings, BitePal 65 screens and 2 recordings):
@@ -88,3 +96,21 @@ Zest follows the union that fits one lemon: the lemon sits beside every question
 A blank diary stays neutral. A small logged amount produces a curious expression, values within the guide stay content, and above-guide values produce a playful eyebrow. Copy stays supportive; the character does not prescribe compensation.
 
 Reduce Motion suppresses gaze drift and blinking and removes the calendar's long travel. Hardware sensor and haptic response require a physical device. Native recordings are reviewed at normal speed and in consecutive frames; an encoded 60 fps file alone is not hardware performance evidence.
+
+## Streak
+
+The streak brings people back to log one plate a day. Its design and motion follow Duolingo's streak reveal and streak screen, read frame by frame from the Appllama recording (30 fps, 8,602 frames; the reveal sits at 226-231 s) and the Streak, Feed and Profile screens, recoloured to Zest's gold.
+
+| Beat | Duolingo (frames at 30 fps) | Zest |
+| --- | --- | --- |
+| Reveal | grey outline flame with a grey "0", held 33 frames (1.1 s) | `StreakFlame` dim, `Counter` shows the old number |
+| Squash | ears retract and the flame flattens into a grey bead, 6 frames | `shape` to -1 over 6 frames |
+| Bead | the bead turns gold and stretches sideways, 6 frames (anticipation) | `lit` flips at frame 39, `shape` -0.85 |
+| Pop | full flame in 1 frame, held 5 | `shape` 0 in 1 frame, medium haptic |
+| Stretch | flame stretches tall, 3 frames | `shape` 1 |
+| Burst | sparks fly, the "0" squashes and the "1" rises, 1 frame; sparks fade over 8 | `fire` 0→1 over 8 frames, `flip` over 3, success haptic, headline appears |
+| Settle | 9 frames, then the button | `ready` after 9 frames; "Keep it going" |
+| Streak screen | orange band with the number, "day streak!", a flame-in-circle badge, a month calendar with orange dots, "Day practiced" and "Freezes used" tiles | `StreakBand` in the profile: gold band, number, word, flame badge, Monday-first week strip; the calendar sheet already marks logged days |
+| Feed card | orange card with a flame and four check dots: "Complete a lesson every day to maintain your streak!" | the lemon's home line carries the streak count |
+
+Zest's flame is gold (`theme.soft`) with a pale core; unlit it is warm grey on paper. The celebration plays once per day, 0.7 s after the first saved meal of that day (Duolingo waits about that long after "Learning legend!"), and never on the showcase diary. Reduce Motion shows the final state at once.

@@ -33,6 +33,10 @@ Still yours to design before shipping: retention of uploaded photos on the provi
 - `components/DayProgress.tsx` draws the calorie ring (Skia arc) and macro bars used by the profile and the calendar day view. Meals without an estimate add zero grams.
 - Macros travel with the model wire format (`name | kcal | protein | carbs | fat`); sample meals carry fixtures. Deleting the profile also clears the diary.
 
+## Streak
+
+`components/Streak.tsx` holds the gold flame (`StreakFlame`, a Skia path with squash/stretch), the full-screen `StreakCelebration` (timed to Duolingo's reveal, see MOTION_SPEC) and the profile's `StreakBand`. `ZestScreen.celebrateIfNewDay` runs after every saved meal and shows the celebration the first time a day gains a meal; `profile.celebratedDay` keeps it to once a day. `data/nutrition.ts` provides `streak` and `loggedThisWeek`.
+
 ## Customize the visuals
 
 The palette lives in `theme.ts`, image declarations in `data/photos.ts`, and original SVGs under `assets/cookbooks/zest/stickers/`. Lemon anatomy is in `components/Lemon.tsx`; its shared position/gaze values live in `hooks/useScene.ts`. Backdrop color triples are in `components/Backdrop.tsx`, with its shader in `motion/backdropShader.ts`.

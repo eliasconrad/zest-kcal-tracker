@@ -161,3 +161,16 @@ export const limits = {
   weightKg: { min: 30, max: 300 },
   birthYear: (now = new Date()) => ({ min: now.getFullYear() - 100, max: now.getFullYear() - 13 }),
 };
+
+/** Monday-first booleans for the current week: which days have a logged meal. */
+export function loggedThisWeek(loggedDays: Iterable<string>, now = new Date()) {
+  const days = new Set(loggedDays);
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    return days.has(key);
+  });
+}

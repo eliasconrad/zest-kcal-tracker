@@ -52,7 +52,9 @@ export type Estimate = {
 };
 
 /** Reads `name | kcal | protein` from streamed text as soon as its newline arrives. */
-export function parseEstimate(text: string): Estimate | null {
+export function parseEstimate(raw: string): Estimate | null {
+  // Models often open with a blank line; the first line is the first non-empty one.
+  const text = raw.replace(/^\s+/, "");
   const newline = text.indexOf("\n");
   const settled = newline >= 0;
   const head = (settled ? text.slice(0, newline) : text).trim();

@@ -32,6 +32,8 @@ export type Profile = {
   /** When set, replaces the computed daily guide. */
   manualGuide?: number;
   weights: WeightEntry[];
+  /** The last day the streak celebration was shown, so it plays once a day. */
+  celebratedDay?: string;
 };
 
 export type ProfileState = Profile & {

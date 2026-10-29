@@ -5,7 +5,15 @@ import { GlassSurface } from "./ui/GlassSurface";
 import { GlassButton } from "./ui/GlassButton";
 import { Symbol, Touch } from "./ui/Touch";
 import { CalorieRing, MacroBars } from "./DayProgress";
-import { dayKey, loggedDays, macrosOn, relativeDay, totalOn, type Meal } from "../data/diary";
+import { StreakBand } from "./Streak";
+import {
+  dayKey,
+  loggedDays,
+  macrosOn,
+  relativeDay,
+  totalOn,
+  type Meal,
+} from "../data/diary";
 import {
   activityLabel,
   age,
@@ -14,11 +22,15 @@ import {
   goalLabel,
   kgToLb,
   lbToKg,
+  loggedThisWeek,
   paceLabel,
   streak,
   weeksToTarget,
 } from "../data/nutrition";
-import { profilePlan, type Profile as ProfileData } from "../state/profileStore";
+import {
+  profilePlan,
+  type Profile as ProfileData,
+} from "../state/profileStore";
 import type { OnboardingStep } from "./Onboarding";
 import { theme } from "../theme";
 import type { Scene } from "../hooks/useScene";
@@ -83,8 +95,13 @@ export function ProfileSheet({
   const tracking = profile.goal === "lose" || profile.goal === "gain";
   const start = profile.weights[0]?.kg ?? profile.weightKg;
   const span = Math.abs(profile.targetWeightKg - start);
-  const done = Math.max(0, Math.min(1, span ? Math.abs(profile.weightKg - start) / span : 0));
-  const weeks = tracking ? weeksToTarget(profile.weightKg, profile.targetWeightKg, profile.pace) : 0;
+  const done = Math.max(
+    0,
+    Math.min(1, span ? Math.abs(profile.weightKg - start) / span : 0),
+  );
+  const weeks = tracking
+    ? weeksToTarget(profile.weightKg, profile.targetWeightKg, profile.pace)
+    : 0;
   const initial = (profile.name.trim()[0] ?? "Z").toUpperCase();
 
   const promptWeight = () =>
@@ -103,7 +120,13 @@ export function ProfileSheet({
       "decimal-pad",
     );
   const promptName = () =>
-    Alert.prompt("Your name", undefined, (text) => text?.trim() && onName(text.trim()), "plain-text", profile.name);
+    Alert.prompt(
+      "Your name",
+      undefined,
+      (text) => text?.trim() && onName(text.trim()),
+      "plain-text",
+      profile.name,
+    );
   const promptGuide = () =>
     Alert.prompt(
       "Daily guide",
@@ -114,7 +137,9 @@ export function ProfileSheet({
           text: "Save",
           onPress: (text?: string) => {
             const n = Number.parseInt(String(text ?? ""), 10);
-            onGuide(Number.isFinite(n) && n >= 800 && n <= 6000 ? n : undefined);
+            onGuide(
+              Number.isFinite(n) && n >= 800 && n <= 6000 ? n : undefined,
+            );
           },
         },
       ],
@@ -123,10 +148,14 @@ export function ProfileSheet({
       "number-pad",
     );
   const confirmReset = () =>
-    Alert.alert("Start over?", "This clears your profile and every logged meal on this device.", [
-      { text: "Keep everything", style: "cancel" },
-      { text: "Clear all", style: "destructive", onPress: onReset },
-    ]);
+    Alert.alert(
+      "Start over?",
+      "This clears your profile and every logged meal on this device.",
+      [
+        { text: "Keep everything", style: "cancel" },
+        { text: "Clear all", style: "destructive", onPress: onReset },
+      ],
+    );
 
   return (
     <View
@@ -136,10 +165,18 @@ export function ProfileSheet({
       importantForAccessibility={open ? "auto" : "no-hide-descendants"}
       style={{ position: "absolute", inset: 0, zIndex: 30 }}
     >
-      <Animated.View pointerEvents="none" style={[{ position: "absolute", inset: 0 }, blur]}>
+      <Animated.View
+        pointerEvents="none"
+        style={[{ position: "absolute", inset: 0 }, blur]}
+      >
         <BlurView intensity={65} tint="light" style={{ flex: 1 }} />
       </Animated.View>
-      <Animated.View style={[{ position: "absolute", top: scene.top, right: 18 }, closeControl]}>
+      <Animated.View
+        style={[
+          { position: "absolute", top: scene.top, right: 18 },
+          closeControl,
+        ]}
+      >
         <GlassButton name="xmark" label="Close profile" onPress={onClose} />
       </Animated.View>
       <Animated.View
@@ -158,9 +195,15 @@ export function ProfileSheet({
           <View style={{ flex: 1, borderRadius: 36, overflow: "hidden" }}>
             <ScrollView
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 22, paddingBottom: 30 }}
+              contentContainerStyle={{
+                paddingHorizontal: 20,
+                paddingTop: 22,
+                paddingBottom: 30,
+              }}
             >
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 14 }}
+              >
                 <Touch label="Change your name" onPress={promptName}>
                   <View
                     style={{
@@ -172,46 +215,70 @@ export function ProfileSheet({
                       justifyContent: "center",
                     }}
                   >
-                    <Text style={{ fontSize: 24, fontWeight: "600", color: theme.ink }}>{initial}</Text>
+                    <Text
+                      style={{
+                        fontSize: 24,
+                        fontWeight: "600",
+                        color: theme.ink,
+                      }}
+                    >
+                      {initial}
+                    </Text>
                   </View>
                 </Touch>
                 <View style={{ flex: 1 }}>
                   <Text
                     accessibilityRole="header"
                     numberOfLines={1}
-                    style={{ fontSize: 26, fontWeight: "600", letterSpacing: -0.7, color: theme.ink }}
+                    style={{
+                      fontSize: 26,
+                      fontWeight: "600",
+                      letterSpacing: -0.7,
+                      color: theme.ink,
+                    }}
                   >
                     {profile.name.trim() || "You"}
                   </Text>
-                  <Text style={{ fontSize: 13, color: theme.muted, marginTop: 1 }}>
+                  <Text
+                    style={{ fontSize: 13, color: theme.muted, marginTop: 1 }}
+                  >
                     {age(profile.birthYear)} years · {goalLabel[profile.goal]}
                     {days > 1 ? ` · ${days}-day streak` : ""}
                   </Text>
                 </View>
-                {days > 0 && (
-                  <View
-                    accessible
-                    accessibilityLabel={`${days} day logging streak`}
-                    style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
-                  >
-                    <Symbol name="flame.fill" size={15} color={theme.accent} />
-                    <Text style={{ fontSize: 15, fontWeight: "600", color: theme.ink }}>{days}</Text>
-                  </View>
-                )}
+              </View>
+
+              <View style={{ marginTop: 18 }}>
+                <StreakBand
+                  days={days}
+                  loggedWeek={loggedThisWeek(loggedDays(meals))}
+                />
               </View>
 
               <Card title="Today">
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 18 }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 18,
+                  }}
+                >
                   <CalorieRing total={total} guide={plan.guide} />
                   <View style={{ flex: 1 }}>
                     <MacroBars
                       logged={macros}
-                      targets={{ protein: plan.protein, carbs: plan.carbs, fat: plan.fat }}
+                      targets={{
+                        protein: plan.protein,
+                        carbs: plan.carbs,
+                        fat: plan.fat,
+                      }}
                       compact
                     />
                   </View>
                 </View>
-                <Text style={{ fontSize: 12, color: theme.muted, marginTop: 12 }}>
+                <Text
+                  style={{ fontSize: 12, color: theme.muted, marginTop: 12 }}
+                >
                   {total.toLocaleString()} of {plan.guide.toLocaleString()} kcal
                   {profile.manualGuide ? " · manual guide" : ""}
                 </Text>
@@ -222,13 +289,23 @@ export function ProfileSheet({
                   title="Progress"
                   action={{ label: "Log weight", onPress: promptWeight }}
                 >
-                  <Text style={{ fontSize: 17, fontWeight: "500", color: theme.ink }}>
+                  <Text
+                    style={{
+                      fontSize: 17,
+                      fontWeight: "500",
+                      color: theme.ink,
+                    }}
+                  >
                     {Math.abs(profile.weightKg - start) < 0.05
                       ? "Just getting started."
                       : `${profile.goal === "lose" ? "Down" : "Up"} ${formatWeight(Math.abs(profile.weightKg - start), profile.units)} so far.`}
                   </Text>
-                  <Text style={{ fontSize: 13, color: theme.muted, marginTop: 2 }}>
-                    {weeks ? `About ${weeks} ${weeks === 1 ? "week" : "weeks"} to go at ${paceLabel[profile.pace].toLowerCase()} pace.` : "You’re at your target."}
+                  <Text
+                    style={{ fontSize: 13, color: theme.muted, marginTop: 2 }}
+                  >
+                    {weeks
+                      ? `About ${weeks} ${weeks === 1 ? "week" : "weeks"} to go at ${paceLabel[profile.pace].toLowerCase()} pace.`
+                      : "You’re at your target."}
                   </Text>
                   <View
                     style={{
@@ -248,28 +325,62 @@ export function ProfileSheet({
                       }}
                     />
                   </View>
-                  <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 6 }}>
-                    <Text style={{ fontSize: 12, color: theme.muted }}>{formatWeight(start, profile.units)}</Text>
-                    <Text style={{ fontSize: 12, fontWeight: "500", color: theme.ink }}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      marginTop: 6,
+                    }}
+                  >
+                    <Text style={{ fontSize: 12, color: theme.muted }}>
+                      {formatWeight(start, profile.units)}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        fontWeight: "500",
+                        color: theme.ink,
+                      }}
+                    >
                       now {formatWeight(profile.weightKg, profile.units)}
                     </Text>
-                    <Text style={{ fontSize: 12, color: theme.muted }}>{formatWeight(profile.targetWeightKg, profile.units)}</Text>
+                    <Text style={{ fontSize: 12, color: theme.muted }}>
+                      {formatWeight(profile.targetWeightKg, profile.units)}
+                    </Text>
                   </View>
                 </Card>
               )}
 
               <Card title="Your plan">
-                <Row label="Goal" value={goalLabel[profile.goal]} onPress={() => onEdit("goal")} />
+                <Row
+                  label="Goal"
+                  value={goalLabel[profile.goal]}
+                  onPress={() => onEdit("goal")}
+                />
                 <Row
                   label="Body"
                   value={`${formatHeight(profile.heightCm, profile.units)} · ${formatWeight(profile.weightKg, profile.units)} · ${age(profile.birthYear)} y`}
                   onPress={() => onEdit("body")}
                 />
                 {tracking && (
-                  <Row label="Target" value={formatWeight(profile.targetWeightKg, profile.units)} onPress={() => onEdit("target")} />
+                  <Row
+                    label="Target"
+                    value={formatWeight(profile.targetWeightKg, profile.units)}
+                    onPress={() => onEdit("target")}
+                  />
                 )}
-                <Row label="Activity" value={activityLabel[profile.activity].title} onPress={() => onEdit("activity")} />
-                {tracking && <Row label="Pace" value={paceLabel[profile.pace]} onPress={() => onEdit("pace")} />}
+                <Row
+                  label="Activity"
+                  value={activityLabel[profile.activity].title}
+                  onPress={() => onEdit("activity")}
+                />
+                {tracking && (
+                  <Row
+                    label="Pace"
+                    value={paceLabel[profile.pace]}
+                    onPress={() => onEdit("pace")}
+                  />
+                )}
                 <Row
                   label="Daily guide"
                   value={`${plan.guide.toLocaleString()} kcal${profile.manualGuide ? " (manual)" : ""}`}
@@ -282,13 +393,23 @@ export function ProfileSheet({
                 <Row label="Protein" value={`${plan.protein} g`} />
                 <Row label="Carbs" value={`${plan.carbs} g`} />
                 <Row label="Fat" value={`${plan.fat} g`} last />
-                <Text style={{ fontSize: 12, lineHeight: 17, color: theme.muted, marginTop: 10 }}>
-                  Protein leads, fat takes a fixed share, carbs fill the rest. A guide, not a grade.
+                <Text
+                  style={{
+                    fontSize: 12,
+                    lineHeight: 17,
+                    color: theme.muted,
+                    marginTop: 10,
+                  }}
+                >
+                  Protein leads, fat takes a fixed share, carbs fill the rest. A
+                  guide, not a grade.
                 </Text>
               </Card>
 
               <Card title="This device">
-                <Text style={{ fontSize: 13, lineHeight: 19, color: theme.muted }}>
+                <Text
+                  style={{ fontSize: 13, lineHeight: 19, color: theme.muted }}
+                >
                   {apiConfigured
                     ? "Meal photos are sent to the configured model to estimate calories; the diary itself stays on this phone."
                     : "Everything stays on this phone. No account, no upload."}
@@ -296,9 +417,15 @@ export function ProfileSheet({
                 <Touch
                   label="Clear profile and diary"
                   onPress={confirmReset}
-                  style={{ minHeight: 44, justifyContent: "center", marginTop: 6 }}
+                  style={{
+                    minHeight: 44,
+                    justifyContent: "center",
+                    marginTop: 6,
+                  }}
                 >
-                  <Text style={{ fontSize: 14, color: "#936355" }}>Start over</Text>
+                  <Text style={{ fontSize: 14, color: "#936355" }}>
+                    Start over
+                  </Text>
                 </Touch>
               </Card>
             </ScrollView>
@@ -313,16 +440,41 @@ function Card({
   title,
   action,
   children,
-}: React.PropsWithChildren<{ title: string; action?: { label: string; onPress: () => void } }>) {
+}: React.PropsWithChildren<{
+  title: string;
+  action?: { label: string; onPress: () => void };
+}>) {
   return (
     <View style={{ marginTop: 22 }}>
-      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-        <Text style={{ fontSize: 13, fontWeight: "600", letterSpacing: 0.2, color: theme.muted }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 10,
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 13,
+            fontWeight: "600",
+            letterSpacing: 0.2,
+            color: theme.muted,
+          }}
+        >
           {title.toUpperCase()}
         </Text>
         {action && (
-          <Touch label={action.label} onPress={action.onPress} style={{ minHeight: 32, justifyContent: "center" }}>
-            <Text style={{ fontSize: 13, fontWeight: "500", color: theme.accent }}>{action.label}</Text>
+          <Touch
+            label={action.label}
+            onPress={action.onPress}
+            style={{ minHeight: 32, justifyContent: "center" }}
+          >
+            <Text
+              style={{ fontSize: 13, fontWeight: "500", color: theme.accent }}
+            >
+              {action.label}
+            </Text>
           </Touch>
         )}
       </View>
@@ -363,8 +515,13 @@ function Row({
         gap: 10,
       }}
     >
-      <Text style={{ fontSize: 15, color: theme.muted, width: 92 }}>{label}</Text>
-      <Text numberOfLines={1} style={{ flex: 1, fontSize: 15, color: theme.ink, textAlign: "right" }}>
+      <Text style={{ fontSize: 15, color: theme.muted, width: 92 }}>
+        {label}
+      </Text>
+      <Text
+        numberOfLines={1}
+        style={{ flex: 1, fontSize: 15, color: theme.ink, textAlign: "right" }}
+      >
         {value}
       </Text>
       {onPress && <Symbol name="chevron.right" size={12} color={theme.faint} />}

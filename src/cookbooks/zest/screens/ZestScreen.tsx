@@ -57,7 +57,8 @@ import { useProfile } from "../state/useProfile";
 import { profilePlan, type Profile } from "../state/profileStore";
 import { Onboarding, type OnboardingStep } from "../components/Onboarding";
 import { ProfileSheet } from "../components/Profile";
-import { goalLabel, streak } from "../data/nutrition";
+import { goalLabel, loggedThisWeek, streak } from "../data/nutrition";
+import { StreakCelebration } from "../components/Streak";
 import { loggedDays, relativeDay } from "../data/diary";
 
 /** Short, honest copy for the two ways a model call can fail. */
@@ -102,6 +103,22 @@ export function ZestScreen({
   /** First-launch setup, or one step re-opened from the profile. */
   /** A two-word tag from the lemon right after setup, like the references' "You're awesome!" */
   const [tag, setTag] = useState("");
+  /** Streak celebration after the first logged meal of a day; plays once per day. */
+  const [celebration, setCelebration] = useState<{
+    from: number;
+    to: number;
+  } | null>(null);
+  const celebrateIfNewDay = (before: Meal[]) => {
+    const today = dayKey();
+    const after = useDiary.getState().meals;
+    const hadToday = before.some((m) => m.date === today);
+    if (hadToday || useProfile.getState().celebratedDay === today) return;
+    const from = streak(loggedDays(before), relativeDay(-1), relativeDay(-2));
+    const to = streak(loggedDays(after), today, relativeDay(-1));
+    useProfile.getState().save({ celebratedDay: today });
+    // Duolingo shows the streak 0.7 s after the lesson-complete card settles.
+    later(() => setCelebration({ from, to: Math.max(1, to) }), 700);
+  };
   const [setup, setSetup] = useState<{
     step?: OnboardingStep;
     editing: boolean;
@@ -518,7 +535,9 @@ export function ZestScreen({
         );
       }, CHOICE_RETIRE_MS);
       later(() => {
+        const before = useDiary.getState().meals;
         useDiary.getState().add(meal);
+        celebrateIfNewDay(before);
         setTurns((old) =>
           old.map((item) =>
             item.id === replyId ? { ...item, state: "complete" } : item,
@@ -589,7 +608,9 @@ export function ZestScreen({
               if (!saved) {
                 // Line one is final: save once, reveal the number, keep streaming the note.
                 saved = true;
+                const before = useDiary.getState().meals;
                 useDiary.getState().add(meal);
+                celebrateIfNewDay(before);
                 scene.hop.set(
                   withSequence(
                     withTiming(0.3, { duration: 130 }),
@@ -1085,6 +1106,15 @@ export function ZestScreen({
               onCancel={setup.editing ? cancelSetup : undefined}
               revealing={revealing}
               burst={burst}
+            />
+          )}
+          {celebration && (
+            <StreakCelebration
+              from={celebration.from}
+              to={celebration.to}
+              loggedWeek={loggedThisWeek(loggedDays(meals))}
+              reduced={scene.reduced}
+              onDone={() => setCelebration(null)}
             />
           )}
           {tag !== "" && (
