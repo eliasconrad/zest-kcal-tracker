@@ -1,0 +1,7 @@
+# Copy to .dev.vars for `npm run dev`. Never commit .dev.vars.
+OPENROUTER_API_KEY=sk-or-v1-...
+# Optional shared secret; the app sends it as the x-zest-token header.
+ZEST_APP_TOKEN=change-me
+# Optional overrides of wrangler.jsonc vars:
+# OPENROUTER_MODEL=qwen/qwen2.5-vl-72b-instruct
+# OPENROUTER_BASE_URL=http://127.0.0.1:8788/v1   (local mock, see scripts/mock-openrouter.mjs)

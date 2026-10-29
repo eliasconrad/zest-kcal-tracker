@@ -18,6 +18,7 @@ export function ChatTurn({
   onChoose,
   onEdit,
   onCalendar,
+  onAsk,
 }: {
   turn: Turn;
   meals: Meal[];
@@ -26,7 +27,10 @@ export function ChatTurn({
   onChoose: (turn: Turn, type: MealType) => void;
   onEdit: (meal: Meal) => void;
   onCalendar: () => void;
+  /** Sends a tapped follow-up question as if typed. */
+  onAsk?: (question: string) => void;
 }) {
+  const streaming = turn.state === "thinking" && !!turn.text;
   return (
     <Animated.View
       key={
@@ -45,7 +49,10 @@ export function ChatTurn({
       style={[
         { marginBottom: turn.role === "user" ? 20 : 24 },
         turn.role === "assistant" && {
-          width: turn.state === "thinking" && turn.kind !== "meal" ? 72 : "92%",
+          width:
+            turn.state === "thinking" && turn.kind !== "meal" && !streaming
+              ? 72
+              : "92%",
           alignSelf: "flex-start",
           backgroundColor: "#FEFEFC",
           borderRadius: 28,
@@ -118,6 +125,7 @@ export function ChatTurn({
               total={meal ? totalOn(meals, meal.date) : 0}
               guide={guide}
               thinking={<Thinking />}
+              note={turn.note}
               onChoose={(type) => onChoose(turn, type)}
               onEdit={() => {
                 if (saved) onEdit(saved);
@@ -126,7 +134,7 @@ export function ChatTurn({
             />
           );
         })()
-      ) : turn.state === "thinking" ? (
+      ) : turn.state === "thinking" && !streaming ? (
         <Thinking />
       ) : (
         <View>
@@ -135,6 +143,7 @@ export function ChatTurn({
           ) : (
             <Text
               selectable
+              accessibilityLiveRegion={streaming ? "polite" : "none"}
               style={{
                 fontSize: 20,
                 lineHeight: 28,
@@ -144,6 +153,43 @@ export function ChatTurn({
             >
               {turn.text}
             </Text>
+          )}
+          {streaming && (
+            <View style={{ marginTop: 8 }}>
+              <Thinking />
+            </View>
+          )}
+          {turn.state === "complete" && !!turn.followups?.length && onAsk && (
+            <View style={{ marginTop: 14 }}>
+              {turn.followups.map((question, index) => (
+                <Touch
+                  key={question}
+                  label={`Ask: ${question}`}
+                  onPress={() => onAsk(question)}
+                  style={{
+                    minHeight: 44,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 10,
+                    paddingVertical: 8,
+                    borderTopWidth: index === 0 ? 0 : 1,
+                    borderTopColor: theme.line,
+                  }}
+                >
+                  <Symbol
+                    name="arrow.turn.down.right"
+                    size={13}
+                    color={theme.muted}
+                  />
+                  <Text
+                    style={{ flex: 1, fontSize: 15, color: theme.ink }}
+                    numberOfLines={2}
+                  >
+                    {question}
+                  </Text>
+                </Touch>
+              ))}
+            </View>
           )}
           {turn.state === "stopped" && (
             <Text

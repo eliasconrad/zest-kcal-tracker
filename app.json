@@ -34,7 +34,8 @@
           }
         }
       ],
-      "./plugins/with-quoted-ios-paths"
+      "./plugins/with-quoted-ios-paths",
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true

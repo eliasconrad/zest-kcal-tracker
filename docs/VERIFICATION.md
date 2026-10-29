@@ -10,11 +10,11 @@ Validated October 6, 2026 with a bundled Release build in a fresh isolated iPhon
 | --- | --- |
 | Independent `npm ci` | Passed with the project's own lockfile and dependencies. |
 | Strict TypeScript and Expo ESLint | Passed. |
-| Node regression suite | 19 passing checks: local dates/leap years, totals, partial protein, supportive guide answers, sample identity, reactions, duplicate confirmation, edit/delete/persistence, storage isolation, actual router parser, malformed URI handling, native-tool UUIDs, assets, routes and documentation links. |
+| Node regression suite | 30 passing checks (October 29, 2026: streaming reply parsing, diary context, nutrition math, profile persistence added): local dates/leap years, totals, partial protein, supportive guide answers, sample identity, reactions, duplicate confirmation, edit/delete/persistence, storage isolation, actual router parser, malformed URI handling, native-tool UUIDs, assets, routes and documentation links. |
 | `npx expo-doctor` | 21/21 checks passed. |
 | iOS JavaScript export | Passed; all bundled food artwork resolves. |
 | Native Release build | Passed, zero errors and one native build-script warning. Built directly from a checkout whose parent path contains spaces. |
-| Shipped Maestro flow | Passed 1/1 in 1 minute 8 seconds: sample camera retake, dinner receipt, protein, calendar navigation, close, and retained diary after a new chat. |
+| Shipped Maestro flows | October 29, 2026, Xcode 26.6 / iOS 26.4 simulator: `diary.yaml` passed (sample camera retake, dinner receipt, protein, calendar navigation, close, retained diary after a new chat; now starting from the onboarding sheet and skipping it via the showcase link). `onboarding.yaml` passed (2 min 18 s): name with the lemon's greeting bubble, goal, body with the keyboard toolbar, target, activity, pace, the "working it out" beat, the computed guide, the profile sheet with ring and progress, close, and the profile surviving a relaunch. Both flows together: 3 min 51 s. |
 | npm security audit | Not clean: 20 high-severity affected entries from two unpatched transitive tooling advisories. See [dependency notes](DEPENDENCIES.md). |
 
 ## Native interaction results
@@ -35,6 +35,8 @@ npx expo export --platform ios
 npx expo run:ios --configuration Release --device <simulator-udid>
 SIMULATOR_UDID=<booted-device> npm run test:ios
 ```
+
+Maestro needs a Java 17+ runtime on PATH (for example `brew install openjdk@21` and `export PATH="/opt/homebrew/opt/openjdk@21/bin:$PATH"`). `maestro` itself can live in `~/.maestro/bin`.
 
 After a Maestro XCTest run or native reinstall, restart the dedicated simulator and IDB companion if IDB returns an empty accessibility tree. This resets the test service, not the diary.
 

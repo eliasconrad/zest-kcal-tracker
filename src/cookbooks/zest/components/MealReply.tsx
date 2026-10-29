@@ -193,6 +193,7 @@ function MealReplyBody({
   total,
   guide,
   thinking,
+  note,
   onChoose,
   onEdit,
   onCalendar,
@@ -204,6 +205,8 @@ function MealReplyBody({
   total: number;
   guide: number;
   thinking: React.ReactNode;
+  /** A streamed model note replaces the fixed caption when present. */
+  note?: string;
   onChoose: (type: MealType) => void;
   onEdit: () => void;
   onCalendar: () => void;
@@ -328,18 +331,30 @@ function MealReplyBody({
             </View>
           </View>
           <View style={{ marginTop: 2 }}>
-            <ReplyCopy
-              active={complete}
-              delay={300}
-              text={
-                total > guide
-                  ? "A plot twist. You’re fine."
-                  : meal.photo?.sample && meal.photo.asset === "breakfast"
-                    ? "Toast with ambition."
-                    : "Saved. Nicely done."
-              }
-              style={{ fontSize: 18, letterSpacing: -0.4, color: theme.ink }}
-            />
+            {note !== undefined ? (
+              // Live model text: it already arrives word by word from the stream.
+              <Reveal active={complete && note.length > 0} delay={120}>
+                <Text
+                  accessibilityLiveRegion="polite"
+                  style={{ fontSize: 18, letterSpacing: -0.4, color: theme.ink }}
+                >
+                  {note}
+                </Text>
+              </Reveal>
+            ) : (
+              <ReplyCopy
+                active={complete}
+                delay={300}
+                text={
+                  total > guide
+                    ? "A plot twist. You’re fine."
+                    : meal.photo?.sample && meal.photo.asset === "breakfast"
+                      ? "Toast with ambition."
+                      : "Saved. Nicely done."
+                }
+                style={{ fontSize: 18, letterSpacing: -0.4, color: theme.ink }}
+              />
+            )}
           </View>
           <View
             accessibilityElementsHidden={!calendar.visible}

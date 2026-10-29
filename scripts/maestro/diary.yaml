@@ -3,12 +3,14 @@ name: Sample meal, protein answer and calendar
 ---
 - launchApp:
     clearState: true
-- assertVisible: "Good evening,.*"
+# A clean install starts with onboarding; the showcase link skips it.
+- assertVisible: "What should I call you?"
 - assertNotVisible: "Back to chat collection"
 - openLink: "zest-kcal-tracker://?demo=1"
 - tapOn:
     text: Open
     optional: true
+- assertVisible: "Good .*,.*"
 - tapOn: "Log a meal"
 - tapOn: "Try a sample meal"
 - extendedWaitUntil:

@@ -6,9 +6,9 @@ export type MealPhoto = {
   asset?: "breakfast" | "lunch" | "dinner";
 };
 export const sampleEstimates = {
-  breakfast: { name: "Avocado toast & eggs", kcal: 480, protein: 20 },
-  lunch: { name: "Chickpea rice bowl", kcal: 640, protein: 18 },
-  dinner: { name: "Pasta & garlic bread", kcal: 1120, protein: 32 },
+  breakfast: { name: "Avocado toast & eggs", kcal: 480, protein: 20, carbs: 42, fat: 26 },
+  lunch: { name: "Chickpea rice bowl", kcal: 640, protein: 18, carbs: 88, fat: 22 },
+  dinner: { name: "Pasta & garlic bread", kcal: 1120, protein: 32, carbs: 150, fat: 40 },
 };
 export type Meal = {
   id: string;
@@ -17,6 +17,8 @@ export type Meal = {
   type: MealType;
   kcal: number;
   protein?: number;
+  carbs?: number;
+  fat?: number;
   photo?: MealPhoto;
   time: string;
 };
@@ -39,6 +41,23 @@ export function mealsOn(meals: Meal[], date: string) {
 }
 export function totalOn(meals: Meal[], date: string) {
   return mealsOn(meals, date).reduce((sum, meal) => sum + meal.kcal, 0);
+}
+export type Macros = { protein: number; carbs: number; fat: number };
+/** Grams logged on a day; meals without an estimate count as zero, and `known` says how many had one. */
+export function macrosOn(meals: Meal[], date: string): Macros & { known: number } {
+  return mealsOn(meals, date).reduce(
+    (sum, meal) => ({
+      protein: sum.protein + (meal.protein ?? 0),
+      carbs: sum.carbs + (meal.carbs ?? 0),
+      fat: sum.fat + (meal.fat ?? 0),
+      known: sum.known + (meal.protein !== undefined ? 1 : 0),
+    }),
+    { protein: 0, carbs: 0, fat: 0, known: 0 },
+  );
+}
+/** Dates with at least one meal, for streaks. */
+export function loggedDays(meals: Meal[]) {
+  return new Set(meals.map((meal) => meal.date));
 }
 /** A reaction to the log, never a judgment about nutrition or the person. */
 export function intakeMood(total: number, guide: number): -1 | 0 | 1 {

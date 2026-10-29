@@ -48,6 +48,7 @@ export function Touch({
   testID,
   disabled = false,
   expand = false,
+  selected,
   surfacePress,
 }: React.PropsWithChildren<{
   onPress?: () => void;
@@ -57,6 +58,8 @@ export function Touch({
   testID?: string;
   disabled?: boolean;
   expand?: boolean;
+  /** Announced to assistive tech for choice controls. */
+  selected?: boolean;
   surfacePress?: SharedValue<number>;
 }>) {
   const scale = useSharedValue(1);
@@ -126,7 +129,7 @@ export function Touch({
           accessible
           accessibilityRole="button"
           accessibilityLabel={label}
-          accessibilityState={{ disabled }}
+          accessibilityState={{ disabled, selected }}
           onAccessibilityTap={activate}
           testID={testID}
           style={[style, animated]}
@@ -141,7 +144,7 @@ export function Touch({
       style={flex ? { flex } : undefined}
       accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityState={{ disabled }}
+      accessibilityState={{ disabled, selected }}
       testID={testID}
       disabled={disabled}
       onLongPress={onLongPress}

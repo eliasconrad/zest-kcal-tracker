@@ -14,7 +14,24 @@ Use GestureHandlerRootView, SafeAreaProvider, and KeyboardProvider from `_layout
 - Imported photos are copied into Documents before attaching. They require manual names and calories. There is no fabricated image analysis or protein estimate for user photos.
 - Deleting a meal removes its diary entry. The copied image file currently remains until app data is cleared; add an explicit orphan-file cleanup policy before deploying a production tracker.
 
-To add image recognition, replace the sample estimate boundary in `ZestScreen`, then preserve cancellation, duplicate-confirmation prevention and meal/photo identity. To add a language model, replace the `answerAbout` call while retaining the measured reply container and keyboard sequencing. Add network failure/retry behavior and your own privacy/retention design alongside that integration.
+## Model boundary
+
+`data/api.ts` is the only network code. It streams from the Worker in `server/` through `expo/fetch` and is active only when `EXPO_PUBLIC_ZEST_API_URL` is set at bundle time.
+
+- `ZestScreen.chooseType` → `estimateWithModel` for real photos: the photo is downscaled to 1024 px JPEG (`expo-image-manipulator`), sent as a data URL, and the receipt is saved the moment the first line (`name | kcal | protein`) settles. The note streams into `turn.note` afterwards. Stop aborts; a saved receipt keeps its number. Failures fall back to the manual editor with plain copy.
+- `ZestScreen.send` → `askZest` for questions `isDiaryQuestion` does not claim. The model sees `diaryContext` (totals, names, times, guide; never photos or paths) and streams prose plus a trailing `>> a | b | c` follow-up line, which `parseAnswer` hides until complete. Diary questions keep the exact local `answerAbout` path.
+- `data/replies.ts` holds every parser (SSE events, estimate line, follow-up marker) and is covered by `tests/replies.test.mjs`. The Worker's prompts in `server/src/prompts.ts` define that format; change both together.
+- The Worker is model-agnostic: `OPENROUTER_MODEL` selects any OpenRouter model with image input, `OPENROUTER_BASE_URL` can point at a fine-tuned OpenAI-compatible endpoint or the bundled mock. `ZEST_APP_TOKEN` is a shared header secret; set it in production.
+
+Still yours to design before shipping: retention of uploaded photos on the provider side, rate limiting per user, and a privacy notice covering photo upload.
+
+## Profile and plan
+
+- `state/profileStore.ts` mirrors the diary store: an isolated Zustand store with injected storage holding name, sex, birth year, height, weight, target weight, goal, activity, pace, units, an optional manual guide and a weight log. `profilePlan` turns it into a daily guide and macro targets via `data/nutrition.ts` (Mifflin-St Jeor, activity factor, pace adjustment, a 1,200/1,500 kcal floor, protein-first macro split).
+- `components/Onboarding.tsx` runs once on first launch (`demo=1` skips it with a default profile) and is reused from the profile to edit a single step. It writes the profile once, on completion, then sets the diary guide from the plan. The lemon narrates from the sheet edge through `LemonBubble` (one line per step, a thinking beat before the plan) and hops through `scene.hop`; the copy lives in the `line` expression at the top of the component.
+- `components/Profile.tsx` is a sheet with the same geometry as the calendar; both read `scene.pick`, gated by their own `open` flag, so the lemon climbs onto whichever is open. Weight, name and a manual guide use native prompts.
+- `components/DayProgress.tsx` draws the calorie ring (Skia arc) and macro bars used by the profile and the calendar day view. Meals without an estimate add zero grams.
+- Macros travel with the model wire format (`name | kcal | protein | carbs | fat`); sample meals carry fixtures. Deleting the profile also clears the diary.
 
 ## Customize the visuals
 

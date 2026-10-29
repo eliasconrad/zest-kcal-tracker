@@ -47,6 +47,34 @@ import { CHOICE_RETIRE_MS } from "../components/MealReply";
 
 import { ChatTurn } from "../components/ChatTurn";
 import type { Turn } from "../data/conversation";
+import { ApiError, apiConfigured, askZest, estimateMeal } from "../data/api";
+import { diaryContext } from "../data/context";
+import { isDiaryQuestion } from "../data/replies";
+import { useProfile } from "../state/useProfile";
+import { profilePlan, type Profile } from "../state/profileStore";
+import { Onboarding, type OnboardingStep } from "../components/Onboarding";
+import { ProfileSheet } from "../components/Profile";
+import { goalLabel, streak } from "../data/nutrition";
+import { loggedDays, relativeDay } from "../data/diary";
+
+/** Short, honest copy for the two ways a model call can fail. */
+function failureText(error: unknown) {
+  const kind = error instanceof ApiError ? error.kind : "server";
+  return kind === "offline"
+    ? "I can’t reach the kitchen right now. Check your connection and try again."
+    : "Something went wrong on my side. Try again in a moment.";
+}
+
+function greetingFor(date: Date) {
+  const hour = date.getHours();
+  return hour < 5
+    ? "Still up"
+    : hour < 12
+      ? "Good morning"
+      : hour < 18
+        ? "Good afternoon"
+        : "Good evening";
+}
 
 let eventSequence = 0;
 /** Called by event handlers; the sequence also distinguishes rapid attachments. */
@@ -63,8 +91,16 @@ export function ZestScreen({
   const scene = useScene();
   const meals = useDiary((s) => s.meals);
   const guide = useDiary((s) => s.guide);
+  const profile = useProfile((s) => s);
+  const plan = profilePlan(profile);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [calendar, setCalendar] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  /** First-launch setup, or one step re-opened from the profile. */
+  const [setup, setSetup] = useState<{
+    step?: OnboardingStep;
+    editing: boolean;
+  } | null>(() => (!profile.onboarded && !demo ? { editing: false } : null));
   const [photoMenu, setPhotoMenu] = useState(false);
   const [sampleCamera, setSampleCamera] = useState(false);
   const [editor, setEditor] = useState<EditRequest | null>(null);
@@ -75,6 +111,8 @@ export function ZestScreen({
   const [busy, setBusy] = useState(false);
   const active = useRef(false);
   const pending = useRef<ReturnType<typeof setTimeout>[]>([]);
+  /** The one in-flight model request; stop/new-conversation abort it. */
+  const request = useRef<AbortController | null>(null);
   const list = useRef<FlashListRef<Turn>>(null);
   const touching = useRef(false);
   const touches = useRef(0);
@@ -92,11 +130,30 @@ export function ZestScreen({
   const clearTimers = useCallback(() => {
     pending.current.forEach(clearTimeout);
     pending.current = [];
+    request.current?.abort();
+    request.current = null;
   }, []);
   useEffect(() => clearTimers, [clearTimers]);
+  const beginRequest = () => {
+    request.current?.abort();
+    const controller = new AbortController();
+    request.current = controller;
+    return controller;
+  };
+  const endRequest = (controller: AbortController) => {
+    if (request.current === controller) request.current = null;
+  };
   useEffect(() => {
     if (demo) useDiary.getState().seedDemo();
-  }, [demo]);
+    // The showcase skips setup; a default profile keeps the greeting and guide stable.
+    if (demo && !useProfile.getState().onboarded)
+      useProfile.getState().save({ onboarded: true, name: displayName });
+  }, [demo, displayName]);
+  // The sheet sits where the calendar sits; the lemon climbs onto it the same way.
+  useEffect(() => {
+    if (setup)
+      pick.set(withSpring(1, { damping: 26, stiffness: 180, mass: 0.9 }));
+  }, [setup, pick]);
   useEffect(() => {
     if (!calendar)
       expression.set(
@@ -159,6 +216,55 @@ export function ZestScreen({
       }),
     );
   };
+  const openProfile = () => {
+    if (calendar) return;
+    Keyboard.dismiss();
+    setPhotoMenu(false);
+    setProfileOpen(true);
+    pick.set(withSpring(1, { damping: 26, stiffness: 180, mass: 0.9 }));
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+  const closeProfile = () => {
+    pick.set(
+      withSpring(0, { damping: 27, stiffness: 230, mass: 0.85 }, (finished) => {
+        if (finished) scheduleOnRN(setProfileOpen, false);
+      }),
+    );
+  };
+  const finishSetup = (fields: Partial<Profile>) => {
+    const store = useProfile.getState();
+    store.save(fields);
+    if (!setup?.editing) store.finishOnboarding();
+    // The diary's guide follows the plan unless a manual guide is set.
+    const next = profilePlan(useProfile.getState());
+    useDiary.getState().setGuide(next.guide);
+    setSetup(null);
+    if (!profileOpen)
+      pick.set(withSpring(0, { damping: 27, stiffness: 230, mass: 0.85 }));
+    scene.hop.set(
+      withSequence(
+        withTiming(0.45, { duration: 140 }),
+        withTiming(0, { duration: 200 }),
+        withTiming(0.3, { duration: 120 }),
+        withTiming(0, { duration: 220 }),
+      ),
+    );
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  };
+  const cancelSetup = () => {
+    setSetup(null);
+    if (!profileOpen)
+      pick.set(withSpring(0, { damping: 27, stiffness: 230, mass: 0.85 }));
+  };
+  const anySheet = calendar || profileOpen || !!setup;
+  // What the lemon would say about today: the diary's numbers, never a verdict.
+  const todayTotal = totalOn(meals, dayKey());
+  const days = streak(loggedDays(meals), dayKey(), relativeDay(-1));
+  const lemonLine = !todayTotal
+    ? days > 1
+      ? `${days} days in a row. Nothing yet today.`
+      : "Nothing logged yet. Show me a plate."
+    : `${todayTotal.toLocaleString()} of ${guide.toLocaleString()} kcal${days > 1 ? ` · ${days} days in a row` : ""}`;
   const dock = useAnimatedStyle(() => ({
     transform: [
       {
@@ -173,7 +279,7 @@ export function ZestScreen({
   }));
   const greeting = useAnimatedStyle(() => ({
     opacity:
-      hasTurns || focused
+      hasTurns || focused || setup
         ? 0
         : 1 - Math.min(1, pick.get() * 2 + scene.keyboardProgress.get() * 2),
     transform: [{ translateY: -scene.keyboardProgress.get() * 90 }],
@@ -296,6 +402,12 @@ export function ZestScreen({
         protein: turn.photo?.sample
           ? sampleEstimates[turn.photo.asset ?? "breakfast"].protein
           : undefined,
+        carbs: turn.photo?.sample
+          ? sampleEstimates[turn.photo.asset ?? "breakfast"].carbs
+          : undefined,
+        fat: turn.photo?.sample
+          ? sampleEstimates[turn.photo.asset ?? "breakfast"].fat
+          : undefined,
         time:
           demo && turn.photo?.sample
             ? "9:41 PM"
@@ -347,10 +459,137 @@ export function ZestScreen({
         );
       }, CHOICE_RETIRE_MS + 500);
     };
+    /** A real photo through the model: the receipt appears as soon as line one lands, the note streams after. */
+    const estimateWithModel = (uri: string) => {
+      activity(true);
+      const controller = beginRequest();
+      const replyId = turn.id;
+      const draft: Meal = {
+        id: `meal-${turn.id}`,
+        date: dayKey(),
+        name: "",
+        kcal: 0,
+        type,
+        photo: turn.photo,
+        time: new Date().toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+        }),
+      };
+      let saved = false;
+      const patch = (fields: Partial<Turn>) =>
+        setTurns((old) =>
+          old.map((item) =>
+            item.id === replyId ? { ...item, ...fields } : item,
+          ),
+        );
+      patch({
+        mealId: draft.id,
+        pendingMeal: draft,
+        state: "confirming",
+        live: true,
+      });
+      later(() => patch({ kind: "meal", state: "thinking" }), CHOICE_RETIRE_MS);
+      void (async () => {
+        try {
+          const estimate = await estimateMeal(
+            { uri, type },
+            (partial) => {
+              if (
+                controller.signal.aborted ||
+                !partial?.settled ||
+                partial.notFood
+              )
+                return;
+              const meal = {
+                ...draft,
+                name: partial.name,
+                kcal: partial.kcal,
+                protein: partial.protein,
+                carbs: partial.carbs,
+                fat: partial.fat,
+              };
+              if (!saved) {
+                // Line one is final: save once, reveal the number, keep streaming the note.
+                saved = true;
+                useDiary.getState().add(meal);
+                scene.hop.set(
+                  withSequence(
+                    withTiming(0.3, { duration: 130 }),
+                    withTiming(0, { duration: 210 }),
+                  ),
+                );
+                void Haptics.notificationAsync(
+                  Haptics.NotificationFeedbackType.Success,
+                );
+              }
+              patch({
+                pendingMeal: meal,
+                state: "complete",
+                note: partial.note,
+              });
+            },
+            controller.signal,
+          );
+          if (controller.signal.aborted) return;
+          if (estimate.notFood) {
+            patch({
+              kind: "question",
+              state: "choosing",
+              live: false,
+              pendingMeal: undefined,
+              mealId: undefined,
+              text: "That doesn’t look like a meal. Try another photo?",
+            });
+            return;
+          }
+          const meal = {
+            ...draft,
+            name: estimate.name,
+            kcal: estimate.kcal,
+            protein: estimate.protein,
+            carbs: estimate.carbs,
+            fat: estimate.fat,
+          };
+          if (!saved) useDiary.getState().add(meal);
+          else
+            useDiary
+              .getState()
+              .edit(meal.id, { name: meal.name, kcal: meal.kcal });
+          patch({
+            pendingMeal: meal,
+            state: "complete",
+            note: estimate.note,
+            live: false,
+          });
+        } catch (error) {
+          if (controller.signal.aborted) return;
+          if (saved) {
+            // The number is in the diary; only the note was lost.
+            patch({ live: false });
+            return;
+          }
+          patch({
+            kind: "question",
+            state: "choosing",
+            live: false,
+            pendingMeal: undefined,
+            mealId: undefined,
+            text: `${failureText(error)} Or type it in.`,
+          });
+          setEditor({ name: "", onSave: complete });
+        } finally {
+          endRequest(controller);
+          if (!controller.signal.aborted) activity(false);
+        }
+      })();
+    };
     if (turn.photo?.sample) {
       const estimate = sampleEstimates[turn.photo.asset ?? "breakfast"];
       complete(estimate.name, estimate.kcal);
-    } else setEditor({ name: "", onSave: complete });
+    } else if (apiConfigured && turn.photo?.uri)
+      estimateWithModel(turn.photo.uri);
+    else setEditor({ name: "", onSave: complete });
   };
   const send = async (question: string) => {
     if (active.current || !question.trim()) return false;
@@ -364,6 +603,73 @@ export function ZestScreen({
     activity(true);
     const id = eventId("answer");
     const diary = useDiary.getState();
+    if (apiConfigured && !isDiaryQuestion(question)) {
+      // Open questions stream from the model; diary numbers come along as context only.
+      const controller = beginRequest();
+      setTurns((old) => [
+        ...old,
+        { id: `${id}-prompt`, role: "user", kind: "text", text: question },
+        {
+          id,
+          role: "assistant",
+          kind: "text",
+          state: "thinking",
+          text: "",
+          live: true,
+        },
+      ]);
+      const patch = (fields: Partial<Turn>) =>
+        setTurns((old) =>
+          old.map((item) => (item.id === id ? { ...item, ...fields } : item)),
+        );
+      void (async () => {
+        try {
+          const answer = await askZest(
+            question,
+            diaryContext(diary.meals, diary.guide, undefined, new Date(), {
+              targets: {
+                protein: plan.protein,
+                carbs: plan.carbs,
+                fat: plan.fat,
+              },
+              person: {
+                name: profile.name || undefined,
+                goal: goalLabel[profile.goal],
+                streak: streak(
+                  loggedDays(diary.meals),
+                  dayKey(),
+                  relativeDay(-1),
+                ),
+              },
+            }),
+            (partial) => {
+              if (!controller.signal.aborted)
+                patch({ text: partial.text, followups: partial.followups });
+            },
+            controller.signal,
+          );
+          if (controller.signal.aborted) return;
+          patch({
+            state: "complete",
+            live: false,
+            text: answer.text || "I don’t have a good answer for that one.",
+            followups: answer.followups,
+          });
+        } catch (error) {
+          if (controller.signal.aborted) return;
+          patch({
+            state: "complete",
+            live: false,
+            text: failureText(error),
+            followups: [],
+          });
+        } finally {
+          endRequest(controller);
+          if (!controller.signal.aborted) activity(false);
+        }
+      })();
+      return true;
+    }
     const answer = answerAbout(question, diary.meals, diary.guide);
     setTurns((old) => [
       ...old,
@@ -403,9 +709,15 @@ export function ZestScreen({
               ...turn,
               kind: turn.photo ? "question" : turn.kind,
               state: turn.photo ? "choosing" : "stopped",
+              live: false,
+              pendingMeal: turn.photo ? undefined : turn.pendingMeal,
+              mealId: turn.photo ? undefined : turn.mealId,
               text: turn.photo ? "Which meal was this?" : turn.text,
             }
-          : turn,
+          : turn.live
+            ? // A saved receipt whose note was still streaming keeps what arrived.
+              { ...turn, live: false }
+            : turn,
       ),
     );
   };
@@ -475,6 +787,7 @@ export function ZestScreen({
                   onChoose={chooseType}
                   onEdit={editMeal}
                   onCalendar={openCalendar}
+                  onAsk={(question) => void send(question)}
                 />
               )}
             />
@@ -485,7 +798,8 @@ export function ZestScreen({
             color={theme.paper}
           />
           <View
-            accessibilityElementsHidden={calendar}
+            accessibilityElementsHidden={anySheet}
+            pointerEvents={setup ? "none" : "auto"}
             style={{
               position: "absolute",
               top: scene.top,
@@ -497,7 +811,11 @@ export function ZestScreen({
               justifyContent: "space-between",
             }}
           >
-            <View style={{ width: 44 }} pointerEvents="none" />
+            <GlassButton
+              name="person.crop.circle"
+              label="Your profile"
+              onPress={profileOpen ? closeProfile : openProfile}
+            />
             <View style={{ alignItems: "center" }}>
               <Text
                 style={{
@@ -518,9 +836,9 @@ export function ZestScreen({
           </View>
           <Animated.View
             pointerEvents={
-              !hasTurns && !focused && !calendar ? "box-none" : "none"
+              !hasTurns && !focused && !anySheet ? "box-none" : "none"
             }
-            accessibilityElementsHidden={hasTurns || focused || calendar}
+            accessibilityElementsHidden={hasTurns || focused || anySheet}
             style={[
               {
                 position: "absolute",
@@ -543,8 +861,20 @@ export function ZestScreen({
                 color: theme.ink,
               }}
             >
-              Good evening,{"\n"}
-              {displayName}.
+              {greetingFor(new Date())},{"\n"}
+              {profile.name.trim() || displayName}.
+            </Text>
+            <Text
+              accessibilityLabel={`Zest says: ${lemonLine}`}
+              style={{
+                marginTop: 10,
+                fontSize: 15,
+                lineHeight: 20,
+                textAlign: "center",
+                color: theme.muted,
+              }}
+            >
+              {lemonLine}
             </Text>
 
             <Touch
@@ -574,8 +904,8 @@ export function ZestScreen({
             </Touch>
           </Animated.View>
           <Animated.View
-            pointerEvents={calendar ? "none" : "box-none"}
-            accessibilityElementsHidden={calendar}
+            pointerEvents={anySheet ? "none" : "box-none"}
+            accessibilityElementsHidden={anySheet}
             style={[
               {
                 position: "absolute",
@@ -629,14 +959,67 @@ export function ZestScreen({
                 name: "Daily guide",
                 kcal: guide,
                 guide: true,
-                onSave: (_name, kcal) => useDiary.getState().setGuide(kcal),
+                onSave: (_name, kcal) => {
+                  useDiary.getState().setGuide(kcal);
+                  useProfile.getState().save({ manualGuide: kcal });
+                },
               })
             }
+            targets={{
+              protein: plan.protein,
+              carbs: plan.carbs,
+              fat: plan.fat,
+            }}
           />
+          <ProfileSheet
+            scene={scene}
+            open={profileOpen}
+            meals={meals}
+            profile={profile}
+            apiConfigured={apiConfigured}
+            onClose={closeProfile}
+            onEdit={(step) => setSetup({ step, editing: true })}
+            onName={(name) => useProfile.getState().save({ name })}
+            onGuide={(manualGuide) => {
+              useProfile.getState().save({ manualGuide });
+              useDiary
+                .getState()
+                .setGuide(profilePlan(useProfile.getState()).guide);
+            }}
+            onLogWeight={(kg) =>
+              useProfile.getState().logWeight({ date: dayKey(), kg })
+            }
+            onReset={() => {
+              useDiary.getState().reset();
+              useProfile.getState().reset();
+              setProfileOpen(false);
+              fresh();
+              setSetup({ editing: false });
+            }}
+          />
+          {setup && (
+            <Onboarding
+              key={setup.step ?? "all"}
+              scene={scene}
+              profile={profile}
+              startAt={setup.step}
+              editing={setup.editing}
+              onDone={finishSetup}
+              onCancel={setup.editing ? cancelSetup : undefined}
+            />
+          )}
           <Lemon
             scene={scene}
-            calendarOpen={calendar}
-            onPress={calendar ? closeCalendar : openCalendar}
+            calendarOpen={anySheet}
+            onPress={
+              calendar
+                ? closeCalendar
+                : profileOpen
+                  ? closeProfile
+                  : setup
+                    ? () => {}
+                    : openCalendar
+            }
           />
           {photoMenu && (
             <View style={{ position: "absolute", inset: 0, zIndex: 50 }}>

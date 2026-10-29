@@ -14,6 +14,7 @@ export type Diary = {
   remove: (id: string) => void;
   setGuide: (guide: number) => void;
   seedDemo: () => void;
+  reset: () => void;
 };
 
 /** An isolated store with an injected storage boundary; native files live in useDiary. */
@@ -37,6 +38,7 @@ export function createDiaryStore(storage: StateStorage) {
           set((s) => ({ meals: s.meals.filter((m) => m.id !== id) })),
         setGuide: (guide) => set({ guide }),
         seedDemo: () => set({ meals: demoMeals(), guide: 2000 }),
+        reset: () => set({ meals: [], guide: 2000 }),
       }),
       {
         name: "zest-diary",

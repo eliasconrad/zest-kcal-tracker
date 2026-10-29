@@ -19,10 +19,11 @@ Zest opens directly into the tracker. There is no gallery, character picker, or 
 - Progressive blur at reading boundaries and a restrained warm accent beneath the composer.
 - Native camera/library entry, plus an explicit sample-camera experience that needs no account or network.
 - Four illustrated meal choices, a progressive receipt, large visual diary answers, and a sticker calendar.
-- An editable local diary: meal names, calories, deletion, and a daily guide survive app termination.
+- An editable local diary: meal names, calories, macros, deletion, and a daily guide survive app termination.
+- A short onboarding (name, goal, body, activity, pace) that computes a daily guide and macro targets, and a profile sheet with today’s ring, weight progress, streak and every setting that feeds the plan.
 - An independent feature folder, original local artwork, asset checksums, a locked dependency tree, and reproducible checks.
 
-This is a UI template with deterministic local answers. It does not analyze food photographs or contact an AI service. Imported photos ask for a meal name and calorie amount; bundled sample meals use fixture estimates. Protein is available for sample meals only. Conversations reset on relaunch; diary entries persist. [Behavior and integration boundaries](docs/INTEGRATION.md).
+Out of the box this is a UI template with deterministic local answers that does not analyze food photographs or contact any service. With the optional Worker in [`server/`](server/) configured, photos are estimated by a vision model and open questions stream from it; see [Run it with a model](#run-it-with-a-model). Imported photos ask for a meal name and calorie amount; bundled sample meals use fixture estimates. Protein is available for sample meals only. Conversations reset on relaunch; diary entries persist. [Behavior and integration boundaries](docs/INTEGRATION.md).
 
 ## Run it
 
@@ -53,7 +54,7 @@ Native glass APIs require iOS 26+ and an SDK that provides them. The published p
 
 ### Try the sample diary
 
-An ordinary first launch starts empty. “Log a meal” → “Try a sample meal” opens the bundled dinner viewfinder without requesting camera access. To reproduce the populated showcase:
+An ordinary first launch opens the onboarding sheet (seven short steps) and then an empty diary. “Log a meal” → “Try a sample meal” opens the bundled dinner viewfinder without requesting camera access. To reproduce the populated showcase:
 
 ```bash
 xcrun simctl openurl <simulator-udid> 'zest-kcal-tracker://?demo=1'
@@ -61,11 +62,38 @@ xcrun simctl openurl <simulator-udid> 'zest-kcal-tracker://?demo=1'
 
 **`demo=1` replaces this app's local diary with sample data.** It supplies ten days of history and breakfast/lunch today. Use an isolated simulator for demonstrations. A subsequent ordinary launch retains that diary; uninstall the sample app to return to a completely empty store.
 
+## Run it with a model
+
+Zest ships with deterministic local answers. To estimate real photos and answer open questions, run the small Worker in [`server/`](server/) and point the app at it. The API key never enters the app bundle.
+
+```bash
+# 1. Worker (Cloudflare, OpenRouter behind it)
+cd server && npm install
+cp .dev.vars.example .dev.vars        # add OPENROUTER_API_KEY, optional ZEST_APP_TOKEN
+npm run dev                           # http://127.0.0.1:8787
+
+# 2. App
+cp .env.example .env                  # EXPO_PUBLIC_ZEST_API_URL=http://127.0.0.1:8787
+npm run ios:release                   # Metro inlines the URL at bundle time
+```
+
+Pick any OpenRouter model with image input in `server/wrangler.jsonc` (`OPENROUTER_MODEL`); the default is an open-weights Qwen vision model. The Worker holds the prompts and the wire format, so a model swap or a fine-tuned endpoint needs no app update. For production: `cd server && npx wrangler secret put OPENROUTER_API_KEY && npm run deploy`, then set the Worker URL in `.env`.
+
+What changes once a URL is configured:
+
+- A camera or library photo streams a receipt: the name and calorie line settle first and are saved, then a one-line note streams in.
+- Questions the local diary engine can answer exactly (today, yesterday, week, protein, guide, meal types) stay local and instant. Everything else streams from the model with the diary totals as context and ends with up to three tappable follow-ups.
+- Stop aborts the request; a receipt whose number already landed stays saved.
+- Without a reachable Worker the app reports it plainly and offers manual entry; without a URL at all the template behaves exactly as before.
+
+To try the whole chain without a key: `cd server && npm run mock` streams a fixed reply on port 8788; set `OPENROUTER_BASE_URL=http://127.0.0.1:8788/v1` in `.dev.vars`.
+
 ## Architecture
 
 The layout follows [Appllama's Liquid Glass Chat UI](https://github.com/Appllama/liquid-glass-chat-ui): thin Expo Router adapters and one independent cookbook that owns its UI, state, motion, and assets.
 
 ```text
+server/                     Cloudflare Worker: OpenRouter streaming proxy, prompts, mock model
 assets/
   cookbooks/zest/photos/       Three original sample meal photographs
   cookbooks/zest/stickers/     Five authored food illustrations
@@ -74,10 +102,13 @@ src/
   app/                        Root route and native providers
   cookbooks/zest/
     screens/                  ZestScreen coordinates the feature
-    components/               Composer, lemon, calendar, receipt, camera, editor
+    components/               Composer, lemon, calendar, receipt, camera, editor,
+                              onboarding, profile sheet, calorie ring and macro bars
       ui/                     Native glass, SwiftUI buttons, gestures, symbols, blur
-    data/                     Local dates, nutrition fixtures, answers, photo identity
+    data/                     Local dates, nutrition fixtures, answers, photo identity,
+                              model client (api.ts), reply parsing (replies.ts), diary context
     hooks/                    Shared scene and native keyboard geometry
+    state/                    Diary and profile stores with injected storage
     motion/                   Backdrop shader, easing, tilt response
     state/                    Portable diary store and native file adapter
     theme.ts                  Light palette

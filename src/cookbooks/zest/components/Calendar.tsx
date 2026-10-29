@@ -11,14 +11,17 @@ import { GlassSurface } from "./ui/GlassSurface";
 import { GlassButton } from "./ui/GlassButton";
 import { Symbol, Touch } from "./ui/Touch";
 import { FoodSticker, MealSticker, StickerArrival } from "./Stickers";
+import { MacroBars } from "./DayProgress";
 import {
   dayCaption,
   dayKey,
   intakeMood,
+  macrosOn,
   mealsOn,
   monthCells,
   parseDay,
   totalOn,
+  type Macros,
   type Meal,
 } from "../data/diary";
 import { theme } from "../theme";
@@ -34,11 +37,14 @@ export function CalorieCalendar({
   onAdd,
   onEdit,
   onGuide,
+  targets,
 }: {
   scene: Scene;
   open: boolean;
   meals: Meal[];
   guide: number;
+  /** Macro targets from the profile; the bars hide when absent. */
+  targets?: Macros;
   onClose: () => void;
   onAdd: () => void;
   onEdit: (meal: Meal) => void;
@@ -61,19 +67,23 @@ export function CalorieCalendar({
       expression.set(withTiming(intakeMood(total, guide), { duration: 220 }));
   }, [open, total, guide, expression]);
   const panelTop = Math.max(180, scene.height - 616);
-  const slide = useAnimatedStyle(() => ({
-    transform: [
-      {
-        translateY: reduced
-          ? pick.get() < 0.01
-            ? scene.height
-            : 0
-          : (1 - pick.get()) * (scene.height - panelTop + 20),
-      },
-    ],
-  }));
+  // `open` gates the geometry so the profile sheet can share scene.pick.
+  const slide = useAnimatedStyle(() => {
+    const p = open ? pick.get() : 0;
+    return {
+      transform: [
+        {
+          translateY: reduced
+            ? p < 0.01
+              ? scene.height
+              : 0
+            : (1 - p) * (scene.height - panelTop + 20),
+        },
+      ],
+    };
+  });
   const blur = useAnimatedStyle(() => ({
-    opacity: Math.max(0, Math.min(1, pick.get())),
+    opacity: open ? Math.max(0, Math.min(1, pick.get())) : 0,
   }));
   const stepMonth = (direction: number) => {
     const next = new Date(
@@ -89,7 +99,7 @@ export function CalorieCalendar({
     void Haptics.selectionAsync();
   };
   const closeControl = useAnimatedStyle(() => ({
-    transform: [{ translateY: (1 - scene.pick.get()) * -130 }],
+    transform: [{ translateY: (1 - (open ? scene.pick.get() : 0)) * -130 }],
   }));
   return (
     <View
@@ -424,6 +434,11 @@ export function CalorieCalendar({
                     </Text>
                   </Touch>
                 </View>
+                {targets && items.length > 0 && (
+                  <View style={{ marginTop: 10, marginBottom: 6 }}>
+                    <MacroBars logged={macrosOn(meals, selected)} targets={targets} compact />
+                  </View>
+                )}
                 {items.length ? (
                   <Animated.View
                     key={selected}

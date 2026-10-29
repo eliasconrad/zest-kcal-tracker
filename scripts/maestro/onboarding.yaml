@@ -1,0 +1,72 @@
+appId: io.appllama.zestkcaltracker
+name: First launch onboarding, computed guide and profile sheet
+---
+- launchApp:
+    clearState: true
+- assertVisible: "What should I call you?"
+- assertVisible: "Zest says: Hi! I’m Zest."
+- tapOn: "Your name"
+- inputText: "Mia"
+# Return submits the name; the sheet shortens above the keyboard so Continue stays reachable too.
+- pressKey: Enter
+- assertVisible: "What are you here for?"
+- assertVisible: "Zest says: Nice to meet you, Mia!"
+- tapOn: "Lose weight"
+- tapOn: "Continue"
+- assertVisible: "A little about you"
+- tapOn: "Female"
+- tapOn: "Birth year"
+- eraseText: 4
+- inputText: "1994"
+# The keyboard toolbar moves focus; the next field is otherwise under the keyboard.
+- tapOn: "Next"
+- eraseText: 3
+- inputText: "168"
+- tapOn: "Next"
+- eraseText: 5
+- inputText: "70"
+- tapOn: "Done"
+# Let the keyboard and its toolbar leave before the button underneath is tapped.
+- extendedWaitUntil:
+    notVisible: "Previous"
+    timeout: 5000
+- tapOn: "Continue"
+- assertVisible: "Where would you like to land?"
+- tapOn: "Target weight"
+- eraseText: 5
+- inputText: "64"
+- tapOn: "Done"
+# Let the keyboard and its toolbar leave before the button underneath is tapped.
+- extendedWaitUntil:
+    notVisible: "Previous"
+    timeout: 5000
+- tapOn: "Continue"
+- assertVisible: "How do your weeks move?"
+- tapOn: "Lightly active"
+- tapOn: "Continue"
+- assertVisible: "How quickly?"
+- tapOn: "Steady, 0.5 kilograms a week"
+- assertVisible: "About 12 weeks.*"
+- tapOn: "Continue"
+- extendedWaitUntil:
+    visible: "Mia, here’s your guide."
+    timeout: 6000
+- tapOn: "Start logging"
+# The greeting is one two-line text; (?s) lets the regex span the line break.
+- assertVisible: "(?s)Good .*Mia\\..*"
+- tapOn: "Your profile"
+- assertVisible: "32 years · Lose weight"
+- assertVisible: "Just getting started."
+- assertVisible: "Goal: Lose weight. Edit"
+# Hosted SwiftUI controls may retain their pre-animation AX frame; the close
+# target sits at the top trailing corner, as in diary.yaml.
+- tapOn:
+    point: "90%, 10%"
+- assertVisible: "Log a meal"
+# The profile and guide survive a relaunch; onboarding does not return.
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: "(?s)Good .*Mia\\..*"
+    timeout: 10000
+- assertNotVisible: "What should I call you?"

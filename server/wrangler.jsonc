@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "zest-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "observability": { "enabled": true },
+  "vars": {
+    // Open-weights vision model on OpenRouter. Swap freely; the app never sees it.
+    "OPENROUTER_MODEL": "qwen/qwen2.5-vl-72b-instruct",
+    "OPENROUTER_BASE_URL": "https://openrouter.ai/api/v1",
+    "ZEST_MAX_IMAGE_BYTES": "6000000"
+  }
+  // Secrets (never in this file):
+  //   wrangler secret put OPENROUTER_API_KEY
+  //   wrangler secret put ZEST_APP_TOKEN      (shared with the app; optional but recommended)
+}

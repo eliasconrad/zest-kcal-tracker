@@ -29,6 +29,8 @@ The composer begins at 108 points and grows with measured text up to its support
 
 The lemon moves from its centered welcome to the composer's edge, then to the diary's upper corner. Eyes notice touches first, the head follows, and the body leans last. The low warm light gathers beneath the glass while busy. Calendar opening retains its glass tree, and close removes accessibility only after its exit finishes.
 
+During onboarding the lemon stands on the sheet's upper edge and narrates. A speech bubble to its left pops in (spring) with one short line per step and reacts to the name ("Nice to meet you, Mia!"). Each step change is a small hop; moving to the plan opens a 1.3-second "working it out" beat with thinking dots in the bubble, then a double hop as the guide is revealed, and another double hop when the diary opens for the first time. Below the greeting the lemon keeps one line in its own voice: nothing logged, today's total against the guide, or the logging streak. Reduce Motion removes the bubble spring, the hops and the beat.
+
 A blank diary stays neutral. A small logged amount produces a curious expression, values within the guide stay content, and above-guide values produce a playful eyebrow. Copy stays supportive; the character does not prescribe compensation.
 
 Reduce Motion suppresses gaze drift and blinking and removes the calendar's long travel. Hardware sensor and haptic response require a physical device. Native recordings are reviewed at normal speed and in consecutive frames; an encoded 60 fps file alone is not hardware performance evidence.
