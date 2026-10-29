@@ -49,6 +49,8 @@ export type Scene = {
   perch: SharedValue<number>;
   /** 0 closed, 1 the calendar is open. */
   pick: SharedValue<number>;
+  /** First launch only: 0 hidden behind the sheet, 1 standing on its edge. */
+  reveal: SharedValue<number>;
   /** Last touch on the page; `touched` changes with every one. */
   touchX: SharedValue<number>;
   touchY: SharedValue<number>;
@@ -127,6 +129,7 @@ export function useScene(): Scene {
   const composerHeight = useSharedValue(108);
   const perch = useSharedValue(0);
   const pick = useSharedValue(0);
+  const reveal = useSharedValue(1);
   const touchX = useSharedValue(width / 2);
   const touchY = useSharedValue(height / 2);
   const touched = useSharedValue(0);
@@ -179,7 +182,11 @@ export function useScene(): Scene {
     return restX.get() + (card - restX.get()) * pick.get();
   });
   const feetY = useDerivedValue(
-    () => restY.get() + (cardFloor(height) - restY.get()) * pick.get(),
+    () =>
+      restY.get() +
+      (cardFloor(height) - restY.get()) * pick.get() +
+      // Sunk behind the sheet until revealed; only while it sits on the sheet.
+      (1 - reveal.get()) * 170 * pick.get(),
   );
   const figure = useDerivedValue(
     () => restFigure.get() + (SCALE.card - restFigure.get()) * pick.get(),
@@ -296,6 +303,7 @@ export function useScene(): Scene {
       composerHeight,
       perch,
       pick,
+      reveal,
       touchX,
       touchY,
       touched,

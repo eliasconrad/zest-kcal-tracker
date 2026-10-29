@@ -36,9 +36,23 @@ During onboarding the lemon stands on the sheet's upper edge and narrates. The t
 | Question change | 0.3-0.6 s dissolve | 0.3 s push from the right, avatar fixed | 0.28 s push, lemon and bubble fixed |
 | Greeting after the name | 0.3 s in, 1.3 s hold, 0.6 s out | bubble stays beside every question | 1.3 s interlude ("Nice to meet you, Mia."), bubble stays |
 | Plan computation | 7-8 s, four items at ~1.5 s, mascot present | 7 s ring, four items at ~1.8 s, no mascot | four items at 1.5 s (6.4 s), lemon present, dots become checks |
-| Reveal | sticker scales in 0.3 s, sparkles move every ~0.2 s | lid 0.6 s, pop 0.4 s, then still | double hop, five sparkles repositioned every 0.2 s for 2.4 s |
+| Reveal | sticker scales in 0.1 s, sparkles move every ~0.2 s | lid 0.3 s, 1.0 s pause, pop 0.07 s, settle 0.5 s, items 0.8 s | hidden start, peek, pop, sticker burst (see the frame table); double hop and sparkles at the plan |
 | Bubble | appears with the screen, no spring | avatar static | 0.3 s fade, 0.2 s fade out |
 | After the first diary | "You're awesome!" tag 1 s after, ~0.8 s | hero scene static | "Let's eat." tag 1 s after, 1.4 s |
+
+Frame-level reads at the recordings' native rate (30 fps; BitePal's splash 60 fps), one frame = 33 ms:
+
+| Moment | Measured | Zest |
+| --- | --- | --- |
+| BitePal splash | face only for 42 frames (0.70 s), 6-frame dissolve (0.10 s), static splash | n/a (Expo splash) |
+| YAZIO splash | logo 18 frames (0.60 s), 7-frame fade (0.23 s) overlapping a 5-frame fade-in, food pieces pop in 2-3 frames each at 1.20, 1.27, 1.47, 1.53 s | n/a |
+| BitePal reveal | tail wags every ~9 frames (0.3 s); tap; lid lifts 9 frames (0.30 s); 30-frame pause with a lid wobble (1.0 s); lid 4 frames (0.13 s); head pops in 2 frames (0.07 s); rises and settles over 15 frames (0.50 s); items arc for 24 frames (0.8 s); hold 33 frames (1.1 s); cut | lemon hidden behind the sheet; leaf peeks 0.3 s at 0.6 s, sinks 0.3 s, wobble 0.4 s; pop at 1.6 s with a stiff spring and a 0.5 s hop; three stickers arc 0.8 s; bubble at 2.2 s |
+| YAZIO greeting | name screen out 3 frames (0.10 s); blank 14 frames (0.47 s); mascot and bubble scale and fade in over 8 frames (0.27 s); hold 33 frames (1.10 s); dissolve into the list over 8 frames (0.27 s) | 1.3 s interlude after the name, bubble fades 0.3 s |
+| YAZIO plan | mascot crossfades in over 6 frames (0.20 s); checklist items ~1.1-1.5 s apart | four items at 1.5 s |
+| YAZIO Quiz Hero | sticker scales in 2-3 frames (0.07-0.10 s), 6 frames after the purple cut; stripes drift behind | double hop, sparkles every 0.2 s |
+| YAZIO diary tag | visible ~0.8-1.0 s, shrinks and fades over 7 frames (0.23 s) | 1.4 s, 0.22 s fade |
+| BitePal "Got it" | push in 6 frames (0.2 s); hearts drift ~1 px per frame, sparkles blink; 1.4 s hold | push 0.28 s |
+| BitePal plan | summary to loading crossfade 5 frames (0.17 s); ring +1 % every 8 frames | n/a |
 
 Both references keep the mascot itself a still illustration on every screen; the motion is in transitions, particles and copy.
 

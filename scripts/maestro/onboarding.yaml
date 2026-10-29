@@ -4,7 +4,10 @@ name: First launch onboarding, computed guide and profile sheet
 - launchApp:
     clearState: true
 - assertVisible: "What should I call you?"
-- assertVisible: "Zest says: Hi! I’m Zest."
+# The lemon pops out of the sheet 1.6 s after launch; its first line follows.
+- extendedWaitUntil:
+    visible: "Zest says: Hi! I’m Zest."
+    timeout: 6000
 - tapOn: "Your name"
 - inputText: "Mia"
 # Return submits the name; the sheet shortens above the keyboard so Continue stays reachable too.

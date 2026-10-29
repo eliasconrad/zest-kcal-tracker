@@ -8,11 +8,15 @@ import {
   useWindowDimensions,
 } from "react-native";
 import Animated, {
+  Easing,
   FadeIn,
   FadeInRight,
   FadeOut,
+  useAnimatedStyle,
+  useSharedValue,
   withSequence,
   withTiming,
+  type SharedValue,
 } from "react-native-reanimated";
 import {
   KeyboardAwareScrollView,
@@ -22,7 +26,7 @@ import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GlassSurface } from "./ui/GlassSurface";
 import { Symbol, Touch } from "./ui/Touch";
-import { FoodSticker } from "./Stickers";
+import { FoodSticker, type StickerKind } from "./Stickers";
 import { Thinking } from "./Thinking";
 import { cardFloor, FIGURE, SCALE } from "../hooks/useScene";
 import {
@@ -91,6 +95,8 @@ export function Onboarding({
   editing = false,
   onDone,
   onCancel,
+  revealing = false,
+  burst = false,
 }: {
   scene: Scene;
   profile: Profile;
@@ -99,6 +105,10 @@ export function Onboarding({
   editing?: boolean;
   onDone: (fields: Partial<Profile>) => void;
   onCancel?: () => void;
+  /** The lemon is still hidden behind the sheet; no bubble yet. */
+  revealing?: boolean;
+  /** Food stickers scatter from the sheet edge as the lemon pops out. */
+  burst?: boolean;
 }) {
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
@@ -269,8 +279,11 @@ export function Onboarding({
           right={24}
         />
       )}
+      {burst && !scene.reduced && (
+        <RevealBurst top={cardFloor(height) - 30} right={48} />
+      )}
       <LemonBubble
-        text={line}
+        text={revealing ? "" : line}
         thinking={false}
         top={cardFloor(height) - FIGURE.hero * SCALE.card - 8}
         right={118}
@@ -1305,5 +1318,71 @@ function Sparkles({ top, right }: { top: number; right: number }) {
         );
       })}
     </View>
+  );
+}
+
+/**
+ * Three stickers fly out of the sheet edge as the lemon pops up, the way
+ * BitePal's banana and fish bones leave the can: 0.8 s arcs, then they fade.
+ */
+function RevealBurst({ top, right }: { top: number; right: number }) {
+  const p = useSharedValue(0);
+  useEffect(() => {
+    p.set(withTiming(1, { duration: 800, easing: Easing.out(Easing.cubic) }));
+  }, [p]);
+  const pieces: {
+    kind: StickerKind;
+    dir: number;
+    lift: number;
+    spin: number;
+  }[] = [
+    { kind: "Snack", dir: -1, lift: 150, spin: -40 },
+    { kind: "Breakfast", dir: -0.45, lift: 190, spin: 25 },
+    { kind: "Lunch", dir: 0.35, lift: 120, spin: 50 },
+  ];
+  return (
+    <View
+      pointerEvents="none"
+      accessibilityElementsHidden
+      style={{ position: "absolute", top, right, width: 160, height: 160 }}
+    >
+      {pieces.map((piece) => (
+        <Piece key={piece.kind} progress={p} {...piece} />
+      ))}
+    </View>
+  );
+}
+
+function Piece({
+  progress,
+  kind,
+  dir,
+  lift,
+  spin,
+}: {
+  progress: SharedValue<number>;
+  kind: StickerKind;
+  dir: number;
+  lift: number;
+  spin: number;
+}) {
+  const style = useAnimatedStyle(() => {
+    const t = progress.get();
+    return {
+      opacity: t < 0.7 ? 1 : Math.max(0, 1 - (t - 0.7) / 0.3),
+      transform: [
+        { translateX: dir * 120 * t },
+        { translateY: -lift * Math.sin(t * Math.PI) + 70 * t },
+        { rotate: `${spin * t}deg` },
+        { scale: 0.5 + 0.5 * Math.min(1, t * 5) },
+      ],
+    };
+  });
+  return (
+    <Animated.View
+      style={[{ position: "absolute", right: 40, top: 60 }, style]}
+    >
+      <FoodSticker kind={kind} size={46} />
+    </Animated.View>
   );
 }

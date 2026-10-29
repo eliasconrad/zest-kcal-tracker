@@ -154,16 +154,59 @@ export function ZestScreen({
       useProfile.getState().save({ onboarded: true, name: displayName });
   }, [demo, displayName]);
   // The sheet sits where the calendar sits; the lemon climbs onto it the same way.
-  // The sheet appears first; the lemon climbs onto it 0.6 s later, the beat
-  // BitePal's pet reveal uses before its pet pops up (lid 0.6 s, pop 0.4 s).
+  /**
+   * First launch: the lemon is hidden behind the sheet and revealed the way
+   * BitePal's pet leaves its can, measured at 30 fps: a 0.3 s peek, a 1.0 s
+   * pause with a wobble, a 0.07 s pop, 0.5 s to settle, scattered food for
+   * 0.8 s. Editing from the profile and Reduce Motion skip all of it.
+   */
+  const [revealing, setRevealing] = useState(
+    () => !profile.onboarded && !demo && !scene.reduced,
+  );
+  const [burst, setBurst] = useState(false);
   useEffect(() => {
     if (!setup) return;
-    const delay = setup.editing || scene.reduced ? 0 : 600;
-    const timer = setTimeout(
-      () => pick.set(withSpring(1, { damping: 26, stiffness: 180, mass: 0.9 })),
-      delay,
-    );
-    return () => clearTimeout(timer);
+    if (setup.editing || scene.reduced || !revealing) {
+      scene.reveal.set(1);
+      pick.set(withSpring(1, { damping: 26, stiffness: 180, mass: 0.9 }));
+      return;
+    }
+    scene.reveal.set(0);
+    pick.set(withSpring(1, { damping: 26, stiffness: 180, mass: 0.9 }));
+    const peek = setTimeout(() => {
+      // The leaf shows above the edge (lid lifts), then sinks back (wobble).
+      scene.reveal.set(
+        withSequence(
+          withTiming(0.22, { duration: 300 }),
+          withTiming(0.06, { duration: 300 }),
+          withTiming(0.12, { duration: 200 }),
+          withTiming(0.04, { duration: 200 }),
+        ),
+      );
+    }, 600);
+    const pop = setTimeout(() => {
+      scene.reveal.set(
+        withSpring(1, { damping: 14, stiffness: 420, mass: 0.7 }),
+      );
+      scene.hop.set(
+        withSequence(
+          withTiming(0.5, { duration: 70 }),
+          withTiming(0, { duration: 430 }),
+        ),
+      );
+      setBurst(true);
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }, 1600);
+    const settle = setTimeout(() => setRevealing(false), 2200);
+    const clear = setTimeout(() => setBurst(false), 2600);
+    return () => {
+      clearTimeout(peek);
+      clearTimeout(pop);
+      clearTimeout(settle);
+      clearTimeout(clear);
+    };
+    // Runs once per setup session.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setup, pick, scene.reduced]);
   useEffect(() => {
     if (!calendar)
@@ -1023,6 +1066,8 @@ export function ZestScreen({
               editing={setup.editing}
               onDone={finishSetup}
               onCancel={setup.editing ? cancelSetup : undefined}
+              revealing={revealing}
+              burst={burst}
             />
           )}
           {tag !== "" && (
@@ -1055,6 +1100,7 @@ export function ZestScreen({
           <Lemon
             scene={scene}
             calendarOpen={anySheet}
+            under={revealing}
             onPress={
               calendar
                 ? closeCalendar
