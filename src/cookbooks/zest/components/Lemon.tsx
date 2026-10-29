@@ -27,13 +27,10 @@ export function Lemon({
   scene,
   onPress,
   calendarOpen,
-  under = false,
 }: {
   scene: Scene;
   onPress: () => void;
   calendarOpen: boolean;
-  /** Layered beneath the onboarding sheet while it is still hidden there. */
-  under?: boolean;
 }) {
   const {
     gazeX,
@@ -117,7 +114,7 @@ export function Lemon({
             top: 0,
             width: FIGURE.hero,
             height: FIGURE.hero,
-            zIndex: under ? 35 : 45,
+            zIndex: 45,
           },
           place,
         ]}

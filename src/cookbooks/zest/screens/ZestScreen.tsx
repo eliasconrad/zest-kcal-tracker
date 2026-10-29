@@ -12,6 +12,7 @@ import { FlashList, type FlashListRef } from "@shopify/flash-list";
 import Animated, {
   FadeIn,
   FadeOut,
+  useAnimatedReaction,
   useAnimatedStyle,
   withSequence,
   withSpring,
@@ -164,6 +165,21 @@ export function ZestScreen({
     () => !profile.onboarded && !demo && !scene.reduced,
   );
   const [burst, setBurst] = useState(false);
+  // A cold start can sit on a blank frame for seconds before the first draw;
+  // the reveal waits until frames are actually being produced.
+  const [live, setLive] = useState(false);
+  useAnimatedReaction(
+    () => scene.frames.get() >= 6,
+    (ready, before) => {
+      if (ready && !before) scheduleOnRN(setLive, true);
+    },
+  );
+  // Never let the reveal wait forever if frame reporting is unavailable.
+  useEffect(() => {
+    if (!revealing || live) return;
+    const fallback = setTimeout(() => setLive(true), 4000);
+    return () => clearTimeout(fallback);
+  }, [revealing, live]);
   useEffect(() => {
     if (!setup) return;
     if (setup.editing || scene.reduced || !revealing) {
@@ -173,14 +189,15 @@ export function ZestScreen({
     }
     scene.reveal.set(0);
     pick.set(withSpring(1, { damping: 26, stiffness: 180, mass: 0.9 }));
+    if (!live) return;
     const peek = setTimeout(() => {
       // The leaf shows above the edge (lid lifts), then sinks back (wobble).
       scene.reveal.set(
         withSequence(
-          withTiming(0.22, { duration: 300 }),
-          withTiming(0.06, { duration: 300 }),
-          withTiming(0.12, { duration: 200 }),
-          withTiming(0.04, { duration: 200 }),
+          withTiming(0.44, { duration: 300 }),
+          withTiming(0.3, { duration: 300 }),
+          withTiming(0.38, { duration: 200 }),
+          withTiming(0.3, { duration: 200 }),
         ),
       );
     }, 600);
@@ -205,9 +222,9 @@ export function ZestScreen({
       clearTimeout(settle);
       clearTimeout(clear);
     };
-    // Runs once per setup session.
+    // Runs once the page is live, then once per setup session.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setup, pick, scene.reduced]);
+  }, [setup, pick, scene.reduced, live]);
   useEffect(() => {
     if (!calendar)
       expression.set(
@@ -1097,20 +1114,37 @@ export function ZestScreen({
               </Text>
             </Animated.View>
           )}
-          <Lemon
-            scene={scene}
-            calendarOpen={anySheet}
-            under={revealing}
-            onPress={
-              calendar
-                ? closeCalendar
-                : profileOpen
-                  ? closeProfile
-                  : setup
-                    ? () => {}
-                    : openCalendar
-            }
-          />
+          {/* While revealing, everything below the sheet's top edge is clipped away,
+              the way the can hides BitePal's pet; glass is translucent, so layering
+              alone would not hide it. */}
+          <View
+            pointerEvents="box-none"
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              top: 0,
+              height: revealing
+                ? Math.max(180, scene.height - 616) + 3
+                : scene.height,
+              overflow: "hidden",
+              zIndex: 45,
+            }}
+          >
+            <Lemon
+              scene={scene}
+              calendarOpen={anySheet}
+              onPress={
+                calendar
+                  ? closeCalendar
+                  : profileOpen
+                    ? closeProfile
+                    : setup
+                      ? () => {}
+                      : openCalendar
+              }
+            />
+          </View>
           {photoMenu && (
             <View style={{ position: "absolute", inset: 0, zIndex: 50 }}>
               <Pressable

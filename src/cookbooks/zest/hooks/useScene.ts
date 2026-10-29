@@ -51,6 +51,8 @@ export type Scene = {
   pick: SharedValue<number>;
   /** First launch only: 0 hidden behind the sheet, 1 standing on its edge. */
   reveal: SharedValue<number>;
+  /** Frames drawn since mount; a cold start stays at 0 until the page is really on screen. */
+  frames: SharedValue<number>;
   /** Last touch on the page; `touched` changes with every one. */
   touchX: SharedValue<number>;
   touchY: SharedValue<number>;
@@ -130,6 +132,7 @@ export function useScene(): Scene {
   const perch = useSharedValue(0);
   const pick = useSharedValue(0);
   const reveal = useSharedValue(1);
+  const frames = useSharedValue(0);
   const touchX = useSharedValue(width / 2);
   const touchY = useSharedValue(height / 2);
   const touched = useSharedValue(0);
@@ -197,6 +200,7 @@ export function useScene(): Scene {
     const dt = Math.min(64, frame.timeSincePreviousFrame ?? 16) / 1000;
     const now = time.get() + dt;
     time.set(now);
+    frames.set(frames.get() + 1);
     const charge = energy.get();
     // The charge spins up like a motor: speed follows energy, phase never
     // jumps. With no charge it holds still, so an idle page redraws nothing.
@@ -304,6 +308,7 @@ export function useScene(): Scene {
       perch,
       pick,
       reveal,
+      frames,
       touchX,
       touchY,
       touched,
