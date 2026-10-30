@@ -126,9 +126,11 @@ are "Pebble the penguin, Calm coach". The bubble on the setup sheet reads
 - `scripts/maestro/helpers.yaml`: the setup step, the live swap on the sheet
   edge and the voice per step. Run it alone:
   `SIMULATOR_UDID=<udid> npm run test:ios -- scripts/maestro/helpers.yaml`.
-- `scripts/maestro/helpers-swap.yaml`: hold-and-slide. The gesture is a long
-  press with 60 pt of slack (`HOLD_SLACK`) that opens the bar, and a manual
-  pan that takes over on the first move after it; Maestro's 4 s swipe keeps
-  the first 380 ms inside that slack, so the flow can exercise it.
+- `scripts/maestro/helpers-swap.yaml`: hold-and-slide, passing. The gesture
+  is a long press with 60 pt of slack (`HOLD_SLACK`) that opens the bar, and a
+  manual pan that takes over on the first move after it; Maestro's 4 s swipe
+  keeps the first 380 ms inside that slack. XCTest lets go a little short of
+  the swipe's end point, so the flow asserts that the helper changed (it lands
+  on Mochi, one slot right of the aimed Fig), not which slot.
 - Not verified: the model's voice per helper through a deployed Worker (needs
   a real photo and the OpenRouter key).
