@@ -311,6 +311,10 @@ export function Onboarding({
       return;
     }
     setStep(next);
+    if (step === "intro" && direction === 1) {
+      setArrived(true);
+      setTimeout(() => setArrived(false), 1100);
+    }
     if (!scene.reduced) {
       if (next === "plan" && direction === 1) {
         setDoneItems(0);
@@ -330,6 +334,8 @@ export function Onboarding({
     go(1, { reminders });
   };
   const intro = step === "intro";
+  // The stickers scatter when the mascot really appears: after the first screen.
+  const [arrived, setArrived] = useState(false);
   const firstName = draft.name.trim().split(/\s+/)[0] || "";
   const helper = helperFor(draft.helper);
   const plain = editing
@@ -472,7 +478,7 @@ export function Onboarding({
           right={24}
         />
       )}
-      {burst && !scene.reduced && (
+      {(arrived || (burst && !intro)) && !scene.reduced && (
         <RevealBurst top={cardFloor(height) - 30} right={48} />
       )}
       <Animated.View
