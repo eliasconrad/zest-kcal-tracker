@@ -858,6 +858,10 @@ export function ZestScreen({
     if (apiConfigured && !isDiaryQuestion(question)) {
       // Open questions stream from the model; diary numbers come along as context only.
       const controller = beginRequest();
+      // What was said so far, so a follow-up question makes sense to the model.
+      const history = turns
+        .filter((turn) => turn.kind === "text" && turn.text && !turn.live)
+        .map((turn) => ({ role: turn.role, text: turn.text ?? "" }));
       setTurns((old) => [
         ...old,
         { id: `${id}-prompt`, role: "user", kind: "text", text: question },
@@ -919,6 +923,7 @@ export function ZestScreen({
             },
             controller.signal,
             profile.helper,
+            history,
           );
           if (controller.signal.aborted) return;
           patch({

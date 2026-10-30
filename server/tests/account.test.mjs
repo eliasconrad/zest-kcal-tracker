@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
-import { handleAccount, spend, authenticate } from "../src/account.ts";
+import { handleAccount, refund, spend, authenticate } from "../src/account.ts";
 import { base64url, hashPassword, verifyAppleToken, verifyPassword } from "../src/auth.ts";
 
 /** D1's surface over a real SQLite with the real migration. */
@@ -243,4 +243,23 @@ test("an Apple token is only accepted when signed by Apple's key, for us, and un
     ["sign", "verify"],
   );
   assert.equal(await verifyAppleToken(await sign(good, other.privateKey), "eu.eliasconrad.zest", keys, now), null);
+});
+
+test("the meal route is not swallowed by the /v1/me prefix", async () => {
+  const request = new Request("https://zest.test/v1/meal", { method: "POST", body: "{}" });
+  assert.equal(await handleAccount(request, new URL(request.url), {}), null);
+  const ask = new Request("https://zest.test/v1/ask", { method: "POST", body: "{}" });
+  assert.equal(await handleAccount(ask, new URL(ask.url), {}), null);
+});
+
+test("a failed scan does not cost one of the free scans", async () => {
+  const db = database();
+  db.sqlite.exec("INSERT INTO users (id, invite_code, created_at) VALUES ('u1', 'code1', 1)");
+  const env = { DB: db, FREE_SCANS_PER_DAY: 1 };
+  const user = { id: "u1", pro_until: 0 };
+  const now = Date.UTC(2026, 9, 30);
+  assert.equal((await spend(env, user, "scans", now)).allowed, true);
+  assert.equal((await spend(env, user, "scans", now)).allowed, false);
+  await refund(env, user, "scans", now);
+  assert.equal((await spend(env, user, "scans", now)).allowed, true);
 });

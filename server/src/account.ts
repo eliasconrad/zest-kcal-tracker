@@ -148,6 +148,13 @@ export async function spend(
   return { allowed: true, limit };
 }
 
+/** Gives a use back when the model failed; a scan that never came should not count. */
+export async function refund(env: AccountEnv, user: User, kind: "scans" | "asks", now: number) {
+  await env.DB.prepare(`UPDATE usage SET ${kind} = MAX(0, ${kind} - 1) WHERE user_id = ? AND day = ?`)
+    .bind(user.id, isoDay(now))
+    .run();
+}
+
 async function underSignupLimit(request: Request, db: D1Database, now: number) {
   const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
   const ipHash = await sha256(ip);
@@ -236,7 +243,7 @@ export async function handleAccount(
   const send = deps.send ?? fetch;
   const path = url.pathname;
   const method = request.method;
-  if (!path.startsWith("/v1/auth/") && !path.startsWith("/v1/me") && !path.startsWith("/v1/sync/") && !path.startsWith("/v1/friends") && !path.startsWith("/v1/purchase") && path !== "/v1/config" && path !== "/v1/appstore/notifications")
+  if (!path.startsWith("/v1/auth/") && path !== "/v1/me" && !path.startsWith("/v1/me/") && !path.startsWith("/v1/sync/") && !path.startsWith("/v1/friends") && !path.startsWith("/v1/purchase") && path !== "/v1/config" && path !== "/v1/appstore/notifications")
     return null;
 
   if (path === "/v1/config" && method === "GET") {

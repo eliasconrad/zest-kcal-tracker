@@ -179,10 +179,11 @@ export async function askZest(
   onAnswer: (answer: ReturnType<typeof parseAnswer>) => void,
   signal: AbortSignal,
   helper?: HelperId,
+  history: { role: "user" | "assistant"; text: string }[] = [],
 ) {
   const full = await stream(
     "/v1/ask",
-    { question, helper, diary: { ...diary, locale: locale() } },
+    { question, helper, history, diary: { ...diary, locale: locale() } },
     (text) => onAnswer(parseAnswer(text)),
     signal,
     40_000,

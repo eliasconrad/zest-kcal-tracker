@@ -18,15 +18,17 @@ import {
   mealUserPrompt,
   type DiaryContext,
   type MealType,
+  chatHistory,
 } from "./prompts.ts";
 import { createLineCalibrator } from "./calibrate.ts";
 import { legalPages } from "./legal.ts";
-import { authenticate, handleAccount, spend, type AccountEnv } from "./account.ts";
+import { authenticate, handleAccount, refund, spend, type AccountEnv } from "./account.ts";
 import { streamChat, type ChatMessage } from "./openrouter.ts";
 
 export interface Env extends AccountEnv {
   OPENROUTER_API_KEY: string;
   OPENROUTER_MODEL: string;
+  OPENROUTER_CHAT_MODEL?: string;
   OPENROUTER_BASE_URL: string;
   ZEST_APP_TOKEN?: string;
   ZEST_MAX_IMAGE_BYTES?: string;
@@ -44,7 +46,10 @@ function authorized(request: Request, env: Env) {
 }
 
 /** One SSE response; `run` writes events, errors become an `error` event instead of a broken stream. */
-function sse(run: (send: (event: object) => Promise<void>, signal: AbortSignal) => Promise<void>) {
+function sse(
+  run: (send: (event: object) => Promise<void>, signal: AbortSignal) => Promise<void>,
+  onFail?: () => Promise<void>,
+) {
   const { readable, writable } = new TransformStream<Uint8Array>();
   const writer = writable.getWriter();
   const encoder = new TextEncoder();
@@ -56,6 +61,7 @@ function sse(run: (send: (event: object) => Promise<void>, signal: AbortSignal) 
       await send({ type: "done" });
     } catch (error) {
       const message = error instanceof Error ? error.message : "unknown";
+      await onFail?.().catch(() => {});
       await send({ type: "error", message }).catch(() => {});
     } finally {
       await writer.close().catch(() => {});
@@ -80,6 +86,11 @@ function isDiary(value: unknown): value is DiaryContext {
     !!d.yesterday &&
     !!d.week
   );
+}
+
+/** Text answers can run on a cheaper model than photos; without one set they share it. */
+function chatEnv(env: Env) {
+  return env.OPENROUTER_CHAT_MODEL ? { ...env, OPENROUTER_MODEL: env.OPENROUTER_CHAT_MODEL } : env;
 }
 
 export default {
@@ -141,7 +152,7 @@ export default {
         );
         const rest = calibrator.flush();
         if (rest) await send({ type: "text", delta: rest });
-      });
+      }, () => refund(env, session.user, "scans", Date.now()));
     }
 
     if (url.pathname === "/v1/ask") {
@@ -152,14 +163,15 @@ export default {
       if (!ask.allowed) return json(429, { error: "limit", kind: "asks", limit: ask.limit });
       const messages: ChatMessage[] = [
         { role: "system", content: askSystemPrompt(body.diary, body.helper) },
+        ...chatHistory(body.history),
         { role: "user", content: question },
       ];
       return sse(async (send, signal) => {
-        await streamChat(env, messages, (delta) => send({ type: "text", delta }), signal, {
-          maxTokens: 260,
+        await streamChat(chatEnv(env), messages, (delta) => send({ type: "text", delta }), signal, {
+          maxTokens: 320,
           temperature: 0.5,
         });
-      });
+      }, () => refund(env, session.user, "asks", Date.now()));
     }
 
     if (url.pathname === "/v1/recipe") {
@@ -171,11 +183,11 @@ export default {
         { role: "user", content: "What could I make?" },
       ];
       return sse(async (send, signal) => {
-        await streamChat(env, messages, (delta) => send({ type: "text", delta }), signal, {
+        await streamChat(chatEnv(env), messages, (delta) => send({ type: "text", delta }), signal, {
           maxTokens: 200,
           temperature: 0.6,
         });
-      });
+      }, () => refund(env, session.user, "asks", Date.now()));
     }
 
     return json(404, { error: "route" });

@@ -119,6 +119,20 @@ function personLine(person: DiaryContext["person"]) {
   return facts.length ? `About them: ${facts.join(", ")}.` : "";
 }
 
+/** The last turns of this conversation, so a follow-up question makes sense. Capped, because it comes from the app. */
+export function chatHistory(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter(
+      (turn): turn is { role: "user" | "assistant"; text: string } =>
+        (turn?.role === "user" || turn?.role === "assistant") &&
+        typeof turn?.text === "string" &&
+        turn.text.trim().length > 0,
+    )
+    .slice(-8)
+    .map((turn) => ({ role: turn.role, content: turn.text.trim().slice(0, 500) }));
+}
+
 export function askSystemPrompt(diary: DiaryContext, helper?: unknown) {
   const persona = personaLine(helper);
   return [
@@ -127,6 +141,7 @@ export function askSystemPrompt(diary: DiaryContext, helper?: unknown) {
       : "You are Zest, a food-diary companion living inside a calorie-tracker app.",
     "Answer in two to four short sentences, warm and plain. Use the diary below as the only source for numbers; never invent meals or totals.",
     "You may suggest food ideas or explain nutrition in general terms. No medical claims, no diets, no judgement about the person's body.",
+    "When asked what to eat, name two or three concrete dishes with rough kcal and protein that fit what is left of today. When asked about the conversation so far, use it.",
     "After the answer, add one final line starting with `>> ` holding up to three short follow-up questions the user might tap, separated by ` | `.",
     "",
     `Daily guide: ${diary.guide} kcal.` +

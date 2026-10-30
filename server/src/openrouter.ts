@@ -33,7 +33,7 @@ export function createDeltaParser() {
 }
 
 export type ChatMessage = {
-  role: "system" | "user";
+  role: "system" | "user" | "assistant";
   content:
     | string
     | ({ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } })[];
