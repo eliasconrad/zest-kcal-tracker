@@ -60,15 +60,20 @@ name: First launch onboarding, computed guide and profile sheet
 - inputText: "mia@example.com"
 - tapOn: "Next"
 - inputText: "lemonade8"
-- tapOn: "Show password"
-- assertVisible: "lemonade8"
 - tapOn: "Done"
+# With the keyboard gone the row's frame is settled; the eye reveals the text.
 - extendedWaitUntil:
     notVisible: "Previous"
     timeout: 5000
+- tapOn: "Show password"
+- assertVisible: "lemonade8"
 - tapOn: "Continue"
-# Four plan items at 1.5 s each, then the reveal.
-- assertVisible: "Working it out…"
+# Should iOS still offer to save the password, decline; the app keeps it itself.
+- tapOn:
+    text: "Not Now"
+    optional: true
+# Four plan items at 1.5 s each ("Working it out…"), then the reveal. iOS may
+# cover the computation with its save-password sheet, so only the reveal is asserted.
 - extendedWaitUntil:
     visible: "Mia, here’s your guide."
     timeout: 12000

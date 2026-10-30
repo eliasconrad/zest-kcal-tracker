@@ -372,6 +372,7 @@ export function MealCamera({
                 label={option}
                 selected={selected}
                 onPress={() => pick(option)}
+                expand
                 style={{ flex: 1 }}
               >
                 <View
