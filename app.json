@@ -180,7 +180,8 @@
           "microphonePermission": "Zest listens while you dictate, so you can say what a photo missed.",
           "speechRecognitionPermission": "Zest turns what you say into text, so you can correct a meal by voice."
         }
-      ]
+      ],
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true

@@ -125,6 +125,14 @@ test("the exact birth date decides the age, and only real dates count", async ()
   assert.equal(parseBirthDate(31, 2, 1994, today), null);
   assert.equal(parseBirthDate(1, 1, 2020, today), null);
   assert.equal(parseBirthDate(0, 0, 0, today), null);
+  const { birthDateProblem, MIN_AGE } = await import("../src/cookbooks/zest/data/nutrition.ts");
+  assert.equal(MIN_AGE, 16);
+  const october = new Date(2026, 9, 30, 12);
+  assert.equal(birthDateProblem(2, 11, 2010, october), "young", "turns 16 on Monday");
+  assert.equal(birthDateProblem(30, 10, 2010, october), null, "16 today");
+  assert.equal(birthDateProblem(31, 2, 1994, october), "invalid");
+  assert.equal(birthDateProblem(1, 1, 2030, october), "invalid");
+  assert.equal(parseBirthDate(2, 11, 2010, october), null);
 });
 
 test("plant-based diets lower the protein target, raise carbs and leave the guide alone", () => {

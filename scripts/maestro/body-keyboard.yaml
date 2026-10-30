@@ -4,6 +4,10 @@ name: On the body step the focused field stays above the keyboard
 - launchApp:
     clearState: true
 - extendedWaitUntil:
+    visible: "Snap it. Zest does the sums."
+    timeout: 10000
+- tapOn: "Get started"
+- extendedWaitUntil:
     visible: "Zest says: Hi! I’m Zest."
     timeout: 15000
 - tapOn: "Your name"

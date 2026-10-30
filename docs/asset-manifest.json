@@ -78,5 +78,10 @@
     "path": "assets/images/icons/pip.png",
     "bytes": 48157,
     "sha256": "193bd4c9b263d710b95f43402a0b899f6ec185a921406133b0641e50ad1afaf9"
+  },
+  {
+    "path": "assets/onboarding/how-it-works.mp4",
+    "bytes": 475496,
+    "sha256": "de8346b4e95006b33b1c0abd87bdab76d0fcb476e6db21112310f7368519cfdc"
   }
 ]

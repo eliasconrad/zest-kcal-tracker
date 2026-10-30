@@ -10,14 +10,16 @@ import {
 import Animated, {
   Easing,
   FadeIn,
-  FadeInRight,
+  FadeInDown,
   FadeOut,
   LinearTransition,
+  ZoomIn,
+  type SharedValue,
   useAnimatedStyle,
+  useReducedMotion,
   useSharedValue,
   withSequence,
   withTiming,
-  type SharedValue,
 } from "react-native-reanimated";
 import {
   KeyboardAwareScrollView,
@@ -36,6 +38,8 @@ import {
   activityLabel,
   ageOf,
   allergens,
+  birthDateProblem,
+  MIN_AGE,
   dietLabel,
   diets,
   obstacles,
@@ -64,6 +68,9 @@ import {
 import { type Profile } from "../state/profileStore";
 import { helperFor, helperLine, helperList, type HelperId } from "../data/helpers";
 import { StaticHelper } from "./helpers/StaticHelper";
+import { ArtIcon, PaceCurve, PlanOrbit, StepStage, TickBurst } from "./onboarding/Art";
+import { Intro } from "./onboarding/Intro";
+import { artAccent, type ArtId } from "./onboarding/drawings";
 import {
   mealTypes,
   reminderTime,
@@ -77,7 +84,8 @@ import { theme } from "../theme";
 import type { Scene } from "../hooks/useScene";
 
 export type OnboardingStep =
-  | "name"
+  | "intro"
+| "name"
   | "helper"
   | "goal"
   | "body"
@@ -93,6 +101,7 @@ export type OnboardingStep =
   | "plan";
 
 const order: OnboardingStep[] = [
+  "intro",
   "name",
   "goal",
   "body",
@@ -108,6 +117,49 @@ const order: OnboardingStep[] = [
   "plan",
 ];
 
+/** The drawing beside each answer. */
+const goalArt: Record<Goal, ArtId> = { lose: "scale", maintain: "balance", gain: "plateUp", muscle: "dumbbell" };
+const activityArt: Record<string, ArtId> = { sedentary: "sofa", light: "sneaker", active: "dumbbell", athletic: "flame" };
+const paceArt: Record<Pace, ArtId> = { slow: "leaf", steady: "sneaker", fast: "bolt" };
+const dietArt: Record<string, ArtId> = { none: "utensils", vegetarian: "carrot", vegan: "leaf", pescatarian: "fish", halal: "moon", kosher: "star" };
+const allergenArt: Record<string, ArtId> = {
+  "Tree nuts": "nut",
+  Peanuts: "peanut",
+  Gluten: "wheat",
+  Lactose: "milk",
+  Egg: "egg",
+  Soy: "soy",
+  Fish: "fish",
+  Shellfish: "shrimp",
+  Sesame: "sesame",
+};
+const obstacleArt: Record<string, ArtId> = {
+  "Not enough time": "stopwatch",
+  "Eating out a lot": "cloche",
+  Cravings: "cookie",
+  "Losing motivation": "battery",
+  "Not knowing what to eat": "question",
+  "Counting felt like work": "calculator",
+};
+/** The props beside the mascot on each step. */
+const stepProps: Partial<Record<OnboardingStep, ArtId[]>> = {
+  name: ["door"],
+  goal: ["hill", "scale"],
+  body: ["ruler", "scale"],
+  target: ["hill"],
+  activity: ["sneaker", "dumbbell"],
+  pace: ["stopwatch", "leaf"],
+  diet: ["carrot", "fish"],
+  allergies: ["peanut", "egg"],
+  meals: ["plate", "utensils"],
+  obstacles: ["cookie", "stopwatch"],
+  reminders: ["bell", "phone"],
+  account: ["key", "phone"],
+  plan: ["clipboard", "plate"],
+};
+
+/** One line of the plan checks off per interval. */
+const PLAN_ITEM_MS = 1500;
 /** Eight characters, as the references ask; the lemon says so plainly. */
 const PASSWORD_MIN = 8;
 /** The keyboard toolbar and some air, so a focused field never sits under it. */
@@ -170,7 +222,7 @@ export function Onboarding({
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [accountError, setAccountError] = useState("");
-  const [step, setStep] = useState<OnboardingStep>(startAt ?? "name");
+  const [step, setStep] = useState<OnboardingStep>(startAt ?? "intro");
   const steps = useMemo(() => stepsFor(draft.goal), [draft.goal]);
   const index = Math.max(0, steps.indexOf(step));
   const scroll =
@@ -189,7 +241,6 @@ export function Onboarding({
   // recordings (docs/MOTION_SPEC.md): a greeting interlude of 1.3 s, a plan
   // computation of four items at 1.5 s each, a 0.3 s push between questions.
   const GREETING_MS = 1300;
-  const PLAN_ITEM_MS = 1500;
   const planItems = [
     "Resting energy",
     "Daily activity",
@@ -360,7 +411,19 @@ export function Onboarding({
   const panelTop = Math.max(180, height - 616);
   // On a step with several fields the mascot makes room: there is too little left
   // between its feet and the keyboard to see the field being typed in.
-  const lift = useSharedValue(0);
+  const intro = step === "intro";
+  const lift = useSharedValue(intro ? 1 : 0);
+  // The first screen has the whole sheet; the mascot arrives with the first question.
+  useEffect(() => {
+    if (!intro) return;
+    lift.set(1);
+    onLift?.(true);
+    return () => {
+      lift.set(withTiming(0, { duration: scene.reduced ? 0 : 300, easing: Easing.bezier(0.23, 1, 0.32, 1) }));
+      onLift?.(false);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [intro]);
   const canLift = LIFTING_STEPS.includes(step);
   useEffect(() => {
     if (!canLift) return;
@@ -424,6 +487,14 @@ export function Onboarding({
           right={118}
           reduced={scene.reduced}
         />
+        {!editing && stepProps[step] && (
+          <StepStage
+            key={step}
+            props={stepProps[step]}
+            floor={panelTop}
+            reduced={scene.reduced}
+          />
+        )}
       </Animated.View>
       <Animated.View
         entering={scene.reduced ? undefined : FadeIn.duration(260)}
@@ -440,6 +511,7 @@ export function Onboarding({
       >
         <GlassSurface style={{ flex: 1, borderRadius: 36 }}>
           <View style={{ flex: 1, borderRadius: 36, overflow: "hidden" }}>
+            {!intro && (
             <View
               style={{
                 flexDirection: "row",
@@ -491,6 +563,7 @@ export function Onboarding({
                 />
               </View>
             </View>
+            )}
             {/* The list scrolls the focused field above the keyboard and its toolbar;
                 the button stays under it, so a long list never pushes it off the screen. */}
             <KeyboardAwareScrollView
@@ -506,7 +579,7 @@ export function Onboarding({
             >
               <Animated.View
                 key={`${step}-${interlude ? "hello" : "ask"}`}
-                entering={scene.reduced ? undefined : FadeInRight.duration(280)}
+                entering={scene.reduced ? undefined : FadeIn.duration(220)}
                 exiting={scene.reduced ? undefined : FadeOut.duration(120)}
               >
                 {interlude && step === "goal" && (
@@ -528,6 +601,7 @@ export function Onboarding({
                     </View>
                   </Question>
                 )}
+                {intro && <Intro height={Math.max(240, height - insets.top - insets.bottom - 320)} />}
                 {step === "name" && (
                   <Question
                     title="What should I call you?"
@@ -583,6 +657,8 @@ export function Onboarding({
                       <Choice
                         key={goal}
                         label={goalLabel[goal]}
+                        art={goalArt[goal]}
+                        order={goals.indexOf(goal)}
                         selected={draft.goal === goal}
                         onPress={() =>
                           update({
@@ -702,6 +778,8 @@ export function Onboarding({
                         key={activity}
                         label={activityLabel[activity].title}
                         detail={activityLabel[activity].detail}
+                        art={activityArt[activity]}
+                        order={activities.indexOf(activity)}
                         selected={draft.activity === activity}
                         onPress={() => update({ activity })}
                       />
@@ -723,6 +801,8 @@ export function Onboarding({
                       <Choice
                         key={diet}
                         label={dietLabel[diet]}
+                        art={dietArt[diet]}
+                        order={diets.indexOf(diet)}
                         selected={draft.diet === diet}
                         onPress={() => update({ diet })}
                       />
@@ -739,6 +819,7 @@ export function Onboarding({
                         <TagChip
                           key={item}
                           label={item}
+                          art={allergenArt[item]}
                           selected={draft.allergies.includes(item)}
                           onPress={() =>
                             update({ allergies: toggle(draft.allergies, item) })
@@ -764,6 +845,8 @@ export function Onboarding({
                       <Choice
                         key={meal}
                         label={meal}
+                        leading={<FoodSticker kind={meal} size={36} angle={-4} />}
+                        order={mealTypes.indexOf(meal)}
                         selected={draft.usualMeals.includes(meal)}
                         onPress={() =>
                           update({
@@ -784,6 +867,8 @@ export function Onboarding({
                       <Choice
                         key={item}
                         label={item}
+                        art={obstacleArt[item]}
+                        order={obstacles.indexOf(item)}
                         selected={draft.pastObstacles.includes(item)}
                         onPress={() =>
                           update({
@@ -799,6 +884,7 @@ export function Onboarding({
                     title="Want a nudge at mealtimes?"
                     detail="One quiet line per meal. Streaks are easier when something reminds you."
                   >
+                    <NudgePreview helper={draft.helper} name={helper.name} />
                     <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
                       {draft.usualMeals.map((meal) => (
                         <TagChip
@@ -875,7 +961,27 @@ export function Onboarding({
               </Animated.View>
             </KeyboardAwareScrollView>
             <View style={{ paddingHorizontal: 22, paddingTop: 10, paddingBottom: 12 }}>
-              {step === "plan" && !editing && !preparing ? (
+              {intro ? (
+                <View style={{ gap: 2 }}>
+                  <ContinueButton
+                    label="Get started"
+                    ready
+                    reduced={scene.reduced}
+                    onPress={() => go(1)}
+                  />
+                  {onLogin && (
+                    <Touch
+                      label="I already have an account"
+                      onPress={onLogin}
+                      style={{ height: 44, alignItems: "center", justifyContent: "center" }}
+                    >
+                      <Text style={{ fontSize: 15, color: theme.muted }}>
+                        I already have an account
+                      </Text>
+                    </Touch>
+                  )}
+                </View>
+              ) : step === "plan" && !editing && !preparing ? (
                 <HoldToStart reduced={scene.reduced} onCommit={() => go(1)} />
               ) : step === "account" && !editing ? (
                 <View style={{ gap: 2 }}>
@@ -1107,13 +1213,19 @@ function BirthDateField({
       }}
     />
   );
+  // Only once the date is finished: nobody should be told off halfway through typing.
+  const problem =
+    day && month && year.length === 4
+      ? birthDateProblem(Number(day), Number(month), Number(year))
+      : null;
   return (
+    <View>
     <View
       style={{
         flexDirection: "row",
         alignItems: "center",
         borderBottomWidth: 0.5,
-        borderColor: theme.line,
+        borderColor: problem ? "#A63A26" : theme.line,
         minHeight: 56,
       }}
     >
@@ -1140,35 +1252,66 @@ function BirthDateField({
         })}
       </View>
     </View>
+    {problem && (
+      <Animated.Text
+        entering={FadeIn.duration(160)}
+        accessibilityLiveRegion="polite"
+        style={{ fontSize: 14, lineHeight: 19, color: "#A63A26", marginTop: 8 }}
+      >
+        {problem === "young"
+          ? `Zest is for people ${MIN_AGE} and over. A calorie plan isn’t made for a body that’s still growing.`
+          : "That date doesn’t look right. Check the day, month and year."}
+      </Animated.Text>
+    )}
+    </View>
   );
 }
 
 /** A compact on-off chip for lists that may wrap. */
 function TagChip({
   label,
+  art,
   selected,
   onPress,
 }: {
   label: string;
+  art?: ArtId;
   selected: boolean;
   onPress: () => void;
 }) {
+  const reduced = useReducedMotion();
   return (
-    <Touch label={label} onPress={onPress} selected={selected} expand>
-      <Selectable
-        selected={selected}
+    <Touch
+      label={label}
+      onPress={() => {
+        void Haptics.selectionAsync();
+        onPress();
+      }}
+      selected={selected}
+      expand
+    >
+      <View
         style={{
-          height: 44,
-          borderRadius: 22,
-          paddingHorizontal: 16,
+          height: 48,
+          borderRadius: 24,
+          paddingLeft: art ? 10 : 16,
+          paddingRight: 16,
+          flexDirection: "row",
           alignItems: "center",
-          justifyContent: "center",
+          gap: 8,
+          backgroundColor: selected ? "#FFFFFF" : "#2527200A",
+          boxShadow: selected ? "0 4px 14px rgba(37, 39, 32, 0.10)" : undefined,
         }}
       >
-        <SelectableText style={{ fontSize: 15, fontWeight: "500" }}>
+        {art && <ArtIcon id={art} size={28} />}
+        <Text style={{ fontSize: 15, fontWeight: "500", color: theme.ink }}>
           {label}
-        </SelectableText>
-      </Selectable>
+        </Text>
+        {selected && <Symbol name="checkmark" size={11} weight="bold" color={theme.accent} />}
+        {selected && (
+          <TickBurst color={art ? artAccent(art) : theme.soft} reduced={reduced} />
+        )}
+      </View>
     </Touch>
   );
 }
@@ -1349,50 +1492,126 @@ function Question({
 function Choice({
   label,
   detail,
+  art,
+  leading,
+  order = 0,
   selected,
   onPress,
 }: {
   label: string;
   detail?: string;
+  art?: ArtId;
+  leading?: React.ReactNode;
+  /** Rows rise one after the other, 70 ms apart. */
+  order?: number;
   selected: boolean;
   onPress: () => void;
 }) {
+  const reduced = useReducedMotion();
   return (
-    <Touch label={label} onPress={onPress} expand selected={selected}>
-      <Selectable
-        selected={selected}
-        style={{
-          minHeight: 58,
-          borderRadius: 20,
-          borderCurve: "continuous",
-          paddingHorizontal: 18,
-          paddingVertical: 14,
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 12,
+    <Animated.View
+      entering={
+        reduced
+          ? undefined
+          : FadeInDown.delay(60 + order * 70)
+              .duration(300)
+              .easing(Easing.bezier(0.23, 1, 0.32, 1))
+              .withInitialValues({ opacity: 0, transform: [{ translateY: 14 }] })
+      }
+    >
+      <Touch
+        label={label}
+        onPress={() => {
+          void Haptics.selectionAsync();
+          onPress();
         }}
+        expand
+        selected={selected}
       >
-        <View style={{ flex: 1 }}>
-          <SelectableText style={{ fontSize: 17, fontWeight: "500" }}>
-            {label}
-          </SelectableText>
-          {detail && (
-            <SelectableText
-              from={theme.muted}
-              to="#D9DAD3"
-              style={{ fontSize: 13, marginTop: 2 }}
-            >
-              {detail}
-            </SelectableText>
+        <View
+          style={{
+            minHeight: 62,
+            borderRadius: 22,
+            borderCurve: "continuous",
+            paddingLeft: 14,
+            paddingRight: 14,
+            paddingVertical: 12,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 12,
+            backgroundColor: selected ? "#FFFFFF" : "#2527200A",
+            boxShadow: selected ? "0 6px 18px rgba(37, 39, 32, 0.10)" : undefined,
+          }}
+        >
+          {art ? <ArtIcon id={art} size={34} /> : leading}
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 17, fontWeight: "500", color: theme.ink }}>
+              {label}
+            </Text>
+            {detail && (
+              <Text style={{ fontSize: 13, marginTop: 2, color: theme.muted }}>
+                {detail}
+              </Text>
+            )}
+          </View>
+          <Radio selected={selected} />
+          {selected && (
+            <TickBurst color={art ? artAccent(art) : theme.soft} reduced={reduced} />
           )}
         </View>
-        {selected && (
-          <Animated.View entering={FadeIn.duration(120)}>
-            <Symbol name="checkmark" size={14} color={theme.onHeavy} />
-          </Animated.View>
-        )}
-      </Selectable>
-    </Touch>
+      </Touch>
+    </Animated.View>
+  );
+}
+
+function Radio({ selected }: { selected: boolean }) {
+  return (
+    <View
+      style={{
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        alignItems: "center",
+        justifyContent: "center",
+        borderWidth: selected ? 0 : 1.5,
+        borderColor: "#25272030",
+        backgroundColor: selected ? theme.accent : "transparent",
+      }}
+    >
+      {selected && (
+        <Animated.View entering={ZoomIn.duration(160)}>
+          <Symbol name="checkmark" size={12} weight="bold" color="#FFFFFF" />
+        </Animated.View>
+      )}
+    </View>
+  );
+}
+
+/** What a reminder will look like, before the system asks. */
+function NudgePreview({ helper, name }: { helper: HelperId; name: string }) {
+  return (
+    <Animated.View
+      entering={FadeInDown.delay(120).duration(320)}
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 10,
+        padding: 12,
+        borderRadius: 20,
+        borderCurve: "continuous",
+        backgroundColor: "#FFFFFF",
+        boxShadow: "0 6px 18px rgba(37, 39, 32, 0.08)",
+      }}
+    >
+      <StaticHelper id={helper} size={42} />
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontSize: 14, fontWeight: "600", color: theme.ink }}>{name}</Text>
+        <Text style={{ fontSize: 14, color: theme.muted }}>
+          Lunch? One photo is enough.
+        </Text>
+      </View>
+      <Text style={{ fontSize: 12, color: theme.faint }}>now</Text>
+    </Animated.View>
   );
 }
 
@@ -1616,6 +1835,8 @@ function PaceStep({
   draft: Profile;
   onChange: (pace: Pace) => void;
 }) {
+  const reduced = useReducedMotion();
+  const [chartWidth, setChartWidth] = useState(0);
   const weeks = weeksToTarget(draft.weightKg, draft.targetWeightKg, draft.pace);
   const eta = targetDate(weeks);
   const current = plan(
@@ -1637,6 +1858,18 @@ function PaceStep({
       title="How quickly?"
       detail="A steadier pace is easier to keep. The lemon is patient."
     >
+      <View onLayout={(event) => setChartWidth(event.nativeEvent.layout.width)}>
+        {chartWidth > 0 && (
+          <PaceCurve
+            from={draft.weightKg}
+            to={draft.targetWeightKg}
+            fromLabel={`Today · ${formatWeight(draft.weightKg, draft.units)}`}
+            toLabel={`${formatWeight(draft.targetWeightKg, draft.units)} · ${eta.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`}
+            width={chartWidth}
+            reduced={reduced}
+          />
+        )}
+      </View>
       <View style={{ flexDirection: "row", gap: 8 }}>
         {paces.map((pace) => (
           <Touch
@@ -1650,11 +1883,14 @@ function PaceStep({
               style={{
                 borderRadius: 20,
                 borderCurve: "continuous",
-                paddingVertical: 14,
+                paddingVertical: 12,
                 alignItems: "center",
                 backgroundColor: draft.pace === pace ? theme.heavy : "#FFFFFF",
               }}
             >
+              <View style={{ marginBottom: 4 }}>
+                <ArtIcon id={paceArt[pace]} size={28} />
+              </View>
               <Text
                 style={{
                   fontSize: 15,
@@ -1716,12 +1952,14 @@ function PlanStep({
   items: string[];
   doneItems: number;
 }) {
+  const reduced = useReducedMotion();
   if (preparing)
     return (
       <Question
         title="Working it out…"
         detail="Adding up your body, your days and your goal."
       >
+        <PlanOrbit duration={items.length * PLAN_ITEM_MS + 400} reduced={reduced} />
         <View
           style={{
             borderRadius: 24,
@@ -1772,9 +2010,9 @@ function PlanStep({
       ? weeksToTarget(draft.weightKg, draft.targetWeightKg, draft.pace)
       : 0;
   const rows = [
-    { label: "Protein", value: p.protein, color: "#85916C" },
-    { label: "Carbs", value: p.carbs, color: "#C9AC50" },
-    { label: "Fat", value: p.fat, color: "#B08968" },
+    { label: "Protein", value: p.protein, art: "egg" as const },
+    { label: "Carbs", value: p.carbs, art: "wheat" as const },
+    { label: "Fat", value: p.fat, art: "nut" as const },
   ];
   return (
     <Question
@@ -1832,15 +2070,9 @@ function PlanStep({
               backgroundColor: "#FFFFFF",
             }}
           >
-            <View
-              style={{
-                width: 22,
-                height: 4,
-                borderRadius: 2,
-                backgroundColor: row.color,
-                marginBottom: 8,
-              }}
-            />
+            <View style={{ marginBottom: 6 }}>
+              <ArtIcon id={row.art} size={30} />
+            </View>
             <Text
               style={{
                 fontSize: 22,

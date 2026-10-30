@@ -101,14 +101,34 @@ export function ageOf(body: Pick<Body, "birthYear" | "birthDate">, now = new Dat
   return Math.max(0, now.getFullYear() - y - (before ? 1 : 0));
 }
 
-/** A real calendar date inside the allowed birth years, as an ISO string; null otherwise. */
-export function parseBirthDate(day: number, month: number, year: number, now = new Date()) {
-  const { min, max } = limits.birthYear(now);
-  if (!Number.isInteger(day) || !Number.isInteger(month) || !Number.isInteger(year)) return null;
-  if (year < min || year > max) return null;
+/**
+ * Zest is for people aged 16 and over: a calorie deficit is not meant for a body
+ * that is still growing, and the plan's formula is made for adults. The privacy
+ * page says the same.
+ */
+export const MIN_AGE = 16;
+
+/** Why a finished date cannot be used, for a line under the field; null when it can. */
+export function birthDateProblem(day: number, month: number, year: number, now = new Date()) {
   const date = new Date(year, month - 1, day, 12);
-  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day)
-    return null;
+  if (
+    !Number.isInteger(day) ||
+    !Number.isInteger(month) ||
+    !Number.isInteger(year) ||
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day ||
+    date > now ||
+    year < limits.birthYear(now).min
+  )
+    return "invalid" as const;
+  const iso = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  return ageOf({ birthYear: year, birthDate: iso }, now) < MIN_AGE ? ("young" as const) : null;
+}
+
+/** A real calendar date of someone old enough, as an ISO string; null otherwise. */
+export function parseBirthDate(day: number, month: number, year: number, now = new Date()) {
+  if (birthDateProblem(day, month, year, now)) return null;
   return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 

@@ -3,7 +3,7 @@ name: Helper reacts to a logged meal, glows while busy, and the frame gallery re
 ---
 - launchApp:
     clearState: true
-- assertVisible: "What should I call you?"
+- assertVisible: "Snap it. Zest does the sums."
 - openLink: "zest://?demo=1"
 - tapOn:
     text: "Open|Öffnen"

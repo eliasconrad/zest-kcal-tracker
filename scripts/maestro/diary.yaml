@@ -4,7 +4,7 @@ name: Sample meal, protein answer and calendar
 - launchApp:
     clearState: true
 # A clean install starts with onboarding; the showcase link skips it.
-- assertVisible: "What should I call you?"
+- assertVisible: "Snap it. Zest does the sums."
 - assertNotVisible: "Back to chat collection"
 - openLink: "zest://?demo=1"
 # The deep-link confirmation is localized; match English and German.

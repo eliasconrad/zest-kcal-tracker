@@ -3,6 +3,10 @@ name: First launch onboarding, computed guide and profile sheet
 ---
 - launchApp:
     clearState: true
+- extendedWaitUntil:
+    visible: "Snap it. Zest does the sums."
+    timeout: 10000
+- tapOn: "Get started"
 - assertVisible: "What should I call you?"
 # The lemon pops out of the sheet 1.6 s after launch; its first line follows.
 # The lemon pops out of the sheet 1.6 s after launch; its first line follows.
