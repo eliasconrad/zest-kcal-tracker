@@ -25,6 +25,19 @@ Two free open models were tried as well. `gemma-4-31b:free` answered 429 to all 
 
 Costs are real OpenRouter charges reported per request. Failed requests count as zero in the mean, so runs with failures read slightly low.
 
+## Cheaper models to compare (prices checked October 30, 2026, per million tokens, input / output)
+
+| Model | Price | Note |
+| --- | --- | --- |
+| `qwen/qwen2.5-vl-72b-instruct` | $0.80 / $1.00 | current, measured above |
+| `mistralai/mistral-small-3.2-24b-instruct` | $0.075 / $0.20 | open weights |
+| `google/gemma-4-26b-a4b-it` | $0.09 / $0.30 | open weights |
+| `meta-llama/llama-4-scout` | $0.10 / $0.30 | open weights |
+| `qwen/qwen3.5-9b` | $0.17 / $0.25 | open weights |
+| `qwen/qwen3-vl-8b-instruct` | $0.25 / $0.75 | open weights |
+
+None of them is measured yet. The free Gemma 4 answered only 3 of 20 dishes before its rate limit, which proves nothing about accuracy. `server/scripts/eval/compare.sh` scores all six on the same 30 dishes once the account has credit. The model only changes if it is not worse on error. Text answers can use a cheaper model through `OPENROUTER_CHAT_MODEL`.
+
 ## Blocked: the OpenRouter account has no credit
 
 The account shows 0 credits and $0.16 used. Paid requests now return HTTP 402. Until it is topped up, scans in production fail and show the failure state. Five dollars buys about 8,000 scans at the measured price. After topping up, run:

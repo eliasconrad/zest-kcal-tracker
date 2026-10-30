@@ -25,6 +25,8 @@ October 30, 2026, `qwen/qwen2.5-vl-72b-instruct`, 30 weighed Nutrition5k dishes:
 
 A real photo through the deployed Worker on a device is not verified yet: the Worker's secrets are not set and the account has no credit.
 
+October 30, 2026, live Worker probe with a throwaway account: health, config, legal pages, guest session, signup, login, wrong password, profile, sync, friends, fake purchase and App Store signatures, logout and delete all answered as designed. It found that `/v1/meal` answered 404, because the account handler claimed everything starting with `/v1/me`. Fixed with a regression test in commit 40977fc; live only after the next deploy. Locally, with free models: chat answers in German, keeps the conversation, respects a vegetarian profile and suggests recipes; the scan reached the model, but the free model returned no reply, so a real scan is still unverified.
+
 ## Native interaction results
 
 Direct IDB input passed: one mascot and no root back action; camera focus/review/retake/cancel; exactly one sample dinner; a fully visible 70 g protein answer; invalid calorie edit rejection and valid edit updating the total; guide changes and the above-guide expression; month navigation; deletion; native photo-picker cancel; and persisted diary/guide after app termination. The complete result is retained locally in `.qa/native/native-results.json`.

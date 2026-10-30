@@ -1,0 +1,139 @@
+{
+  "summary": {
+    "model": "google/gemma-4-26b-a4b-it:free",
+    "prompt": "tuned",
+    "dishes": 20,
+    "parsed": 3,
+    "kcalMaeRaw": 155,
+    "kcalMaeCalibrated": 155,
+    "kcalBiasRaw": 28,
+    "kcalMapePercent": 52,
+    "proteinMae": 9,
+    "carbsMae": 8,
+    "fatMae": 10,
+    "costPer1000Scans": 0,
+    "meanTokens": [
+      135,
+      6
+    ]
+  },
+  "rows": [
+    {
+      "id": "dish_1568044634",
+      "truth": 413.19339,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1558550218",
+      "truth": 230.001999,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1563565454",
+      "truth": 350.788818,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1565724620",
+      "truth": 473.953308,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1558380181",
+      "truth": 374.936005,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1565797723",
+      "truth": 202.928879,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1562963289",
+      "truth": 349.917969,
+      "text": "Pizza and salad | 415 | 15 | 44 | 20\nTwo slices of pizza and about 100 g of creamy salad."
+    },
+    {
+      "id": "dish_1562875273",
+      "truth": 495.910278,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1562690112",
+      "truth": 428.202332,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1562946006",
+      "truth": 535.984009,
+      "text": "Scrambled eggs and sausage | 345 | 18 | 2 | 28\nAbout 100 g scrambled eggs and seven small sausage pieces."
+    },
+    {
+      "id": "dish_1563220767",
+      "truth": 265.894379,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1560456853",
+      "truth": 405.703369,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1560526514",
+      "truth": 183.252747,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1562173247",
+      "truth": 290.550018,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1563219035",
+      "truth": 410.209686,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1562777099",
+      "truth": 303.718628,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1565811390",
+      "truth": 205.092285,
+      "text": "Chicken, grains and greens | 415 | 26 | 42 | 17\nAbout 60 g chicken, 120 g grains, and 100 g bok choy."
+    },
+    {
+      "id": "dish_1562603598",
+      "truth": 175.259506,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1566933226",
+      "truth": 245.449509,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1558725403",
+      "truth": 289.050018,
+      "text": "",
+      "error": 429
+    }
+  ]
+}

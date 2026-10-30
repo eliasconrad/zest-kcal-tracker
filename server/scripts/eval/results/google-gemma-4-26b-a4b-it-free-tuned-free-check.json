@@ -1,0 +1,45 @@
+{
+  "summary": {
+    "model": "google/gemma-4-26b-a4b-it:free",
+    "prompt": "tuned",
+    "dishes": 4,
+    "parsed": 1,
+    "kcalMaeRaw": 45,
+    "kcalMaeCalibrated": 45,
+    "kcalBiasRaw": -45,
+    "kcalMapePercent": 11,
+    "proteinMae": 34,
+    "carbsMae": 1,
+    "fatMae": 14,
+    "costPer1000Scans": 0,
+    "meanTokens": [
+      225,
+      12
+    ]
+  },
+  "rows": [
+    {
+      "id": "dish_1568044634",
+      "truth": 413.19339,
+      "text": "Egg, sweet potato and watermelon | 368 | 16 | 38 | 18\nAbout 100 g egg, 80 g sweet potato, and 80 g watermelon with salsa."
+    },
+    {
+      "id": "dish_1558550218",
+      "truth": 230.001999,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1563565454",
+      "truth": 350.788818,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1565724620",
+      "truth": 473.953308,
+      "text": "",
+      "error": 429
+    }
+  ]
+}
