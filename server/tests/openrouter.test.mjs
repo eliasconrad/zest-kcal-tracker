@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createDeltaParser } from "../src/openrouter.ts";
-import { askSystemPrompt, chatHistory, mealSystemPrompt, recipeSystemPrompt, scannedMeal } from "../src/prompts.ts";
+import { askSystemPrompt, chatHistory, mealSystemPrompt, recipeChoices, recipeSystemPrompt, scannedMeal } from "../src/prompts.ts";
 import { calibrateLine, createCorrectionFilter, createLineCalibrator } from "../src/calibrate.ts";
 
 test("delta parser survives chunks split mid-line and ignores keep-alives", () => {
@@ -148,4 +148,18 @@ test("a correction line is held back and corrected, other answers flow through",
   const plain = createCorrectionFilter("Breakfast");
   assert.equal(plain.push("Try a soup."), "Try a soup.");
   assert.equal(plain.push(" Warm."), " Warm.");
+});
+
+test("the recipe list reaches the prompt by id, and only clean entries", () => {
+  const diary = { guide: 2000, today: { total: 0, meals: [] }, yesterday: { total: 0, count: 0 }, week: { total: 0, loggedDays: 0 } };
+  const recipes = recipeChoices([
+    { id: "r7", name: "Lentil soup", type: "Dinner", kcal: 420, protein: 24, minutes: 25 },
+    { id: 7, name: "broken" },
+    "nope",
+  ]);
+  assert.equal(recipes.length, 1);
+  const prompt = askSystemPrompt(diary, undefined, undefined, recipes);
+  assert.match(prompt, /r7: Lentil soup, Dinner, 420 kcal, 24 g protein, 25 min/);
+  assert.match(prompt, /# r7/);
+  assert.deepEqual(recipeChoices("nope"), []);
 });

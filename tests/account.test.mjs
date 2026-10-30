@@ -116,3 +116,14 @@ test("seed recipes are consistent, filtered by diet and allergy, and scale by se
   const doubled = perServings(recipes[0], 2);
   assert.equal(doubled.kcal, recipes[0].kcal * 2);
 });
+
+test("dishes come from the recipe by id, with its numbers, or from a whole line", async () => {
+  const { resolveDishes } = await import("../src/cookbooks/zest/data/recipeRules.ts");
+  const list = [{ id: "r1", name: "Soup", type: "Dinner", minutes: 20, kcal: 400, protein: 20, carbs: 40, fat: 10 }];
+  const [known, made] = resolveDishes(["r1", "Toast | 300 | 12 | 40 | 9 | 10", "r99", "nonsense"], list);
+  assert.equal(known.recipeId, "r1");
+  assert.equal(known.kcal, 400);
+  assert.equal(made.recipeId, undefined);
+  assert.equal(made.kcal, 300);
+  assert.equal(resolveDishes(["r1", "r1"], list).length, 1);
+});

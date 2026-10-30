@@ -1,8 +1,12 @@
+import { useCallback, useState } from "react";
 import { Text, View } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 import { Thinking } from "./Thinking";
 import { VisualAnswer } from "./VisualAnswer";
+import { StreamedText } from "./StreamedText";
+import { DishCard } from "./DishCard";
+import type { Dish } from "../data/recipeRules";
 import { MealReply, REPLY_EASE } from "./MealReply";
 import { MealImage } from "../data/photos";
 import { Symbol, Touch } from "./ui/Touch";
@@ -18,6 +22,8 @@ export function ChatTurn({
   onChoose,
   onEdit,
   onCorrect,
+  onOpenRecipe,
+  onLogDish,
   onCalendar,
   onAsk,
   onRetry,
@@ -33,6 +39,8 @@ export function ChatTurn({
   onChoose: (turn: Turn, type: MealType) => void;
   onEdit: (meal: Meal) => void;
   onCorrect?: () => void;
+  onOpenRecipe?: (recipeId: string) => void;
+  onLogDish?: (dish: Dish) => void;
   onCalendar: () => void;
   /** Sends a tapped follow-up question as if typed. */
   onAsk?: (question: string) => void;
@@ -44,17 +52,14 @@ export function ChatTurn({
   const streaming = turn.state === "thinking" && !!turn.text;
   return (
     <Animated.View
-      key={
-        turn.kind === "text" ? `${turn.id}-${turn.state ?? "sent"}` : turn.id
-      }
+      key={turn.id}
       entering={
         turn.kind === "text" && !reduced
           ? FadeIn.delay(320).duration(140)
           : undefined
       }
-      layout={
-        (turn.kind === "question" || turn.kind === "meal") && !reduced
-          ? LinearTransition.duration(280).easing(REPLY_EASE)
+      layout={!reduced && turn.kind !== "photo" && turn.role === "assistant"
+          ? LinearTransition.duration(240).easing(REPLY_EASE)
           : undefined
       }
       style={[
@@ -205,89 +210,116 @@ export function ChatTurn({
       ) : turn.state === "thinking" && !streaming ? (
         <Thinking />
       ) : (
-        <View>
-          {turn.answer ? (
-            <VisualAnswer answer={turn.answer} />
-          ) : (
-            <Text
-              selectable
-              accessibilityLiveRegion={streaming ? "polite" : "none"}
-              style={{
-                fontSize: 20,
-                lineHeight: 28,
-                letterSpacing: -0.25,
-                color: theme.ink,
-              }}
-            >
-              {turn.text}
-            </Text>
-          )}
-          {streaming && (
-            <View style={{ marginTop: 8 }}>
-              <Thinking />
-            </View>
-          )}
-          {turn.state === "complete" && !!turn.followups?.length && onAsk && (
-            <View style={{ marginTop: 14 }}>
-              {turn.followups.map((question, index) => (
-                <Touch
-                  key={question}
-                  label={`Ask: ${question}`}
-                  onPress={() => onAsk(question)}
-                  style={{
-                    minHeight: 44,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 10,
-                    paddingVertical: 8,
-                    borderTopWidth: index === 0 ? 0 : 1,
-                    borderTopColor: theme.line,
-                  }}
-                >
-                  <Symbol
-                    name="arrow.turn.down.right"
-                    size={13}
-                    color={theme.muted}
-                  />
-                  <Text
-                    style={{ flex: 1, fontSize: 15, color: theme.ink }}
-                    numberOfLines={2}
-                  >
-                    {question}
-                  </Text>
-                </Touch>
-              ))}
-            </View>
-          )}
-          {turn.state === "stopped" && (
-            <Text
-              style={{
-                color: theme.muted,
-                marginTop: 10,
-                fontSize: 13,
-              }}
-            >
-              Response stopped.
-            </Text>
-          )}
-          {turn.state === "complete" && (
-            <Touch
-              label="Copy Zest’s answer"
-              onPress={() => void Clipboard.setStringAsync(turn.text ?? "")}
-              style={{
-                width: 44,
-                height: 44,
-                justifyContent: "center",
-                alignItems: "center",
-                alignSelf: "flex-end",
-                marginTop: 0,
-              }}
-            >
-              <Symbol name="square.on.square" size={16} color={theme.muted} />
-            </Touch>
-          )}
-        </View>
+        <AnswerBody
+          key={turn.id}
+          turn={turn}
+          reduced={reduced}
+          onAsk={onAsk}
+          onOpenRecipe={onOpenRecipe}
+          onLogDish={onLogDish}
+        />
       )}
     </Animated.View>
+  );
+}
+
+/** An answer: words first, then what belongs under them, so nothing jumps while it reads. */
+function AnswerBody({
+  turn,
+  reduced,
+  onAsk,
+  onOpenRecipe,
+  onLogDish,
+}: {
+  turn: Turn;
+  reduced: boolean;
+  onAsk?: (question: string) => void;
+  onOpenRecipe?: (recipeId: string) => void;
+  onLogDish?: (dish: Dish) => void;
+}) {
+  const [shown, setShown] = useState(!turn.live);
+  const onShown = useCallback(() => setShown(true), []);
+  const finished = turn.state === "complete" && shown;
+  return (
+    <View>
+      {turn.answer ? (
+        <VisualAnswer answer={turn.answer} />
+      ) : (
+        <StreamedText
+          text={turn.text ?? ""}
+          live={!!turn.live}
+          reduced={reduced}
+          onShown={onShown}
+          style={{
+            fontSize: 20,
+            lineHeight: 28,
+            letterSpacing: -0.25,
+            color: theme.ink,
+          }}
+        />
+      )}
+      {finished &&
+        onLogDish &&
+        turn.dishes?.map((dish, index) => (
+          <DishCard
+            key={dish.name}
+            dish={dish}
+            order={index}
+            reduced={reduced}
+            onOpen={onOpenRecipe}
+            onLog={onLogDish}
+          />
+        ))}
+      {finished && !!turn.followups?.length && onAsk && (
+        <Animated.View
+          entering={reduced ? undefined : FadeIn.delay(turn.dishes?.length ? 180 : 0).duration(220)}
+          style={{ marginTop: 14 }}
+        >
+          {turn.followups.map((question, index) => (
+            <Touch
+              key={question}
+              label={`Ask: ${question}`}
+              onPress={() => onAsk(question)}
+              style={{
+                minHeight: 44,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 10,
+                paddingVertical: 8,
+                borderTopWidth: index === 0 ? 0 : 1,
+                borderTopColor: theme.line,
+              }}
+            >
+              <Symbol name="arrow.turn.down.right" size={13} color={theme.muted} />
+              <Text style={{ flex: 1, fontSize: 15, color: theme.ink }} numberOfLines={2}>
+                {question}
+              </Text>
+            </Touch>
+          ))}
+        </Animated.View>
+      )}
+      {turn.state === "stopped" && (
+        <Text style={{ color: theme.muted, marginTop: 10, fontSize: 13 }}>
+          Response stopped.
+        </Text>
+      )}
+      {finished && (
+        <Animated.View entering={reduced ? undefined : FadeIn.duration(200)}>
+          <Touch
+            label="Copy Zest’s answer"
+            onPress={() => void Clipboard.setStringAsync(turn.text ?? "")}
+            style={{
+              width: 44,
+              height: 44,
+              justifyContent: "center",
+              alignItems: "center",
+              alignSelf: "flex-end",
+            }}
+          >
+            <Symbol name="square.on.square" size={16} color={theme.muted} />
+          </Touch>
+        </Animated.View>
+      )}
+    </View>
   );
 }

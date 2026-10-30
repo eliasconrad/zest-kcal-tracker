@@ -57,3 +57,44 @@ export function perServings(recipe: Recipe, servings: number) {
     fat: Math.round(recipe.fat * servings),
   };
 }
+
+/** A dish on a card inside an answer. Numbers of a known recipe are always the recipe's own. */
+export type Dish = {
+  /** Set when it is one of Zest's recipes; otherwise the numbers are the model's estimate. */
+  recipeId?: string;
+  name: string;
+  type: MealType;
+  kcal: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  minutes?: number;
+};
+
+/** Turns the model's `#` lines into dishes: an id from the list, or `name | kcal | p | c | f | min`. */
+export function resolveDishes(lines: string[], list: Recipe[], fallback: MealType = "Dinner"): Dish[] {
+  const dishes = lines.flatMap((line): Dish[] => {
+    const id = line.replace(/[`*]/g, "").trim();
+    const recipe = list.find((item) => item.id === id);
+    if (recipe)
+      return [
+        {
+          recipeId: recipe.id,
+          name: recipe.name,
+          type: recipe.type,
+          kcal: recipe.kcal,
+          protein: recipe.protein,
+          carbs: recipe.carbs,
+          fat: recipe.fat,
+          minutes: recipe.minutes,
+        },
+      ];
+    const parts = id.split("|").map((part) => part.trim());
+    if (parts.length < 5) return [];
+    const [name, ...rest] = parts;
+    const [kcal, protein, carbs, fat, minutes] = rest.map(Number);
+    if (!name || !(kcal > 0) || ![protein, carbs, fat].every(Number.isFinite)) return [];
+    return [{ name, type: fallback, kcal: Math.round(kcal), protein, carbs, fat, minutes: minutes || undefined }];
+  });
+  return dishes.filter((dish, i) => dishes.findIndex((d) => d.name === dish.name) === i).slice(0, 3);
+}

@@ -20,12 +20,15 @@ const MAX_STAGGERED = 8;
 
 export function RecipesSheet({
   scene,
+  initial,
   context,
   onClose,
   onLog,
   onLimit,
 }: {
   scene: Scene;
+  /** Opens straight on one recipe, from a card in an answer. */
+  initial?: string;
   context: () => DiaryContext;
   onClose: () => void;
   onLog: (meal: { name: string; kcal: number; protein: number; carbs: number; fat: number; type: MealType }) => void;
@@ -34,7 +37,9 @@ export function RecipesSheet({
   const profile = useProfile((s) => s);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<MealType | "Favourites" | undefined>();
-  const [open, setOpen] = useState<Recipe | null>(null);
+  const [open, setOpen] = useState<Recipe | null>(
+    () => recipes.find((recipe) => recipe.id === initial) ?? null,
+  );
   const [servings, setServings] = useState(1);
   const [ideas, setIdeas] = useState<RecipeIdea[] | null>(null);
   const [thinking, setThinking] = useState(false);

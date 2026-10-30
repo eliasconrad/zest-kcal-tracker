@@ -60,6 +60,7 @@ import { CHOICE_RETIRE_MS } from "../components/MealReply";
 import { ChatTurn } from "../components/ChatTurn";
 import type { Turn } from "../data/conversation";
 import { ApiError, apiConfigured, askZest, estimateMeal } from "../data/api";
+import { recipes, resolveDishes, visibleRecipes } from "../data/recipes";
 import { diaryContext } from "../data/context";
 import { useProfile } from "../state/useProfile";
 import { profilePlan, type Profile } from "../state/profileStore";
@@ -159,6 +160,20 @@ export function ZestScreen({
     }
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
+  /** A recipe into today's diary, from the recipe sheet or a card in an answer. */
+  const logRecipe = (fields: Pick<Meal, "name" | "kcal" | "protein" | "carbs" | "fat" | "type">) => {
+    const before = useDiary.getState().meals;
+    useDiary.getState().add({
+      ...fields,
+      id: eventId("recipe"),
+      date: dayKey(),
+      time: new Date().toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+      }),
+    });
+    celebrateIfNewDay(before);
+  };
   /** What the helper says once a meal is in the diary, placed beside it on the composer. */
   const react = (meal: Meal) => {
     const after = useDiary.getState().meals;
@@ -201,7 +216,7 @@ export function ZestScreen({
     | { kind: "account"; mode: AccountMode }
     | { kind: "paywall"; reason: "soft" | "limit" }
     | { kind: "friends" }
-    | { kind: "recipes" }
+    | { kind: "recipes"; recipeId?: string }
     | null
   >(null);
   const [pendingInvite, setPendingInvite] = useState(inviteCode);
@@ -941,6 +956,19 @@ export function ZestScreen({
               fat: lastMeal.fat,
               type: lastMeal.type,
             },
+            visibleRecipes(recipes, {
+              query: "",
+              diet: profile.diet,
+              allergies: profile.allergies,
+              favourites: [],
+            }).map(({ id, name, type, kcal, protein, minutes }) => ({
+              id,
+              name,
+              type,
+              kcal,
+              protein,
+              minutes,
+            })),
           );
           if (controller.signal.aborted) return;
           if (answer.correction && lastMeal) {
@@ -966,6 +994,7 @@ export function ZestScreen({
             live: false,
             text: answer.text || "I don’t have a good answer for that one.",
             followups: answer.followups,
+            dishes: resolveDishes(answer.dishes, recipes),
           });
         } catch (error) {
           if (controller.signal.aborted) return;
@@ -1105,6 +1134,10 @@ export function ZestScreen({
                     chooseType(item, item.failedType, "manual")
                   }
                   onEdit={editMeal}
+                  onOpenRecipe={(recipeId) => openSheet({ kind: "recipes", recipeId })}
+                  onLogDish={({ name, kcal, protein, carbs, fat, type }) =>
+                    logRecipe({ name, kcal, protein, carbs, fat, type })
+                  }
                   onCorrect={
                     apiConfigured && !demo
                       ? () => {
@@ -1455,6 +1488,7 @@ export function ZestScreen({
           {sheet?.kind === "recipes" && (
             <RecipesSheet
               scene={scene}
+              initial={sheet.recipeId}
               context={() => {
                 const diary = useDiary.getState();
                 return diaryContext(diary.meals, diary.guide, undefined, new Date(), {
@@ -1477,19 +1511,7 @@ export function ZestScreen({
               }}
               onClose={closeSheet}
               onLimit={() => setSheet({ kind: "paywall", reason: "limit" })}
-              onLog={(fields) => {
-                const before = useDiary.getState().meals;
-                useDiary.getState().add({
-                  ...fields,
-                  id: eventId("recipe"),
-                  date: dayKey(),
-                  time: new Date().toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "2-digit",
-                  }),
-                });
-                celebrateIfNewDay(before);
-              }}
+              onLog={logRecipe}
             />
           )}
           {celebration && (

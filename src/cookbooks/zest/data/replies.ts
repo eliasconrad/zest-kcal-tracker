@@ -80,7 +80,23 @@ export function parseEstimate(raw: string): Estimate | null {
   };
 }
 
-export type Answer = { text: string; followups: string[]; pendingMarker: boolean };
+export type Answer = {
+  text: string;
+  followups: string[];
+  pendingMarker: boolean;
+  /** What follows `#` on the dish lines: a recipe id, or a whole dish line. */
+  dishes: string[];
+};
+
+/** Takes the `# dish` lines out of the prose; one still arriving is hidden until it ends. */
+function splitDishes(text: string) {
+  const dishes: string[] = [];
+  const prose = text.replace(/(^|\n)[ \t]*#[ \t]*([^\n]*)(?=\n|$)/g, (_, start: string, line: string) => {
+    if (line.trim()) dishes.push(line.trim());
+    return start;
+  });
+  return { prose: prose.replace(/\n{3,}/g, "\n\n").trimEnd(), dishes };
+}
 
 /** Splits streamed prose from the trailing `>> a | b | c` follow-up line, even mid-stream. */
 export function parseAnswer(text: string): Answer {
@@ -89,13 +105,17 @@ export function parseAnswer(text: string): Answer {
   if (at < 0) {
     // A partial marker may be arriving ("\n>" or " >"); hide it until it resolves.
     const tail = text.match(/(?:\n>?| >)$/);
+    const body = splitDishes(tail ? text.slice(0, tail.index) : text);
     return {
-      text: tail ? text.slice(0, tail.index).trimEnd() : text,
+      // A trailing space keeps a streaming word's end visible; only the marker is cut.
+      text: /\s$/.test(text) && !tail ? `${body.prose} ` : body.prose,
       followups: [],
       pendingMarker: !!tail,
+      dishes: body.dishes,
     };
   }
-  const prose = text.slice(0, at).trimEnd();
+  const body = splitDishes(text.slice(0, at));
+  const prose = body.prose;
   const line = text.slice(at).replace(/^\s*>>\s*/, "");
   const complete = line.includes("\n");
   const followups = line
@@ -104,7 +124,7 @@ export function parseAnswer(text: string): Answer {
     .map((item) => item.trim().replace(/[.?!]+$/, (m) => (m === "?" ? "?" : m)))
     .filter(Boolean)
     .slice(0, 3);
-  return { text: prose, followups, pendingMarker: !complete };
+  return { text: prose, followups, pendingMarker: !complete, dishes: body.dishes };
 }
 
 /** Diary questions the local engine answers exactly; everything else goes to the model. */

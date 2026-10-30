@@ -50,6 +50,7 @@ test("answer parser hides a half-arrived marker and extracts follow-ups", () => 
     text: "Try a light soup.",
     followups: [],
     pendingMarker: true,
+    dishes: [],
   });
   const done = parseAnswer("Try a light soup.\n>> Soup ideas? | Protein today? | Show my week\n");
   assert.equal(done.text, "Try a light soup.");
@@ -105,4 +106,13 @@ test("a correction reads like a meal line, anything else is not one", () => {
   assert.deepEqual(asked.followups, ["More protein?", "A soup?"]);
   assert.equal(parseCorrection("Try a soup.\n"), null);
   assert.equal(parseCorrection("~ Bowl | 42"), null);
+});
+
+test("dish lines leave the prose and a half-arrived one stays hidden", () => {
+  const done = parseAnswer("Try the soup.\n\n# r12\n# Toast | 300 | 12 | 40 | 9 | 10\n\n>> More? | Less?\n");
+  assert.equal(done.text, "Try the soup.");
+  assert.deepEqual(done.dishes, ["r12", "Toast | 300 | 12 | 40 | 9 | 10"]);
+  assert.deepEqual(done.followups, ["More?", "Less?"]);
+  assert.equal(parseAnswer("Try the soup.\n# r1").text, "Try the soup.");
+  assert.equal(parseAnswer("Plain answer").dishes.length, 0);
 });

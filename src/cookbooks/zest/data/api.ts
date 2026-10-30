@@ -183,10 +183,11 @@ export async function askZest(
   helper?: HelperId,
   history: { role: "user" | "assistant"; text: string }[] = [],
   lastMeal?: Pick<Meal, "name" | "kcal" | "protein" | "carbs" | "fat" | "type">,
+  recipes: { id: string; name: string; type: string; kcal: number; protein: number; minutes: number }[] = [],
 ) {
   const full = await stream(
     "/v1/ask",
-    { question, helper, history, lastMeal, diary: { ...diary, locale: locale() } },
+    { question, helper, history, lastMeal, recipes, diary: { ...diary, locale: locale() } },
     (text) => onAnswer(parseAnswer(text), isCorrection(text)),
     signal,
     40_000,

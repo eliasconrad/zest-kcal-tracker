@@ -157,6 +157,51 @@ export function scannedMeal(value: unknown): ScannedMeal | undefined {
   };
 }
 
+/** Zest's own recipes that fit this person, so a suggestion carries real numbers. */
+export type RecipeChoice = {
+  id: string;
+  name: string;
+  type: string;
+  kcal: number;
+  protein: number;
+  minutes: number;
+};
+
+export function recipeChoices(value: unknown): RecipeChoice[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter(
+      (item): item is RecipeChoice =>
+        typeof item?.id === "string" &&
+        typeof item?.name === "string" &&
+        Number.isFinite(item?.kcal) &&
+        Number.isFinite(item?.protein),
+    )
+    .slice(0, 40)
+    .map((item) => ({
+      id: item.id.slice(0, 12),
+      name: item.name.slice(0, 60),
+      type: String(item.type).slice(0, 12),
+      kcal: item.kcal,
+      protein: item.protein,
+      minutes: Number(item.minutes) || 0,
+    }));
+}
+
+function dishRules(recipes: RecipeChoice[]) {
+  return [
+    "When they ask what to eat or for a recipe, answer in one or two short sentences naming one or two dishes, then add one line per dish, each starting with `# `. These lines become cards with the numbers, so do not repeat the numbers in your sentences.",
+    recipes.length
+      ? `Prefer these recipes, which fit their way of eating; pick what suits the meal they ask about and what is left of today, and write only the id, like \`# ${recipes[0].id}\`:`
+      : "",
+    ...recipes.map((r) => `${r.id}: ${r.name}, ${r.type}, ${r.kcal} kcal, ${r.protein} g protein, ${r.minutes} min`),
+    "If nothing on the list fits, write the dish yourself: `# <dish name> | <kcal> | <protein g> | <carbs g> | <fat g> | <minutes>`.",
+    "Never put a dish name on a line of its own; the card shows it. Use `#` lines for nothing else. The follow-up line stays last.",
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
 function correctionRules(meal: ScannedMeal) {
   const macros = [
     meal.protein !== undefined ? `${meal.protein} g protein` : "",
@@ -176,7 +221,12 @@ function correctionRules(meal: ScannedMeal) {
   ].join("\n");
 }
 
-export function askSystemPrompt(diary: DiaryContext, helper?: unknown, lastMeal?: ScannedMeal) {
+export function askSystemPrompt(
+  diary: DiaryContext,
+  helper?: unknown,
+  lastMeal?: ScannedMeal,
+  recipes: RecipeChoice[] = [],
+) {
   const persona = personaLine(helper);
   return [
     persona
@@ -184,7 +234,8 @@ export function askSystemPrompt(diary: DiaryContext, helper?: unknown, lastMeal?
       : "You are Zest, a food-diary companion living inside a calorie-tracker app.",
     "Answer in two to four short sentences, warm and plain. Use the diary below as the only source for numbers; never invent meals or totals.",
     "You may suggest food ideas or explain nutrition in general terms. No medical claims, no diets, no judgement about the person's body.",
-    "When asked what to eat, name two or three concrete dishes with rough kcal and protein that fit what is left of today. When asked about the conversation so far, use it.",
+    "When asked about the conversation so far, use it.",
+    dishRules(recipes),
     "After the answer, add one final line starting with `>> ` holding up to three short follow-up questions the user might tap, separated by ` | `.",
     "",
     `Daily guide: ${diary.guide} kcal.` +

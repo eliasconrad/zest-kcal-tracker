@@ -19,6 +19,7 @@ import {
   type DiaryContext,
   type MealType,
   chatHistory,
+  recipeChoices,
   scannedMeal,
 } from "./prompts.ts";
 import { createCorrectionFilter, createLineCalibrator } from "./calibrate.ts";
@@ -164,7 +165,10 @@ export default {
       if (!ask.allowed) return json(429, { error: "limit", kind: "asks", limit: ask.limit });
       const lastMeal = scannedMeal(body.lastMeal);
       const messages: ChatMessage[] = [
-        { role: "system", content: askSystemPrompt(body.diary, body.helper, lastMeal) },
+        {
+          role: "system",
+          content: askSystemPrompt(body.diary, body.helper, lastMeal, recipeChoices(body.recipes)),
+        },
         ...chatHistory(body.history),
         { role: "user", content: question },
       ];
