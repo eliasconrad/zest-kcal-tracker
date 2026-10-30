@@ -37,10 +37,15 @@ function message(error: unknown) {
   }
 }
 
-/** The Apple button is only shown where the system offers it. */
+/**
+ * The Apple button is only shown where the system offers it. A build signed
+ * without the Sign in with Apple entitlement sets EXPO_PUBLIC_APPLE_SIGNIN=0,
+ * because the system still offers the button there and then fails on the tap.
+ */
 export function AppleButton({ onDone, onError }: { onDone: () => void; onError: (text: string) => void }) {
   const [available, setAvailable] = useState(false);
   useEffect(() => {
+    if (process.env.EXPO_PUBLIC_APPLE_SIGNIN === "0") return;
     void AppleAuthentication.isAvailableAsync().then(setAvailable);
   }, []);
   if (!available) return null;

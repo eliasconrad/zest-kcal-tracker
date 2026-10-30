@@ -1,0 +1,172 @@
+{
+  "summary": {
+    "model": "mistralai/mistral-small-3.2-24b-instruct",
+    "prompt": "tuned",
+    "dishes": 30,
+    "parsed": 30,
+    "kcalMaeRaw": 115,
+    "kcalMaeCalibrated": 115,
+    "kcalBiasRaw": 9,
+    "kcalMapePercent": 40,
+    "proteinMae": 10,
+    "carbsMae": 14,
+    "fatMae": 8,
+    "costPer1000Scans": 0.112,
+    "meanTokens": [
+      1072,
+      48
+    ]
+  },
+  "rows": [
+    {
+      "id": "dish_1560961385",
+      "truth": 249.519989,
+      "text": "Eggs, potatoes, broccoli and tomatoes | 450 | 28 | 36 | 24\nAbout 100 g potatoes, 50 g broccoli, 100 g tomatoes and two eggs. A colorful plate."
+    },
+    {
+      "id": "dish_1568401233",
+      "truth": 490.393372,
+      "text": "Chicken salad with carrots | 450 | 30 | 30 | 25\nAbout 100 g chicken, 50 g carrots, and 100 g salad. Colorful and fresh."
+    },
+    {
+      "id": "dish_1566850142",
+      "truth": 464.951172,
+      "text": "Chicken salad | 350 | 30 | 15 | 20\nAbout 150 g chicken, 50 g vegetables and a light dressing."
+    },
+    {
+      "id": "dish_1567789230",
+      "truth": 689.428406,
+      "text": "Scrambled eggs, sausages and salad | 580 | 38 | 20 | 43\nAbout 150 g eggs, 120 g sausages and 100 g salad. A hearty meal."
+    },
+    {
+      "id": "dish_1561654756",
+      "truth": 256.980011,
+      "text": "Scrambled eggs, potatoes, and olives | 450 | 18 | 42 | 22\nAbout 150 g potatoes, 100 g eggs, and 30 g olives. A savory combination."
+    },
+    {
+      "id": "dish_1563909580",
+      "truth": 544.311523,
+      "text": "Mixed lunch plate | 500 | 20 | 50 | 25\nAbout 100 g cheese, 100 g green beans, 100 g spinach, 100 g quinoa, and 50 g bread."
+    },
+    {
+      "id": "dish_1562012048",
+      "truth": 278.973877,
+      "text": "Grilled chicken | 170 | 30 | 0 | 4\nAbout 100 g chicken with a little oil."
+    },
+    {
+      "id": "dish_1558629444",
+      "truth": 225.459,
+      "text": "Roasted almonds | 400 | 15 | 15 | 33\nAbout 30 g almonds, a small handful. A crunchy snack."
+    },
+    {
+      "id": "dish_1559678457",
+      "truth": 624.236084,
+      "text": "Beef, greens and bulgur | 450 | 36 | 42 | 18\nAbout 100 g beef, 100 g greens, and 100 g bulgur. Fresh and colorful."
+    },
+    {
+      "id": "dish_1567526814",
+      "truth": 408.25,
+      "text": "Scrambled eggs with vegetables | 280 | 18 | 10 | 20\nAbout 150 g eggs, 50 g tomatoes, and 50 g sweet potatoes."
+    },
+    {
+      "id": "dish_1565640576",
+      "truth": 307.28656,
+      "text": "Pork, rice and salad | 500 | 30 | 40 | 25\nAbout 100 g pork, 50 g rice, and a generous handful of salad."
+    },
+    {
+      "id": "dish_1560961012",
+      "truth": 191.699997,
+      "text": "Bagel with cream cheese | 300 | 10 | 45 | 12\nOne medium bagel, about 100 g, with 30 g cream cheese."
+    },
+    {
+      "id": "dish_1562691409",
+      "truth": 225.98999,
+      "text": "Scrambled eggs and sweet potatoes | 270 | 12 | 28 | 12\nAbout 100 g scrambled eggs and 100 g sweet potatoes. A colorful plate."
+    },
+    {
+      "id": "dish_1566328724",
+      "truth": 275.549988,
+      "text": "Tofu cubes | 120 | 11 | 3 | 7\nAbout 150 g tofu, lightly seasoned. A light and healthy choice."
+    },
+    {
+      "id": "dish_1558722780",
+      "truth": 142.838989,
+      "text": "Mixed vegetables and fruit | 180 | 5 | 35 | 4\nAbout 100 g of each component. Colorful and fresh."
+    },
+    {
+      "id": "dish_1561577177",
+      "truth": 234.606445,
+      "text": "Salmon, potatoes, tofu and greens | 420 | 30 | 25 | 25\nAbout 100 g salmon, 100 g potatoes, 50 g tofu and 50 g greens."
+    },
+    {
+      "id": "dish_1561739623",
+      "truth": 156.240005,
+      "text": "Broccoli, carrots and tofu | 180 | 10 | 12 | 10\nAbout 150 g of vegetables and 50 g of tofu. Fresh and colorful."
+    },
+    {
+      "id": "dish_1559849412",
+      "truth": 352.641022,
+      "text": "Almonds | 160 | 6 | 5 | 14\nAbout 30 g of almonds, a small handful."
+    },
+    {
+      "id": "dish_1562603626",
+      "truth": 201.759506,
+      "text": "Fruit and pastry | 320 | 4 | 64 | 8\nAbout 200 g of fruit and one small pastry."
+    },
+    {
+      "id": "dish_1566587714",
+      "truth": 347.536987,
+      "text": "Chicken and greens | 350 | 36 | 10 | 18\nAbout 100 g chicken and 150 g greens. A light meal."
+    },
+    {
+      "id": "dish_1567537212",
+      "truth": 432.506653,
+      "text": "Beef and broccoli | 320 | 34 | 10 | 16\nAbout 100 g beef and 150 g broccoli. A light and healthy choice."
+    },
+    {
+      "id": "dish_1558633221",
+      "truth": 176.878998,
+      "text": "Mixed vegetables and fruits | 200 | 5 | 46 | 2\nAbout 150 g vegetables and 100 g fruits. Colorful and fresh."
+    },
+    {
+      "id": "dish_1562009182",
+      "truth": 306.229919,
+      "text": "Salad with roasted vegetables | 250 | 10 | 15 | 15\nAbout 150 g of mixed greens and roasted vegetables. Fresh and colorful."
+    },
+    {
+      "id": "dish_1558376984",
+      "truth": 671.67804,
+      "text": "Mixed fruit and nuts | 450 | 12 | 43 | 25\nOne apple, 20 g almonds, 20 g dried fruit, and 10 g sausage."
+    },
+    {
+      "id": "dish_1563550614",
+      "truth": 132.824387,
+      "text": "Scrambled eggs and toast | 290 | 15 | 21 | 16\nAbout 100 g scrambled eggs and 30 g toast. A simple meal."
+    },
+    {
+      "id": "dish_1563395510",
+      "truth": 415.627411,
+      "text": "Grilled chicken with vegetables | 450 | 45 | 20 | 22\nAbout 150 g chicken, 100 g vegetables, and a small piece of bread."
+    },
+    {
+      "id": "dish_1563302420",
+      "truth": 435.626282,
+      "text": "Chicken, potatoes, carrots, mushrooms | 450 | 30 | 40 | 20\nAbout 100 g chicken, 100 g potatoes, 50 g carrots, 50 g mushrooms. A balanced plate."
+    },
+    {
+      "id": "dish_1565021104",
+      "truth": 291.309021,
+      "text": "Waffles with toppings | 450 | 12 | 50 | 22\nAbout 150 g waffles, 30 g toppings and 30 g butter."
+    },
+    {
+      "id": "dish_1566331914",
+      "truth": 589.501648,
+      "text": "Shrimp, vegetables and rice | 450 | 25 | 40 | 20\nAbout 100 g shrimp, 100 g vegetables, 50 g rice and 10 g sauce."
+    },
+    {
+      "id": "dish_1558122740",
+      "truth": 260.149994,
+      "text": "Mixed lunch plate | 450 | 18 | 60 | 16\nAbout 100 g potatoes, 50 g spinach, 30 g carrots, 20 g bacon, 100 g grapes, and one apple."
+    }
+  ]
+}

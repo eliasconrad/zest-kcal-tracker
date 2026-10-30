@@ -15,7 +15,7 @@
   ],
   "vars": {
     // Open-weights vision model on OpenRouter. Swap freely; the app never sees it.
-    "OPENROUTER_MODEL": "qwen/qwen2.5-vl-72b-instruct",
+    "OPENROUTER_MODEL": "google/gemma-4-26b-a4b-it",
     "OPENROUTER_BASE_URL": "https://openrouter.ai/api/v1",
     "ZEST_MAX_IMAGE_BYTES": "6000000",
     "ZEST_BUNDLE_ID": "eu.eliasconrad.zest",

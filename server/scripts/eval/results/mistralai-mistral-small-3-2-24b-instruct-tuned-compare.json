@@ -1,0 +1,172 @@
+{
+  "summary": {
+    "model": "mistralai/mistral-small-3.2-24b-instruct",
+    "prompt": "tuned",
+    "dishes": 30,
+    "parsed": 30,
+    "kcalMaeRaw": 87,
+    "kcalMaeCalibrated": 86,
+    "kcalBiasRaw": 52,
+    "kcalMapePercent": 33,
+    "proteinMae": 7,
+    "carbsMae": 13,
+    "fatMae": 6,
+    "costPer1000Scans": 0.09,
+    "meanTokens": [
+      1072,
+      47
+    ]
+  },
+  "rows": [
+    {
+      "id": "dish_1568044634",
+      "truth": 413.19339,
+      "text": "Couscous with vegetables and sauce | 450 | 12 | 70 | 12\nAbout 150 g couscous, 100 g vegetables and 30 g sauce."
+    },
+    {
+      "id": "dish_1558550218",
+      "truth": 230.001999,
+      "text": "Apple, grapes and almonds | 380 | 7 | 42 | 21\nAbout 150 g apple, 100 g grapes and 30 g almonds. A crunchy mix."
+    },
+    {
+      "id": "dish_1563565454",
+      "truth": 350.788818,
+      "text": "Chicken, greens and fruit | 350 | 30 | 25 | 18\nAbout 100 g chicken, 50 g greens and 100 g fruit. Fresh and light."
+    },
+    {
+      "id": "dish_1558380181",
+      "truth": 374.936005,
+      "text": "Apple and grapes with almonds | 300 | 6 | 60 | 10\nOne apple, 50 g grapes and 20 g almonds. A fresh mix."
+    },
+    {
+      "id": "dish_1565724620",
+      "truth": 473.953308,
+      "text": "Chicken, potatoes and broccoli | 520 | 45 | 44 | 20\nAbout 150 g chicken, 100 g potatoes, and 100 g broccoli. A hearty meal."
+    },
+    {
+      "id": "dish_1562963289",
+      "truth": 349.917969,
+      "text": "Pasta salad and pizza | 650 | 24 | 74 | 27\nAbout 150 g pasta salad and two slices of pizza."
+    },
+    {
+      "id": "dish_1565797723",
+      "truth": 202.928879,
+      "text": "Mixed salad with fruit | 250 | 6 | 44 | 7\nAbout 100 g of greens, 50 g of watermelon, 30 g of strawberries, 20 g of blueberries, and 30 g of cheese. A fresh mix."
+    },
+    {
+      "id": "dish_1562875273",
+      "truth": 495.910278,
+      "text": "Chicken, greens and pizza | 650 | 50 | 40 | 37\nAbout 150 g chicken, 100 g greens, and two slices of pizza."
+    },
+    {
+      "id": "dish_1562690112",
+      "truth": 428.202332,
+      "text": "Salad with chicken and bacon | 350 | 30 | 12 | 22\nAbout 100 g chicken, 30 g bacon, and a generous salad."
+    },
+    {
+      "id": "dish_1563220767",
+      "truth": 265.894379,
+      "text": "Chicken pieces | 200 | 22 | 2 | 12\nAbout 100 g of chicken pieces with some herbs."
+    },
+    {
+      "id": "dish_1562946006",
+      "truth": 535.984009,
+      "text": "Scrambled eggs and meatballs | 520 | 38 | 12 | 38\nAbout 150 g eggs and 100 g meatballs. A hearty meal."
+    },
+    {
+      "id": "dish_1560456853",
+      "truth": 405.703369,
+      "text": "Chicken, greens and rice | 600 | 40 | 50 | 30\nAbout 150 g chicken, 100 g rice, and 100 g greens. Fresh and colorful."
+    },
+    {
+      "id": "dish_1562173247",
+      "truth": 290.550018,
+      "text": "Fried rice | 300 | 8 | 46 | 7\nAbout 150 g of fried rice with a little oil."
+    },
+    {
+      "id": "dish_1560526514",
+      "truth": 183.252747,
+      "text": "Mixed salad with potatoes | 350 | 10 | 40 | 14\nAbout 100 g potatoes and a generous serving of greens."
+    },
+    {
+      "id": "dish_1563219035",
+      "truth": 410.209686,
+      "text": "Mixed plate | 450 | 18 | 56 | 16\nAbout 100 g rice, 50 g meat, 30 g cheese, 20 g olives, 30 g cucumber, 30 g apple, and a small piece of bread."
+    },
+    {
+      "id": "dish_1562777099",
+      "truth": 303.718628,
+      "text": "Scrambled eggs with fruit and olives | 350 | 18 | 30 | 18\nAbout 150 g scrambled eggs, 50 g fruit and 20 g olives. A colorful plate."
+    },
+    {
+      "id": "dish_1562603598",
+      "truth": 175.259506,
+      "text": "Mixed fruit and pastry | 300 | 4 | 60 | 7\nAbout 100 g of fruit and 50 g of pastry. A sweet treat."
+    },
+    {
+      "id": "dish_1565811390",
+      "truth": 205.092285,
+      "text": "Lentils, greens and chicken | 380 | 28 | 32 | 16\nAbout 100 g lentils, 100 g greens and 50 g chicken. Fresh and light."
+    },
+    {
+      "id": "dish_1558725403",
+      "truth": 289.050018,
+      "text": "Roasted peanuts | 200 | 7 | 5 | 17\nAbout 30 g of roasted peanuts. A light and crunchy snack."
+    },
+    {
+      "id": "dish_1566933226",
+      "truth": 245.449509,
+      "text": "Chicken and polenta | 350 | 30 | 20 | 18\nAbout 100 g chicken and 50 g polenta. A simple dish."
+    },
+    {
+      "id": "dish_1561148042",
+      "truth": 370.755463,
+      "text": "Mixed vegetables and meat | 450 | 24 | 40 | 22\nAbout 150 g vegetables, 100 g meat, and 50 g cheese. Colorful and varied."
+    },
+    {
+      "id": "dish_1561576737",
+      "truth": 357.472565,
+      "text": "Mixed vegetables and chicken salad | 350 | 28 | 22 | 19\nAbout 150 g of mixed vegetables and 100 g of chicken. Fresh and colorful."
+    },
+    {
+      "id": "dish_1566847043",
+      "truth": 434.877106,
+      "text": "Chicken and zucchini | 250 | 30 | 10 | 10\nAbout 150 g chicken and 100 g zucchini. A light and fresh meal."
+    },
+    {
+      "id": "dish_1562183151",
+      "truth": 108.392403,
+      "text": "Mixed vegetables | 120 | 6 | 15 | 5\nAbout 200 g of various vegetables, lightly cooked. Fresh and colorful."
+    },
+    {
+      "id": "dish_1558725786",
+      "truth": 113.527,
+      "text": "Pineapple slices | 105 | 1 | 27 | 0\nTwo slices, about 120 g in total. Sweet and juicy."
+    },
+    {
+      "id": "dish_1565210009",
+      "truth": 263.816223,
+      "text": "Chicken casserole and vegetables | 350 | 28 | 22 | 18\nAbout 150 g of chicken casserole and 100 g of vegetables. A light meal."
+    },
+    {
+      "id": "dish_1563897087",
+      "truth": 102.440002,
+      "text": "Broccoli and bacon salad | 120 | 10 | 6 | 7\nAbout 100 g of broccoli and a small handful of bacon bits."
+    },
+    {
+      "id": "dish_1562777566",
+      "truth": 263.003998,
+      "text": "Toast with jam | 270 | 4 | 55 | 3\nOne slice of toast with two teaspoons of jam. A quick bite."
+    },
+    {
+      "id": "dish_1560973958",
+      "truth": 145.313232,
+      "text": "Lentil and arugula salad | 300 | 16 | 36 | 8\nAbout 150 g lentils and 100 g arugula. Fresh and light."
+    },
+    {
+      "id": "dish_1561580406",
+      "truth": 203.281494,
+      "text": "Pasta salad | 350 | 14 | 44 | 10\nAbout 150 g pasta with vegetables and dressing."
+    }
+  ]
+}

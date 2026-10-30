@@ -1,0 +1,172 @@
+{
+  "summary": {
+    "model": "qwen/qwen3.5-9b",
+    "prompt": "tuned",
+    "dishes": 30,
+    "parsed": 28,
+    "kcalMaeRaw": 91,
+    "kcalMaeCalibrated": 100,
+    "kcalBiasRaw": 39,
+    "kcalMapePercent": 38,
+    "proteinMae": 10,
+    "carbsMae": 15,
+    "fatMae": 7,
+    "costPer1000Scans": 0.191,
+    "meanTokens": [
+      960,
+      197
+    ]
+  },
+  "rows": [
+    {
+      "id": "dish_1558550218",
+      "truth": 230.001999,
+      "text": ""
+    },
+    {
+      "id": "dish_1568044634",
+      "truth": 413.19339,
+      "text": ""
+    },
+    {
+      "id": "dish_1563565454",
+      "truth": 350.788818,
+      "text": "Spinach salad with corn and bread | 340 | 12 | 38 | 16\n\nAbout 150 g spinach, 80 g corn, and two pieces of bread. A light lunch."
+    },
+    {
+      "id": "dish_1565724620",
+      "truth": 473.953308,
+      "text": "Chicken, potatoes and vegetables | 480 | 35 | 28 | 31\nAbout 120 g chicken, 150 g potatoes and 150 g mixed vegetables. A balanced lunch."
+    },
+    {
+      "id": "dish_1565797723",
+      "truth": 202.928879,
+      "text": "Salad, fruit and scrambled eggs | 340 | 16 | 28 | 25\n\nAbout 100 g salad, 100 g fruit and 80 g eggs. A light lunch."
+    },
+    {
+      "id": "dish_1558380181",
+      "truth": 374.936005,
+      "text": "Apple, grapes and almonds | 320 | 4 | 65 | 10\nAbout one apple (180 g), a small handful of grapes (80 g) and a few almonds (60 g). A sweet snack."
+    },
+    {
+      "id": "dish_1562963289",
+      "truth": 349.917969,
+      "text": "Pizza and coleslaw | 420 | 18 | 35 | 26\nOne slice of pizza and a small side of coleslaw. A light lunch."
+    },
+    {
+      "id": "dish_1562690112",
+      "truth": 428.202332,
+      "text": "Bacon, sausage and salad | 480 | 26 | 14 | 35\n\nAbout 100 g bacon, 150 g sausage pieces and a small side salad."
+    },
+    {
+      "id": "dish_1562875273",
+      "truth": 495.910278,
+      "text": "Chicken, green beans and pizza | 480 | 36 | 28 | 31\nAbout 150 g chicken, 100 g green beans, and two slices of pizza. A balanced lunch."
+    },
+    {
+      "id": "dish_1562946006",
+      "truth": 535.984009,
+      "text": "Scrambled eggs and sausages | 380 | 24 | 1 | 36\nAbout 150 g of scrambled eggs and five small sausages. A hearty portion."
+    },
+    {
+      "id": "dish_1563220767",
+      "truth": 265.894379,
+      "text": "Chicken pieces | 190 | 38 | 2 | 5\n\nAbout 6 small pieces, roughly 100 g total. A light portion of meat."
+    },
+    {
+      "id": "dish_1560456853",
+      "truth": 405.703369,
+      "text": "Chicken, rice and broccoli | 580 | 42 | 61 | 13\nAbout 150 g chicken, 180 g rice, 100 g broccoli. Nicely balanced."
+    },
+    {
+      "id": "dish_1560526514",
+      "truth": 183.252747,
+      "text": "Mixed fruit and potato salad | 320 | 4 | 58 | 16\nAbout 150 g mixed greens, 100 g pineapple, and 100 g roasted potatoes. A colorful side dish."
+    },
+    {
+      "id": "dish_1562173247",
+      "truth": 290.550018,
+      "text": "Scrambled eggs with vegetables | 210 | 13 | 4 | 17\nA small portion, about 150 g of eggs and veggies."
+    },
+    {
+      "id": "dish_1562777099",
+      "truth": 303.718628,
+      "text": "Scrambled eggs with potatoes and fruit | 420 | 18 | 35 | 26\n\nAbout 120 g eggs, 150 g potatoes, and some strawberries. A colorful mix."
+    },
+    {
+      "id": "dish_1563219035",
+      "truth": 410.209686,
+      "text": "Pizza slice, rice and vegetables | 420 | 18 | 52 | 16\nOne pizza slice, about 100 g rice and mixed vegetables. A balanced lunch."
+    },
+    {
+      "id": "dish_1565811390",
+      "truth": 205.092285,
+      "text": "Chicken, buckwheat and bok choy | 420 | 35 | 48 | 16\nAbout 100 g chicken, 120 g buckwheat and 100 g bok choy. A balanced lunch."
+    },
+    {
+      "id": "dish_1562603598",
+      "truth": 175.259506,
+      "text": "Fruit and bacon | 245 | 10 | 38 | 7\nAbout 100 g mixed berries, two slices of bacon, and some fruit. A light lunch."
+    },
+    {
+      "id": "dish_1558725403",
+      "truth": 289.050018,
+      "text": "Almonds | 170 | 6 | 9 | 15\nAbout 20 almonds, roughly 30 g. A healthy snack."
+    },
+    {
+      "id": "dish_1566933226",
+      "truth": 245.449509,
+      "text": "Fried chicken leg and couscous | 420 | 35 | 48 | 19\n\nAbout one fried chicken drumstick (100 g) and a small portion of yellow couscous (120 g)."
+    },
+    {
+      "id": "dish_1561148042",
+      "truth": 370.755463,
+      "text": "Chicken, rice and salad | 420 | 35 | 48 | 16\nAbout 120 g chicken, 80 g rice, and a small side of green beans and salad. A balanced lunch."
+    },
+    {
+      "id": "dish_1561576737",
+      "truth": 357.472565,
+      "text": "Roasted vegetables and salad | 320 | 8 | 45 | 16\nAbout 200 g roasted cauliflower, peppers, and zucchini with a small side of greens."
+    },
+    {
+      "id": "dish_1566847043",
+      "truth": 434.877106,
+      "text": "Chicken and zucchini | 340 | 28 | 16 | 27\nAbout 120 g chicken pieces and 150 g sliced zucchini. A light lunch."
+    },
+    {
+      "id": "dish_1558725786",
+      "truth": 113.527,
+      "text": "Corn on the cob | 130 | 4 | 28 | 1\nTwo small pieces, about 150 g total. A light and sweet snack."
+    },
+    {
+      "id": "dish_1562183151",
+      "truth": 108.392403,
+      "text": "Green beans, broccoli and mushrooms | 145 | 6 | 12 | 8\nA small portion of vegetables, about 200 g total. Light and fresh."
+    },
+    {
+      "id": "dish_1565210009",
+      "truth": 263.816223,
+      "text": "Chicken, broccoli and green beans | 380 | 42 | 16 | 27\n\nAbout 150 g chicken, 100 g broccoli and 100 g green beans. A simple lunch."
+    },
+    {
+      "id": "dish_1563897087",
+      "truth": 102.440002,
+      "text": "Roasted broccoli and cauliflower | 140 | 5 | 18 | 6\nA small portion, about 200 g of vegetables with a little oil."
+    },
+    {
+      "id": "dish_1562777566",
+      "truth": 263.003998,
+      "text": "Toast with jam | 180 | 5 | 32 | 4\n\nOne slice of toast, about 60 g, with a thin layer of jam."
+    },
+    {
+      "id": "dish_1560973958",
+      "truth": 145.313232,
+      "text": "Quinoa and arugula salad | 280 | 10 | 35 | 14\n\nAbout 150 g quinoa and 100 g greens with a light vinaigrette."
+    },
+    {
+      "id": "dish_1561580406",
+      "truth": 203.281494,
+      "text": "Chicken penne with greens | 480 | 38 | 46 | 16\nAbout 120 g pasta, 80 g chicken, greens and dressing. A balanced lunch."
+    }
+  ]
+}

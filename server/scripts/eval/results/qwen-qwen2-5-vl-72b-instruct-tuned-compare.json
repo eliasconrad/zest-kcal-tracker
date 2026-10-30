@@ -1,0 +1,172 @@
+{
+  "summary": {
+    "model": "qwen/qwen2.5-vl-72b-instruct",
+    "prompt": "tuned",
+    "dishes": 30,
+    "parsed": 29,
+    "kcalMaeRaw": 91,
+    "kcalMaeCalibrated": 89,
+    "kcalBiasRaw": 60,
+    "kcalMapePercent": 38,
+    "proteinMae": 9,
+    "carbsMae": 11,
+    "fatMae": 5,
+    "costPer1000Scans": 0.623,
+    "meanTokens": [
+      1026,
+      43
+    ]
+  },
+  "rows": [
+    {
+      "id": "dish_1558550218",
+      "truth": 230.001999,
+      "text": "\nFruit and nuts | 250 | 4 | 36 | 12\nOne apple, 15 almonds, 10 grapes. A light and healthy choice."
+    },
+    {
+      "id": "dish_1568044634",
+      "truth": 413.19339,
+      "text": "Eggs with sweet potato | 350 | 20 | 30 | 10\nAbout 150 g eggs, 100 g sweet potato, and watermelon cubes."
+    },
+    {
+      "id": "dish_1563565454",
+      "truth": 350.788818,
+      "text": "Chicken, corn and greens | 350 | 25 | 30 | 10\nAbout 100 g chicken, 100 g corn, and 150 g greens."
+    },
+    {
+      "id": "dish_1565724620",
+      "truth": 473.953308,
+      "text": "Chicken, potatoes and broccoli | 450 | 30 | 40 | 14\nAbout 150 g chicken, 150 g potatoes, 100 g broccoli. A hearty lunch."
+    },
+    {
+      "id": "dish_1565797723",
+      "truth": 202.928879,
+      "text": "Fruit salad with eggs | 320 | 15 | 35 | 10\nAbout 150 g mixed fruit, 100 g greens, and two boiled eggs."
+    },
+    {
+      "id": "dish_1558380181",
+      "truth": 374.936005,
+      "text": "\nApple, grapes, almonds | 280 | 6 | 36 | 14\nOne apple, 100 g grapes, 30 g almonds. A healthy snack."
+    },
+    {
+      "id": "dish_1562963289",
+      "truth": 349.917969,
+      "text": "Pizza and pasta salad | 520 | 20 | 56 | 16\nTwo slices pizza, about 150 g, and 150 g pasta salad."
+    },
+    {
+      "id": "dish_1562875273",
+      "truth": 495.910278,
+      "text": "Chicken, greens, pizza | 550 | 30 | 40 | 22\nAbout 150 g chicken, 100 g greens, one slice pizza. Enjoy!"
+    },
+    {
+      "id": "dish_1562946006",
+      "truth": 535.984009,
+      "text": "Scrambled eggs and meatballs | 400 | 25 | 15 | 20\nAbout 150 g eggs and 100 g meatballs. A hearty lunch."
+    },
+    {
+      "id": "dish_1563220767",
+      "truth": 265.894379,
+      "text": "Chicken pieces | 280 | 40 | 0 | 12\nAbout 150 g chicken, likely grilled or baked."
+    },
+    {
+      "id": "dish_1560456853",
+      "truth": 405.703369,
+      "text": "Caesar salad with chicken | 550 | 35 | 40 | 20\nAbout 100 g chicken, 150 g salad, 100 g rice, 100 g broccoli."
+    },
+    {
+      "id": "dish_1560526514",
+      "truth": 183.252747,
+      "text": "Vegetable salad with fruit | 350 | 10 | 40 | 12\nAbout 200 g mixed vegetables, 100 g fruit, some dressing. Fresh mix."
+    },
+    {
+      "id": "dish_1562690112",
+      "truth": 428.202332,
+      "text": "Sausage, spinach and bacon | 450 | 25 | 20 | 25\nAbout 150 g sausage, 100 g spinach mix, and 50 g bacon."
+    },
+    {
+      "id": "dish_1562173247",
+      "truth": 290.550018,
+      "text": "Fried chicken | 320 | 20 | 10 | 20\nAbout 150 g chicken pieces, likely breaded and fried."
+    },
+    {
+      "id": "dish_1563219035",
+      "truth": 410.209686,
+      "text": "Chicken with rice and veggies | 520 | 35 | 40 | 18\nAbout 150 g chicken, 150 g rice, 100 g veggies, 50 g pizza."
+    },
+    {
+      "id": "dish_1562777099",
+      "truth": 303.718628,
+      "text": "Scrambled eggs with potatoes | 420 | 20 | 36 | 16\nAbout 150 g eggs, 150 g potatoes, some berries and pickles."
+    },
+    {
+      "id": "dish_1565811390",
+      "truth": 205.092285,
+      "text": "Lentils, chicken and greens | 450 | 30 | 40 | 10\nAbout 100 g lentils, 100 g chicken, and 150 g greens."
+    },
+    {
+      "id": "dish_1562603598",
+      "truth": 175.259506,
+      "text": "Fruit and waffles | 350 | 7 | 56 | 9\nAbout 150 g fruit and three waffle pieces. Sweet and colorful."
+    },
+    {
+      "id": "dish_1566933226",
+      "truth": 245.449509,
+      "text": "Chicken drumstick and couscous | 350 | 25 | 36 | 10\nAbout 100 g chicken and 150 g couscous. A colorful lunch."
+    },
+    {
+      "id": "dish_1558725403",
+      "truth": 289.050018,
+      "text": "Almonds | 240 | 9 | 9 | 21\nAbout 30 almonds, roughly 30 g. A healthy snack."
+    },
+    {
+      "id": "dish_1561148042",
+      "truth": 370.755463,
+      "text": "Vegetable medley | 380 | 18 | 36 | 14\nAbout 150 g mixed greens, 100 g beans, 100 g other veggies, some cheese."
+    },
+    {
+      "id": "dish_1561576737",
+      "truth": 357.472565,
+      "text": "Vegetable plate with dressing | 420 | 15 | 36 | 22\nAbout 200 g mixed vegetables and a spoonful of creamy dressing."
+    },
+    {
+      "id": "dish_1558725786",
+      "truth": 113.527,
+      "text": "Not a meal | 0 | ?\nThe image shows cut fruits, but no other food components are visible."
+    },
+    {
+      "id": "dish_1566847043",
+      "truth": 434.877106,
+      "text": "Pork with zucchini | 380 | 30 | 12 | 16\nAbout 150 g pork and 200 g zucchini, with some oil."
+    },
+    {
+      "id": "dish_1562183151",
+      "truth": 108.392403,
+      "text": "Vegetable medley | 220 | 10 | 20 | 12\nAbout 250 g mixed vegetables, lightly dressed. A fresh choice."
+    },
+    {
+      "id": "dish_1565210009",
+      "truth": 263.816223,
+      "text": "Chicken stir-fry | 450 | 35 | 20 | 15\nAbout 150 g chicken, 100 g vegetables, some sauce. A hearty lunch."
+    },
+    {
+      "id": "dish_1563897087",
+      "truth": 102.440002,
+      "text": "Broccoli and cauliflower | 120 | 6 | 16 | 4\nAbout 200 g mixed vegetables, steamed. A light choice."
+    },
+    {
+      "id": "dish_1562777566",
+      "truth": 263.003998,
+      "text": "Toast with jam | 240 | 5 | 45 | 5\nOne slice of toast, about 80 g with jam spread."
+    },
+    {
+      "id": "dish_1560973958",
+      "truth": 145.313232,
+      "text": "Lentil salad | 320 | 15 | 40 | 8\nAbout 150 g lentils and 100 g arugula, with some dressing."
+    },
+    {
+      "id": "dish_1561580406",
+      "truth": 203.281494,
+      "text": "Pasta salad | 350 | 12 | 40 | 12\nAbout 150 g pasta, greens, and a light dressing."
+    }
+  ]
+}

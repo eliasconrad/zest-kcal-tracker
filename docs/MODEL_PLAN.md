@@ -25,33 +25,26 @@ Two free open models were tried as well. `gemma-4-31b:free` answered 429 to all 
 
 Costs are real OpenRouter charges reported per request. Failed requests count as zero in the mean, so runs with failures read slightly low.
 
-## Cheaper models to compare (prices checked October 30, 2026, per million tokens, input / output)
+## Model choice (measured October 30, 2026)
 
-| Model | Price | Note |
-| --- | --- | --- |
-| `qwen/qwen2.5-vl-72b-instruct` | $0.80 / $1.00 | current, measured above |
-| `mistralai/mistral-small-3.2-24b-instruct` | $0.075 / $0.20 | open weights |
-| `google/gemma-4-26b-a4b-it` | $0.09 / $0.30 | open weights |
-| `meta-llama/llama-4-scout` | $0.10 / $0.30 | open weights |
-| `qwen/qwen3.5-9b` | $0.17 / $0.25 | open weights |
-| `qwen/qwen3-vl-8b-instruct` | $0.25 / $0.75 | open weights |
+Same prompt, same weighed Nutrition5k dishes. Tuning set: the first 30 dishes. Held out: the next 30, never used to change the prompt.
 
-None of them is measured yet. The free Gemma 4 answered only 3 of 20 dishes before its rate limit, which proves nothing about accuracy. `server/scripts/eval/compare.sh` scores all six on the same 30 dishes once the account has credit. The model only changes if it is not worse on error. Text answers can use a cheaper model through `OPENROUTER_CHAT_MODEL`.
+| Model | Price per million tokens | Tuning set: error kcal (%) | Held out: error kcal (%) | Bias kcal, tuning / held out | Protein / carbs / fat error g, held out | Cost per 1,000 scans |
+| --- | --- | --- | --- | --- | --- | --- |
+| **`google/gemma-4-26b-a4b-it` (now in use)** | $0.09 / $0.30 | 83 (32) | 106 (34) | +11 / -14 | 10 / 12 / 7 | **$0.065** |
+| `qwen/qwen2.5-vl-72b-instruct` (before) | $0.80 / $1.00 | 91 (38) | 102 (36) | +60 / +22 | 9 / 12 / 8 | $0.62 |
+| `mistralai/mistral-small-3.2-24b-instruct` | $0.075 / $0.20 | 87 (33) | 115 (40) | +52 / +9 | 10 / 14 / 8 | $0.11 |
+| `qwen/qwen3.5-9b` (28 of 30 scored) | $0.17 / $0.25 | 91 (38) | not run | +39 | | $0.19 |
+| `meta-llama/llama-4-scout` | $0.10 / $0.30 | 112 (47) | not run | +76 | | $0.21 |
+| `qwen/qwen3-vl-8b-instruct` | $0.25 / $0.75 | 156 (65) | not run | +146 | | $0.20 |
 
-## Blocked: the OpenRouter account has no credit
+Gemma and Qwen are level on accuracy within noise; Gemma costs a tenth and has the smaller bias, so it is the model. It is open weights. The older table above has Qwen at 110 kcal on the same dishes and this rerun at 91, so differences of this size between runs are noise.
 
-The account shows 0 credits and $0.16 used. Paid requests now return HTTP 402. Until it is topped up, scans in production fail and show the failure state. Five dollars buys about 8,000 scans at the measured price. After topping up, run:
+Two ways of asking were tried on Gemma on the tuning set (`scripts/eval/experiment.mjs`) and dropped: the median of three calls (85 kcal against 84, at three times the cost) and listing components with grams before the total (93 kcal). Neither beats one plain call.
 
-```bash
-cd server
-export NODE_USE_ENV_PROXY=1   # only behind a proxy
-node --experimental-strip-types scripts/eval/run.mjs --prompt tuned --tag heldout --offset 30 --concurrency 2
-for m in qwen/qwen3-vl-30b-a3b-instruct meta-llama/llama-4-scout google/gemma-3-27b-it mistralai/mistral-small-3.2-24b-instruct; do
-  node --experimental-strip-types scripts/eval/run.mjs --model "$m" --prompt tuned --concurrency 2
-done
-```
+**Reading it honestly:** a scan is an estimate, off by about a third of the dish's calories on this data. Nutrition5k plates are small and shot from straight above, so a phone photo of a full dinner can behave differently. What would improve it next is not another prompt but real data: photos with weighed truth from the app, and the person's own corrections.
 
-Prices listed by OpenRouter on October 30, 2026, per million tokens in and out: qwen3-vl-30b $0.15 / $0.60, llama-4-scout $0.10 / $0.30, gemma-3-27b $0.08 / $0.35, mistral-small-3.2 $0.075 / $0.20. The current model lists at $0.80 / $1.00.
+Through the Worker, Gemma named sample plates in the person's language, refused an illustration as "Not a meal", answered in 2 to 3 seconds (8 s on the first call), kept a conversation, respected a vegetarian profile and declined a 600 kcal crash diet.
 
 ## Real fine-tuning, when it is worth it
 

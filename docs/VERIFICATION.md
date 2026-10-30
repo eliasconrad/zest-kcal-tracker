@@ -21,9 +21,9 @@ Validated October 6, 2026 with a bundled Release build in a fresh isolated iPhon
 
 ## Model accuracy
 
-October 30, 2026, `qwen/qwen2.5-vl-72b-instruct`, 30 weighed Nutrition5k dishes: mean error 110 kcal (48 %), bias +76 kcal, protein 9 g, carbs 13 g, fat 6 g, 28 of 30 scored. The old prompt scored 118 kcal (50 %) on the same dishes, which is within noise. The held-out run could not finish because the OpenRouter account ran out of credit. Details and the steps to finish: [model plan](MODEL_PLAN.md).
+October 30, 2026, `google/gemma-4-26b-a4b-it`, weighed Nutrition5k dishes: mean error 83 kcal (32 %) on 30 tuning dishes, 106 kcal (34 %) on 30 held-out dishes, all 60 parsed, $0.065 per 1,000 scans. The comparison with five other models is in the [model plan](MODEL_PLAN.md).
 
-A real photo through the deployed Worker on a device is not verified yet: the Worker's secrets are not set and the account has no credit.
+A real photo taken on a device through the deployed Worker is not verified yet; bundled sample photos went through the Worker successfully.
 
 October 30, 2026, live Worker probe with a throwaway account: health, config, legal pages, guest session, signup, login, wrong password, profile, sync, friends, fake purchase and App Store signatures, logout and delete all answered as designed. It found that `/v1/meal` answered 404, because the account handler claimed everything starting with `/v1/me`. Fixed with a regression test in commit 40977fc; live only after the next deploy. Locally, with free models: chat answers in German, keeps the conversation, respects a vegetarian profile and suggests recipes; the scan reached the model, but the free model returned no reply, so a real scan is still unverified.
 
