@@ -110,6 +110,10 @@ const order: OnboardingStep[] = [
 
 /** Eight characters, as the references ask; the lemon says so plainly. */
 const PASSWORD_MIN = 8;
+/** The keyboard toolbar and some air, so a focused field never sits under it. */
+const KEYBOARD_CLEARANCE = 84;
+/** Steps with several fields: the sheet rises over the mascot while the keyboard is up. */
+const LIFTING_STEPS: OnboardingStep[] = ["body", "account"];
 
 function stepsFor(goal: Goal): OnboardingStep[] {
   return goal === "lose" || goal === "gain"
@@ -135,6 +139,7 @@ export function Onboarding({
   editing = false,
   onDone,
   onCancel,
+  onLift,
   onLogin,
   revealing = false,
   burst = false,
@@ -148,6 +153,8 @@ export function Onboarding({
   /** The password travels beside the profile; it is kept in the keychain, not the store. */
   onDone: (fields: Partial<Profile>, secrets?: { password?: string }) => void;
   onCancel?: () => void;
+  /** The sheet rose over the mascot for the keyboard, or came back down. */
+  onLift?: (lifted: boolean) => void;
   /** "I already have an account": hands over to the account sheet. */
   onLogin?: () => void;
   /** The lemon is still hidden behind the sheet; no bubble yet. */
@@ -351,6 +358,31 @@ export function Onboarding({
   })();
 
   const panelTop = Math.max(180, height - 616);
+  // On a step with several fields the mascot makes room: there is too little left
+  // between its feet and the keyboard to see the field being typed in.
+  const lift = useSharedValue(0);
+  const canLift = LIFTING_STEPS.includes(step);
+  useEffect(() => {
+    if (!canLift) return;
+    const move = (up: boolean) => {
+      lift.set(withTiming(up ? 1 : 0, { duration: scene.reduced ? 0 : 250, easing: Easing.bezier(0.23, 1, 0.32, 1) }));
+      onLift?.(up);
+    };
+    const show = Keyboard.addListener("keyboardWillShow", () => move(true));
+    const hide = Keyboard.addListener("keyboardWillHide", () => move(false));
+    return () => {
+      show.remove();
+      hide.remove();
+      move(false);
+    };
+    // onLift is a stable setter from the screen.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canLift, lift, scene.reduced]);
+  const liftedTop = scene.top + 52;
+  const panelLift = useAnimatedStyle(() => ({
+    top: panelTop + (liftedTop - panelTop) * lift.get(),
+  }));
+  const bubbleFade = useAnimatedStyle(() => ({ opacity: 1 - lift.get() }));
   const current = plan(
     {
       sex: draft.sex,
@@ -380,25 +412,30 @@ export function Onboarding({
       {burst && !scene.reduced && (
         <RevealBurst top={cardFloor(height) - 30} right={48} />
       )}
-      <LemonBubble
-        speaker={helper.name}
-        text={revealing ? "" : line}
-        thinking={false}
-        top={cardFloor(height) - FIGURE.hero * SCALE.card - 8}
-        right={118}
-        reduced={scene.reduced}
-      />
+      <Animated.View
+        pointerEvents="none"
+        style={[{ position: "absolute", inset: 0 }, bubbleFade]}
+      >
+        <LemonBubble
+          speaker={helper.name}
+          text={revealing ? "" : line}
+          thinking={false}
+          top={cardFloor(height) - FIGURE.hero * SCALE.card - 8}
+          right={118}
+          reduced={scene.reduced}
+        />
+      </Animated.View>
       <Animated.View
         entering={scene.reduced ? undefined : FadeIn.duration(260)}
         exiting={scene.reduced ? undefined : FadeOut.duration(200)}
         style={[
           {
             position: "absolute",
-            top: panelTop,
             left: 16,
             right: 16,
             bottom: insets.bottom + 16,
           },
+          panelLift,
         ]}
       >
         <GlassSurface style={{ flex: 1, borderRadius: 36 }}>
@@ -454,11 +491,11 @@ export function Onboarding({
                 />
               </View>
             </View>
-            {/* The list scrolls the focused field above the keyboard; the button
-                stays under it, so a long list never pushes it off the screen. */}
+            {/* The list scrolls the focused field above the keyboard and its toolbar;
+                the button stays under it, so a long list never pushes it off the screen. */}
             <KeyboardAwareScrollView
               ref={scroll}
-              bottomOffset={28}
+              bottomOffset={KEYBOARD_CLEARANCE}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{
@@ -1057,13 +1094,16 @@ function BirthDateField({
       keyboardType="number-pad"
       selectTextOnFocus
       maxLength={placeholder.length}
+      // Tabular digits on an empty field drop the placeholder below its baseline
+      // while it has focus, so they only come in with the first digit.
       style={{
         width,
+        height: 44,
         fontSize: 26,
         fontWeight: "500",
         color: theme.ink,
-        fontVariant: ["tabular-nums"],
-        paddingVertical: 8,
+        fontVariant: value ? ["tabular-nums"] : undefined,
+        paddingVertical: 0,
       }}
     />
   );
@@ -1077,31 +1117,28 @@ function BirthDateField({
         minHeight: 56,
       }}
     >
-      <Text
-        accessible={false}
-        style={{ width: 104, fontSize: 15, color: theme.muted }}
-      >
-        Born
-      </Text>
+      <View accessible={false} style={{ width: 104 }}>
+        <Text style={{ fontSize: 15, color: theme.muted }}>Born</Text>
+        {!!draft.birthDate && (
+          <Text style={{ fontSize: 13, color: theme.faint, marginTop: 1 }}>
+            {ageOf(draft)} years
+          </Text>
+        )}
+      </View>
       <View style={{ flex: 1, flexDirection: "row", gap: 8 }}>
-        {part("Birth day", "DD", day, 44, (text) => {
+        {part("Birth day", "DD", day, 48, (text) => {
           setDay(text);
           commit(text, month, year);
         })}
-        {part("Birth month", "MM", month, 44, (text) => {
+        {part("Birth month", "MM", month, 56, (text) => {
           setMonth(text);
           commit(day, text, year);
         })}
-        {part("Birth year", "YYYY", year, 76, (text) => {
+        {part("Birth year", "YYYY", year, 84, (text) => {
           setYear(text);
           commit(day, month, text);
         })}
       </View>
-      {!!draft.birthDate && (
-        <Text style={{ fontSize: 14, color: theme.muted }}>
-          {ageOf(draft)} years
-        </Text>
-      )}
     </View>
   );
 }

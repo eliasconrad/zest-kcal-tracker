@@ -4,6 +4,7 @@ import {
   createEventParser,
   isDiaryQuestion,
   parseAnswer,
+  parseCorrection,
   parseEstimate,
 } from "../src/cookbooks/zest/data/replies.ts";
 import { diaryContext } from "../src/cookbooks/zest/data/context.ts";
@@ -91,4 +92,14 @@ test("follow-ups are found when the model keeps them on the last line", () => {
   assert.equal(done.text, "Try the tofu.");
   assert.deepEqual(done.followups, ["More protein?", "A soup?"]);
   assert.equal(parseAnswer("Try the tofu. >").text, "Try the tofu.");
+});
+
+test("a correction reads like a meal line, anything else is not one", () => {
+  const fix = parseCorrection("~ Bowl with oats | 420 | 18 | 58 | 12\nAdded about 40 g oats, now 420 kcal.\n");
+  assert.equal(fix.name, "Bowl with oats");
+  assert.equal(fix.kcal, 420);
+  assert.equal(fix.carbs, 58);
+  assert.equal(fix.note, "Added about 40 g oats, now 420 kcal.");
+  assert.equal(parseCorrection("Try a soup.\n"), null);
+  assert.equal(parseCorrection("~ Bowl | 42"), null);
 });

@@ -20,7 +20,10 @@ export type Diary = {
     serverTime: number,
   ) => void;
   add: (meal: Meal) => void;
-  edit: (id: string, fields: Pick<Meal, "name" | "kcal">) => void;
+  edit: (
+    id: string,
+    fields: Pick<Meal, "name" | "kcal"> & Partial<Pick<Meal, "protein" | "carbs" | "fat">>,
+  ) => void;
   remove: (id: string) => void;
   setGuide: (guide: number) => void;
   seedDemo: () => void;

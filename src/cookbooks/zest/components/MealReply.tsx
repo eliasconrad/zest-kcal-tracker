@@ -198,6 +198,7 @@ function MealReplyBody({
   onChoose,
   onEdit,
   onCalendar,
+  onCorrect,
 }: {
   prompt: string;
   selecting: boolean;
@@ -211,6 +212,8 @@ function MealReplyBody({
   onChoose: (type: MealType) => void;
   onEdit: () => void;
   onCalendar: () => void;
+  /** Only on a meal the model read: tell it what the photo did not show. */
+  onCorrect?: () => void;
 }) {
   const calendar = useReveal(complete, 460);
   return (
@@ -374,8 +377,40 @@ function MealReplyBody({
           </View>
           <View
             accessibilityElementsHidden={!calendar.visible}
-            style={{ alignSelf: "flex-start", marginTop: 16 }}
+            style={{ flexDirection: "row", gap: 8, marginTop: 16 }}
           >
+            {onCorrect && (
+              <Touch
+                label="Missed something"
+                onPress={onCorrect}
+                disabled={!calendar.visible}
+                expand
+              >
+                <GlassSurface
+                  interactive
+                  visible={calendar.visible}
+                  materialize={0.2}
+                  style={{
+                    height: 44,
+                    borderRadius: 22,
+                    paddingHorizontal: 16,
+                    justifyContent: "center",
+                  }}
+                >
+                  <Animated.View
+                    style={[
+                      { flexDirection: "row", alignItems: "center", gap: 8 },
+                      calendar.style,
+                    ]}
+                  >
+                    <Symbol name="mic" size={16} color={theme.ink} />
+                    <Text style={{ fontSize: 14, color: theme.ink }}>
+                      Missed something?
+                    </Text>
+                  </Animated.View>
+                </GlassSurface>
+              </Touch>
+            )}
             <Touch
               label="See calorie calendar"
               onPress={onCalendar}

@@ -17,6 +17,7 @@ export function ChatTurn({
   reduced,
   onChoose,
   onEdit,
+  onCorrect,
   onCalendar,
   onAsk,
   onRetry,
@@ -31,6 +32,7 @@ export function ChatTurn({
   thinkingLine?: string;
   onChoose: (turn: Turn, type: MealType) => void;
   onEdit: (meal: Meal) => void;
+  onCorrect?: () => void;
   onCalendar: () => void;
   /** Sends a tapped follow-up question as if typed. */
   onAsk?: (question: string) => void;
@@ -196,6 +198,7 @@ export function ChatTurn({
                 if (saved) onEdit(saved);
               }}
               onCalendar={onCalendar}
+              onCorrect={turn.photo ? onCorrect : undefined}
             />
           );
         })()

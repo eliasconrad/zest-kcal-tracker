@@ -61,7 +61,6 @@ import { ChatTurn } from "../components/ChatTurn";
 import type { Turn } from "../data/conversation";
 import { ApiError, apiConfigured, askZest, estimateMeal } from "../data/api";
 import { diaryContext } from "../data/context";
-import { isDiaryQuestion } from "../data/replies";
 import { useProfile } from "../state/useProfile";
 import { profilePlan, type Profile } from "../state/profileStore";
 import { Onboarding, type OnboardingStep } from "../components/Onboarding";
@@ -138,6 +137,11 @@ export function ZestScreen({
   const helper = helperFor(profile.helper);
   /** The swap mode, opened by holding the companion. */
   const [swap, setSwap] = useState(false);
+  /** The setup sheet rose over the mascot while the keyboard is up. */
+  const [setupLifted, setSetupLifted] = useState(false);
+  /** Set by "Missed something?" on a receipt: the field asks for the correction. */
+  const [correctHint, setCorrectHint] = useState<string | undefined>();
+  const [correctFocus, setCorrectFocus] = useState(0);
   const openSwap = () => {
     Keyboard.dismiss();
     setPhotoMenu(false);
@@ -855,13 +859,17 @@ export function ZestScreen({
     activity(true);
     const id = eventId("answer");
     const diary = useDiary.getState();
-    if (apiConfigured && !isDiaryQuestion(question)) {
-      // Open questions stream from the model; diary numbers come along as context only.
+    setCorrectHint(undefined);
+    if (apiConfigured && !demo) {
+      // Everything goes to the model, in the person's language; diary numbers come along as context.
       const controller = beginRequest();
       // What was said so far, so a follow-up question makes sense to the model.
       const history = turns
         .filter((turn) => turn.kind === "text" && turn.text && !turn.live)
         .map((turn) => ({ role: turn.role, text: turn.text ?? "" }));
+      // The meal the photo read last; a message can correct it.
+      const scanned = [...turns].reverse().find((turn) => turn.kind === "meal" && turn.mealId);
+      const lastMeal = diary.meals.find((meal) => meal.id === scanned?.mealId);
       setTurns((old) => [
         ...old,
         { id: `${id}-prompt`, role: "user", kind: "text", text: question },
@@ -917,15 +925,42 @@ export function ZestScreen({
                 ),
               },
             }),
-            (partial) => {
-              if (!controller.signal.aborted)
+            (partial, correcting) => {
+              // A correction arrives as a meal line; the dots stay until it is read.
+              if (!controller.signal.aborted && !correcting)
                 patch({ text: partial.text, followups: partial.followups });
             },
             controller.signal,
             profile.helper,
             history,
+            lastMeal && {
+              name: lastMeal.name,
+              kcal: lastMeal.kcal,
+              protein: lastMeal.protein,
+              carbs: lastMeal.carbs,
+              fat: lastMeal.fat,
+              type: lastMeal.type,
+            },
           );
           if (controller.signal.aborted) return;
+          if (answer.correction && lastMeal) {
+            const { name, kcal, protein, carbs, fat, note } = answer.correction;
+            useDiary.getState().edit(lastMeal.id, { name, kcal, protein, carbs, fat });
+            patch({
+              state: "complete",
+              live: false,
+              text: note || `Now ${kcal} kcal.`,
+              followups: [],
+            });
+            scene.hop.set(
+              withSequence(
+                withTiming(0.3, { duration: 130 }),
+                withTiming(0, { duration: 210 }),
+              ),
+            );
+            void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            return;
+          }
           patch({
             state: "complete",
             live: false,
@@ -1070,6 +1105,14 @@ export function ZestScreen({
                     chooseType(item, item.failedType, "manual")
                   }
                   onEdit={editMeal}
+                  onCorrect={
+                    apiConfigured && !demo
+                      ? () => {
+                          setCorrectHint("What did I miss?");
+                          setCorrectFocus((n) => n + 1);
+                        }
+                      : undefined
+                  }
                   onCalendar={openCalendar}
                   onAsk={(question) => void send(question)}
                   thinkingLine={helper.thinking}
@@ -1257,6 +1300,8 @@ export function ZestScreen({
               key={conversation}
               scene={scene}
               helperName={helper.name}
+              hint={correctHint}
+              focusKey={correctFocus}
               busy={busy}
               onSend={send}
               onStop={stop}
@@ -1345,6 +1390,7 @@ export function ZestScreen({
             <Onboarding
               key={setup.step ?? "all"}
               scene={scene}
+              onLift={setSetupLifted}
               profile={profile}
               startAt={setup.step}
               editing={setup.editing}
@@ -1509,7 +1555,7 @@ export function ZestScreen({
               scene={scene}
               helper={profile.helper}
               calendarOpen={anySheet}
-              hidden={swap}
+              hidden={swap || setupLifted}
               onPress={
                 calendar
                   ? closeCalendar

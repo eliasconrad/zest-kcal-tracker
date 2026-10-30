@@ -85,6 +85,39 @@ export function calibrateLine(line: string, type: MealType, hint?: string) {
 }
 
 /**
+ * For a chat answer that may correct a meal: a reply starting with `~` keeps its
+ * first line back until it is corrected as a person's own hint; any other reply
+ * flows through untouched.
+ */
+export function createCorrectionFilter(type: MealType) {
+  let buffer = "";
+  let passed = false;
+  const corrected = (line: string) => `~ ${calibrateLine(line.replace(/^~\s*/, "").trim(), type, "correction")}`;
+  return {
+    push(delta: string) {
+      if (passed) return delta;
+      buffer += delta;
+      const trimmed = buffer.replace(/^\s+/, "");
+      if (!trimmed) return "";
+      if (!trimmed.startsWith("~")) {
+        passed = true;
+        return buffer;
+      }
+      const end = trimmed.indexOf("\n");
+      if (end < 0) return "";
+      passed = true;
+      return `${corrected(trimmed.slice(0, end))}${trimmed.slice(end)}`;
+    },
+    flush() {
+      if (passed) return "";
+      passed = true;
+      const trimmed = buffer.trim();
+      return trimmed.startsWith("~") ? corrected(trimmed) : trimmed;
+    },
+  };
+}
+
+/**
  * Streams text through, holding back only the first non-empty line until it can
  * be corrected. The note after it flows untouched.
  */

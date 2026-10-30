@@ -19,8 +19,9 @@ import {
   type DiaryContext,
   type MealType,
   chatHistory,
+  scannedMeal,
 } from "./prompts.ts";
-import { createLineCalibrator } from "./calibrate.ts";
+import { createCorrectionFilter, createLineCalibrator } from "./calibrate.ts";
 import { legalPages } from "./legal.ts";
 import { authenticate, handleAccount, refund, spend, type AccountEnv } from "./account.ts";
 import { streamChat, type ChatMessage } from "./openrouter.ts";
@@ -161,16 +162,26 @@ export default {
       if (!isDiary(body.diary)) return json(400, { error: "diary" });
       const ask = await spend(env, session.user, "asks", Date.now());
       if (!ask.allowed) return json(429, { error: "limit", kind: "asks", limit: ask.limit });
+      const lastMeal = scannedMeal(body.lastMeal);
       const messages: ChatMessage[] = [
-        { role: "system", content: askSystemPrompt(body.diary, body.helper) },
+        { role: "system", content: askSystemPrompt(body.diary, body.helper, lastMeal) },
         ...chatHistory(body.history),
         { role: "user", content: question },
       ];
       return sse(async (send, signal) => {
-        await streamChat(chatEnv(env), messages, (delta) => send({ type: "text", delta }), signal, {
-          maxTokens: 320,
-          temperature: 0.5,
-        });
+        const filter = createCorrectionFilter(lastMeal?.type ?? "Snack");
+        await streamChat(
+          chatEnv(env),
+          messages,
+          async (delta) => {
+            const text = filter.push(delta);
+            if (text) await send({ type: "text", delta: text });
+          },
+          signal,
+          { maxTokens: 320, temperature: 0.5 },
+        );
+        const rest = filter.flush();
+        if (rest) await send({ type: "text", delta: rest });
       }, () => refund(env, session.user, "asks", Date.now()));
     }
 

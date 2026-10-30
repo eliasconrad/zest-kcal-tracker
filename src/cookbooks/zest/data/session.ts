@@ -52,13 +52,14 @@ export function createSessionClient({
 
   const load = async () => {
     if (loaded) return;
-    token = await secure.get();
+    // A keychain that refuses must not cost the session; it then lasts until the app closes.
+    token = await secure.get().catch(() => null);
     loaded = true;
   };
   const adopt = async (result: { token: string; user: SessionUser }) => {
     token = result.token;
     user = result.user;
-    await secure.set(result.token);
+    await secure.set(result.token).catch(() => {});
     emit();
     return result.user;
   };

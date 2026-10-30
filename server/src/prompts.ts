@@ -133,7 +133,50 @@ export function chatHistory(value: unknown) {
     .map((turn) => ({ role: turn.role, content: turn.text.trim().slice(0, 500) }));
 }
 
-export function askSystemPrompt(diary: DiaryContext, helper?: unknown) {
+/** The meal scanned last in this conversation, so a message can correct it. */
+export type ScannedMeal = {
+  name: string;
+  kcal: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
+  type: MealType;
+};
+
+export function scannedMeal(value: unknown): ScannedMeal | undefined {
+  const meal = value as Partial<ScannedMeal> | null | undefined;
+  if (!meal || typeof meal.name !== "string" || !Number.isFinite(meal.kcal)) return undefined;
+  const number = (field: unknown) => (Number.isFinite(field) ? (field as number) : undefined);
+  return {
+    name: meal.name.slice(0, 80),
+    kcal: meal.kcal as number,
+    protein: number(meal.protein),
+    carbs: number(meal.carbs),
+    fat: number(meal.fat),
+    type: mealTypes.includes(meal.type as MealType) ? (meal.type as MealType) : "Snack",
+  };
+}
+
+function correctionRules(meal: ScannedMeal) {
+  const macros = [
+    meal.protein !== undefined ? `${meal.protein} g protein` : "",
+    meal.carbs !== undefined ? `${meal.carbs} g carbs` : "",
+    meal.fat !== undefined ? `${meal.fat} g fat` : "",
+  ]
+    .filter(Boolean)
+    .join(", ");
+  return [
+    `The meal they scanned last: ${meal.name}, ${meal.kcal} kcal${macros ? `, ${macros}` : ""}.`,
+    "If their message corrects that meal (something was missing, a wrong food, a different portion, they did not finish it), do not answer normally. Reply in exactly this shape and nothing else:",
+    "Line 1: `~ <meal name> | <kilocalories> | <protein g> | <carbs g> | <fat g>`: integers, the totals of the whole meal after the correction. Protein times 4, carbs times 4 and fat times 9 must add up to the kilocalories.",
+    "Line 2: one short sentence in your voice naming what changed, the amount you assumed and the new total in kcal.",
+    "When they name no amount, assume a usual portion of that food in such a meal. Keep everything else about the meal as it was.",
+    "Example: `~ Yoghurt bowl with oats | 420 | 18 | 58 | 12`, then `Added about 40 g oats, now 420 kcal.`",
+    "If the message is not a correction of that meal, answer normally and never start a line with `~`.",
+  ].join("\n");
+}
+
+export function askSystemPrompt(diary: DiaryContext, helper?: unknown, lastMeal?: ScannedMeal) {
   const persona = personaLine(helper);
   return [
     persona
@@ -164,6 +207,7 @@ export function askSystemPrompt(diary: DiaryContext, helper?: unknown) {
     `Yesterday: ${diary.yesterday.total} kcal over ${diary.yesterday.count} meals.`,
     `Last 7 days: ${diary.week.total} kcal across ${diary.week.loggedDays} logged days.`,
     diary.locale ? `Answer in locale ${diary.locale}.` : "",
+    lastMeal ? correctionRules(lastMeal) : "",
   ]
     .filter(Boolean)
     .join("\n");

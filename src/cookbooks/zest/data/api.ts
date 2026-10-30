@@ -12,14 +12,16 @@ import { getLocales } from "expo-localization";
 import {
   createEventParser,
   fitLongEdge,
+  isCorrection,
   parseAnswer,
+  parseCorrection,
   parseEstimate,
   parseRecipes,
   type Estimate,
   type RecipeIdea,
 } from "./replies.ts";
 import type { DiaryContext } from "./context.ts";
-import type { MealType } from "./diary.ts";
+import type { Meal, MealType } from "./diary.ts";
 import { session } from "../state/useSession";
 import type { HelperId } from "./helpers.ts";
 
@@ -176,19 +178,20 @@ export async function estimateMeal(
 export async function askZest(
   question: string,
   diary: DiaryContext,
-  onAnswer: (answer: ReturnType<typeof parseAnswer>) => void,
+  onAnswer: (answer: ReturnType<typeof parseAnswer>, correcting: boolean) => void,
   signal: AbortSignal,
   helper?: HelperId,
   history: { role: "user" | "assistant"; text: string }[] = [],
+  lastMeal?: Pick<Meal, "name" | "kcal" | "protein" | "carbs" | "fat" | "type">,
 ) {
   const full = await stream(
     "/v1/ask",
-    { question, helper, history, diary: { ...diary, locale: locale() } },
-    (text) => onAnswer(parseAnswer(text)),
+    { question, helper, history, lastMeal, diary: { ...diary, locale: locale() } },
+    (text) => onAnswer(parseAnswer(text), isCorrection(text)),
     signal,
     40_000,
   );
-  return parseAnswer(`${full}\n`);
+  return { ...parseAnswer(`${full}\n`), correction: parseCorrection(`${full}\n`) };
 }
 
 /** Three dishes for what is left of today, streamed line by line. */

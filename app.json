@@ -173,6 +173,13 @@
             "ios": "./assets/images/icons/pip.png"
           }
         ]
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Zest listens while you hold the conversation open, so you can say what a photo missed.",
+          "speechRecognitionPermission": "Zest turns what you say into text, so you can correct a meal by voice."
+        }
       ]
     ],
     "experiments": {

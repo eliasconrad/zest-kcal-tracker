@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createDeltaParser } from "../src/openrouter.ts";
-import { askSystemPrompt, chatHistory, mealSystemPrompt, recipeSystemPrompt } from "../src/prompts.ts";
-import { calibrateLine, createLineCalibrator } from "../src/calibrate.ts";
+import { askSystemPrompt, chatHistory, mealSystemPrompt, recipeSystemPrompt, scannedMeal } from "../src/prompts.ts";
+import { calibrateLine, createCorrectionFilter, createLineCalibrator } from "../src/calibrate.ts";
 
 test("delta parser survives chunks split mid-line and ignores keep-alives", () => {
   const push = createDeltaParser();
@@ -128,4 +128,24 @@ test("chat history keeps the last eight real turns and caps their length", () =>
   assert.ok(history.every((turn) => turn.role !== "system"));
   assert.equal(chatHistory([{ role: "user", text: "x".repeat(900) }])[0].content.length, 500);
   assert.deepEqual(chatHistory("nope"), []);
+});
+
+test("the last scanned meal goes into the prompt, and only a real one", () => {
+  const diary = { guide: 2000, today: { total: 0, meals: [] }, yesterday: { total: 0, count: 0 }, week: { total: 0, loggedDays: 0 } };
+  const meal = scannedMeal({ name: "Yoghurt bowl", kcal: 300, protein: 15, type: "Breakfast" });
+  assert.match(askSystemPrompt(diary, undefined, meal), /scanned last: Yoghurt bowl, 300 kcal, 15 g protein/);
+  assert.doesNotMatch(askSystemPrompt(diary), /scanned last/);
+  assert.equal(scannedMeal({ name: "x" }), undefined);
+  assert.equal(scannedMeal("nope"), undefined);
+});
+
+test("a correction line is held back and corrected, other answers flow through", () => {
+  const fix = createCorrectionFilter("Breakfast");
+  assert.equal(fix.push("~ Bowl | 500 |"), "");
+  // 18*4 + 58*4 + 12*9 = 412, so 500 is pulled to what the macros say.
+  assert.equal(fix.push(" 18 | 58 | 12\nAdded oats."), "~ Bowl | 412 | 18 | 58 | 12\nAdded oats.");
+  assert.equal(fix.flush(), "");
+  const plain = createCorrectionFilter("Breakfast");
+  assert.equal(plain.push("Try a soup."), "Try a soup.");
+  assert.equal(plain.push(" Warm."), " Warm.");
 });

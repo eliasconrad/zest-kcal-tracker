@@ -108,6 +108,17 @@ export function parseAnswer(text: string): Answer {
 }
 
 /** Diary questions the local engine answers exactly; everything else goes to the model. */
+/** An answer that corrects the last scanned meal starts with `~` and has the meal line's shape. */
+export function isCorrection(raw: string) {
+  return raw.trimStart().startsWith("~");
+}
+
+export function parseCorrection(raw: string): Estimate | null {
+  if (!isCorrection(raw)) return null;
+  const estimate = parseEstimate(raw.trimStart().replace(/^~\s*/, ""));
+  return estimate?.settled && !estimate.notFood && estimate.kcal > 0 ? estimate : null;
+}
+
 export function isDiaryQuestion(question: string) {
   const q = question.toLowerCase();
   return /\b(week|yesterday|today|protein|left|remaining|guide|goal|over|too much|breakfast|lunch|dinner|snack|total|so far|how much|how many|calories|kcal|streak)\b/.test(
