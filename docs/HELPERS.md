@@ -12,9 +12,11 @@ Screen ids are durable; media links expire after an hour
 
 Coverage: every screen of both apps was listed and read by its elements and
 colours (ChatGPT 2 welcome, 16 onboarding, 2 paywall, 17 other tabs; BitePal
-3 welcome, 35 onboarding, 1 paywall, 26 other tabs), both videos of each app
-were downloaded and read as 1 fps contact sheets, and the screens that bear on
-a mascot or a chat were opened at full size.
+3 welcome, 35 onboarding, 1 paywall, 26 other tabs), all 98 images were
+downloaded and viewed on two contact sheets (35 and 63 stills; the other four
+entries are the videos), both videos of each app were downloaded and read as
+1 fps contact sheets, and the screens that bear on a mascot or a chat were
+opened at full size. The images stay outside the repo.
 
 **ChatGPT (6448311069), 37 screens, 2 videos.** `onb_li26u` guest home: pill
 composer with a round "+" button left and a filled send circle right, two
@@ -123,9 +125,9 @@ are "Pebble the penguin, Calm coach". The bubble on the setup sheet reads
 ## Verified / not verified
 
 - `npm run verify` and `cd server && npm test`: pass (30 Oct 2026).
-- `scripts/maestro/helpers.yaml`: the setup step, the live swap on the sheet
-  edge and the voice per step. Run it alone:
-  `SIMULATOR_UDID=<udid> npm run test:ios -- scripts/maestro/helpers.yaml`.
+- `scripts/maestro/helpers.yaml`, `helpers-diary.yaml` and `helpers-swap.yaml`
+  passed together in one run on 30 Oct 2026 (45 s, 49 s, 1 m 24 s). Run them:
+  `SIMULATOR_UDID=<udid> npm run test:ios -- scripts/maestro/helpers.yaml scripts/maestro/helpers-diary.yaml scripts/maestro/helpers-swap.yaml`.
 - `scripts/maestro/helpers-swap.yaml`: hold-and-slide, passing. The gesture
   is a long press with 60 pt of slack (`HOLD_SLACK`) that opens the bar, and a
   manual pan that takes over on the first move after it; Maestro's 4 s swipe
