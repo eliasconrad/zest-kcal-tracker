@@ -478,6 +478,9 @@ export function Onboarding({
                       onChangeText={(name) => set({ name })}
                       autoFocus
                       autoCapitalize="words"
+                      autoCorrect={false}
+                      spellCheck={false}
+                      textContentType="givenName"
                       returnKeyType="done"
                       onSubmitEditing={() => ready && go(1)}
                       maxLength={40}
