@@ -377,7 +377,7 @@ function MealReplyBody({
           </View>
           <View
             accessibilityElementsHidden={!calendar.visible}
-            style={{ flexDirection: "row", gap: 8, marginTop: 16 }}
+            style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 16 }}
           >
             {onCorrect && (
               <Touch
@@ -393,17 +393,17 @@ function MealReplyBody({
                   style={{
                     height: 44,
                     borderRadius: 22,
-                    paddingHorizontal: 16,
+                    paddingHorizontal: 13,
                     justifyContent: "center",
                   }}
                 >
                   <Animated.View
                     style={[
-                      { flexDirection: "row", alignItems: "center", gap: 8 },
+                      { flexDirection: "row", alignItems: "center", gap: 6 },
                       calendar.style,
                     ]}
                   >
-                    <Symbol name="mic" size={16} color={theme.ink} />
+                    <Symbol name="mic" size={15} color={theme.ink} />
                     <Text style={{ fontSize: 14, color: theme.ink }}>
                       Missed something?
                     </Text>
@@ -424,19 +424,18 @@ function MealReplyBody({
                 style={{
                   height: 44,
                   borderRadius: 22,
-                  paddingHorizontal: 16,
+                  paddingHorizontal: 13,
                   justifyContent: "center",
                 }}
               >
                 <Animated.View
                   style={[
-                    { flexDirection: "row", alignItems: "center", gap: 8 },
+                    { flexDirection: "row", alignItems: "center", gap: 6 },
                     calendar.style,
                   ]}
                 >
-                  <Symbol name="calendar" size={17} color={theme.ink} />
+                  <Symbol name="calendar" size={15} color={theme.ink} />
                   <Text style={{ fontSize: 14, color: theme.ink }}>My day</Text>
-                  <Symbol name="arrow.up.right" size={12} color={theme.muted} />
                 </Animated.View>
               </GlassSurface>
             </Touch>
