@@ -105,13 +105,19 @@ export function ZestScreen({
   demo = false,
   displayName = "Jaimin",
   debugSwapBar = false,
+  debugTilt = false,
 }: {
   demo?: boolean;
   displayName?: string;
   /** `?swapbar=1`: keeps the helper swap bar open for a screenshot; review only. */
   debugSwapBar?: boolean;
+  /** `?tilt=1`: rocks a synthetic phone through the tilt path; review only. */
+  debugTilt?: boolean;
 }) {
   const scene = useScene();
+  useEffect(() => {
+    scene.tiltDemo.set(debugTilt ? 1 : 0);
+  }, [debugTilt, scene.tiltDemo]);
   const meals = useDiary((s) => s.meals);
   const guide = useDiary((s) => s.guide);
   const profile = useProfile((s) => s);

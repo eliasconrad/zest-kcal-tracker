@@ -66,6 +66,12 @@ export type Scene = {
   typing: SharedValue<number>;
   /** 0 idle, 1 composing, 2 thinking, 3 reading the reply out. */
   mood: SharedValue<number>;
+  /**
+   * 1 replaces the gravity reading with a synthetic phone that rocks left and
+   * right every 1.2 s, through the same tilt path. For review on a simulator,
+   * which has no motion sensors; never set in the product.
+   */
+  tiltDemo: SharedValue<number>;
   /** -1 curious, 0 content, 1 a playful raised eyebrow. */
   expression: SharedValue<number>;
   /**
@@ -156,6 +162,7 @@ export function useScene(): Scene {
   const levelX = useSharedValue(0);
   const levelY = useSharedValue(0);
   const seeded = useSharedValue(0);
+  const tiltDemo = useSharedValue(0);
 
   // Which way is down, in the phone's own frame: x toward its right edge, y
   // toward its top. The simulator has no such sensor and reads zero throughout.
@@ -210,7 +217,12 @@ export function useScene(): Scene {
 
     // The gaze leans toward whichever edge of the phone is lowered. A reading
     // of zero means no reading yet, so the first real one sets the level.
-    const down = gravity.sensor.get();
+    let down = gravity.sensor.get();
+    if (tiltDemo.get() === 1) {
+      // A phone held at a comfortable angle, its right edge dipping and rising.
+      const side = Math.floor(now / 1.2) % 2 === 0 ? 1 : -1;
+      down = { ...down, x: 0.3 * side, y: -0.6, z: -0.74 };
+    }
     const pull = Math.hypot(down.x, down.y, down.z);
     if (pull > 1) {
       const lean = leaning(
@@ -317,6 +329,7 @@ export function useScene(): Scene {
       spin,
       typing,
       mood,
+      tiltDemo,
       expression,
       gazeX,
       gazeY,

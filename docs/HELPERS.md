@@ -137,12 +137,14 @@ are "Pebble the penguin, Calm coach". The bubble on the setup sheet reads
 - `docs/images/helpers/<id>.gif`: one animated image per helper, cut from a
   recording of the animated gallery (`?gallery=1&animate=1`, flow
   `helpers-gallery.yaml`): the seven frames in turn at 350 ms, 10 fps.
-- Tilt: the gaze reads the gravity and gyroscope sensors through `useScene`,
-  unchanged from the lemon. The simulator has no such sensors and reads zero,
-  so the tilt maths is covered by `tests/tilt.test.mjs` (lowering the right
-  edge leans the gaze right, tipping the top edge away leans it up, a held
-  tilt fades as the level catches up, the lean is clamped); the feel itself
-  needs a device.
+- `docs/images/helpers-motion-tilt.png`: 5 fps strip of the companion while
+  `?tilt=1` feeds a synthetic phone into the gravity path of `useScene` (the
+  right edge dips and rises every 1.2 s, nothing is touched): the pupils and
+  the head swing with it, through the same `leaning` maths the sensors drive.
+  The simulator has no motion sensors, so this is the in-app check; the maths
+  is also covered by `tests/tilt.test.mjs` (right edge down leans right, top
+  edge away leans up, a held tilt fades as the level catches up, the lean is
+  clamped). The real sensor is only a device away.
 - Every screen of both reference apps, one line each: `docs/APPLLAMA-CATALOGUE.md`.
 
 ## Verified / not verified

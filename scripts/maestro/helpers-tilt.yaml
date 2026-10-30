@@ -1,0 +1,21 @@
+appId: io.appllama.zestkcaltracker
+name: "Tilt through the gaze path, recorded - a synthetic phone rocks, the eyes follow"
+---
+- launchApp:
+    clearState: true
+- assertVisible: "What should I call you?"
+- openLink: "zest-kcal-tracker://?demo=1&tilt=1"
+- tapOn:
+    text: "Open|Öffnen"
+    optional: true
+- assertVisible: "Pebble, open calorie calendar"
+- startRecording: helpers-tilt
+# The synthetic gravity flips every 1.2 s; no touch happens during the recording.
+# The wait returns between flips, so it is chained for about seven seconds.
+- waitForAnimationToEnd:
+    timeout: 3000
+- waitForAnimationToEnd:
+    timeout: 3000
+- waitForAnimationToEnd:
+    timeout: 3000
+- stopRecording
