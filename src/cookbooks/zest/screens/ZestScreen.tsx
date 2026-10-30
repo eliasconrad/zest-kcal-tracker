@@ -79,6 +79,7 @@ import {
   paceLabel,
   streak,
 } from "../data/nutrition";
+import { syncAppIcon } from "../data/appIcon";
 import { syncReminders } from "../data/reminders";
 import { AccountSheet, type AccountMode } from "../components/AccountSheet";
 import { FriendsSheet } from "../components/FriendsSheet";
@@ -245,6 +246,11 @@ export function ZestScreen({
     release,
     expression,
   } = scene;
+  const choosingMascot = !!setup;
+  useEffect(() => {
+    if (demo || choosingMascot) return;
+    void syncAppIcon(profile.helper);
+  }, [profile.helper, choosingMascot, demo]);
   const liftForSheet = () => {
     Keyboard.dismiss();
     setPhotoMenu(false);

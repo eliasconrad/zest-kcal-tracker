@@ -10,8 +10,9 @@ import {
   defaultHelper,
 } from "../src/cookbooks/zest/data/helpers.ts";
 
-test("six helpers, each complete", () => {
-  assert.equal(helperIds.length, 6);
+test("the lemon and six friends, each complete", () => {
+  assert.equal(helperIds.length, 7);
+  assert.equal(defaultHelper, "zest");
   for (const helper of helperList) {
     assert.ok(helper.name && helper.role && helper.pitch && helper.persona);
     for (const key of ["body", "shade", "light", "ink", "accent", "cheek"])

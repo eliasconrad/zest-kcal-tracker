@@ -1,0 +1,45 @@
+# Draws each mascot through ?icon=<id> for scripts/render-icons.sh. Not part of the test flows.
+appId: eu.eliasconrad.zest
+---
+- openLink: "zest://?icon=pebble"
+- tapOn:
+    text: "Open"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: "pebble"
+- openLink: "zest://?icon=fig"
+- tapOn:
+    text: "Open"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: "fig"
+- openLink: "zest://?icon=mochi"
+- tapOn:
+    text: "Open"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: "mochi"
+- openLink: "zest://?icon=bao"
+- tapOn:
+    text: "Open"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: "bao"
+- openLink: "zest://?icon=olive"
+- tapOn:
+    text: "Open"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: "olive"
+- openLink: "zest://?icon=pip"
+- tapOn:
+    text: "Open"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: "pip"

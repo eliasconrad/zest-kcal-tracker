@@ -1,0 +1,13 @@
+# Replays the streak celebration through ?streak=1, for measuring it against the reference.
+appId: eu.eliasconrad.zest
+---
+- openLink: "zest://?streak=1"
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible: "day streak!"
+    timeout: 15000
+- extendedWaitUntil:
+    visible: "Keep it going"
+    timeout: 15000

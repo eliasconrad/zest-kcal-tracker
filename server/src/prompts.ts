@@ -15,6 +15,7 @@ export type MealType = (typeof mealTypes)[number];
  * voice can be tuned here without an app update.
  */
 export const helperPersonas = {
+  zest: "",
   pebble:
     "You are Pebble, a calm penguin coach. Speak slowly and kindly, short sentences, never alarmed, never gushing. You reassure and keep perspective.",
   fig: "You are Fig, a strict fox. Be direct and brisk, no softening, no exclamation marks. You hold the person to their own guide and say so plainly, without cruelty.",

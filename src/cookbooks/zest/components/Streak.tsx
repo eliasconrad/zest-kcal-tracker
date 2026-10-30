@@ -1,17 +1,23 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Text, View } from "react-native";
-import { Canvas, Group, Path, Skia } from "@shopify/react-native-skia";
+import {
+  Canvas,
+  Group,
+  Oval,
+  Path,
+  Skia,
+  usePathInterpolation,
+} from "@shopify/react-native-skia";
 import Animated, {
-  Easing,
+  Extrapolation,
   FadeIn,
   FadeOut,
+  interpolate,
   useAnimatedReaction,
   useAnimatedStyle,
   useDerivedValue,
+  useFrameCallback,
   useSharedValue,
-  withDelay,
-  withSequence,
-  withTiming,
   type SharedValue,
 } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
@@ -40,6 +46,14 @@ const FLAME = Skia.Path.MakeFromSVGString(
 const CORE = Skia.Path.MakeFromSVGString(
   "M50 42 C56 50 62 54 62 62 C62 69 56 74 50 74 C44 74 38 69 38 62 C38 56 44 50 50 42 Z",
 )!;
+// The squashed flame: a soft pill on the same base, drawn with the same segments
+// as FLAME and CORE so one morphs into the other.
+const BEAD = Skia.Path.MakeFromSVGString(
+  "M50 38 C66 38 84 42 84 60 C84 74 66 82 50 82 C34 82 16 74 16 60 C16 53 18 48 22 45 C28 41 34 39 40 38.5 C43 38 47 38 50 38 Z",
+)!;
+const BEAD_CORE = Skia.Path.MakeFromSVGString(
+  "M34 50 C40 46 50 46 54 50 C56 55 50 60 42 60 C36 60 30 58 30 54 C30 52 32 51 34 50 Z",
+)!;
 
 export function StreakFlame({
   size,
@@ -55,6 +69,12 @@ export function StreakFlame({
   const litValue = useDerivedValue(() =>
     typeof lit === "number" ? lit : lit.get(),
   );
+  // 0 is the flame, 1 the bead; the bead is reached before the deepest squash.
+  const morph = useDerivedValue(() =>
+    Math.min(1, Math.max(0, -(progress?.get() ?? 0) / 0.85)),
+  );
+  const outerPath = usePathInterpolation(morph, [0, 1], [FLAME, BEAD]);
+  const innerPath = usePathInterpolation(morph, [0, 1], [CORE, BEAD_CORE]);
   const outer = useDerivedValue(() =>
     litValue.get() > 0.5 ? streakColors.lit : streakColors.dim,
   );
@@ -65,16 +85,28 @@ export function StreakFlame({
   // holds only the scales (a manual translate pair here double-applied the pivot).
   const transform = useDerivedValue(() => {
     const p = progress?.get() ?? 0;
-    const sx = p < 0 ? 1 + -p * 0.45 : 1 - p * 0.18;
-    const sy = p < 0 ? 1 + p * 0.62 : 1 + p * 0.3;
+    const deep = Math.min(0, p + 0.85);
+    const sx = p < 0 ? 1 - deep * 0.2 : 1 - p * 0.18;
+    const sy = p < 0 ? 1 + deep * 0.5 : 1 + p * 0.3;
     return [{ scaleX: sx }, { scaleY: sy }];
   });
+  const shadow = useDerivedValue(() =>
+    litValue.get() > 0.5 ? "#F4E7BF" : "#E9E8E2",
+  );
+  const shadowWidth = useDerivedValue(() => [
+    { scaleX: 1 + morph.get() * 0.5 },
+  ]);
   return (
     <Canvas style={{ width: size, height: size }}>
       <Group transform={[{ scale: size / 100 }]}>
+        {progress && (
+          <Group transform={shadowWidth} origin={{ x: 50, y: 84 }}>
+            <Oval x={28} y={79} width={44} height={10} color={shadow} />
+          </Group>
+        )}
         <Group transform={transform} origin={{ x: 50, y: 82 }}>
-          <Path path={FLAME} color={outer} />
-          <Path path={CORE} color={inner} />
+          <Path path={outerPath} color={outer} />
+          <Path path={innerPath} color={inner} />
         </Group>
       </Group>
     </Canvas>
@@ -125,10 +157,11 @@ function Spark({
   const style = useAnimatedStyle(() => {
     const t = fire.get();
     return {
-      opacity: t <= 0 ? 0 : 1 - t,
+      opacity: t <= 0 ? 0 : 1 - t * t,
+      // They leave from the flame's edge, so they show from the first frame.
       transform: [
-        { translateX: dx * size * 0.55 * t },
-        { translateY: dy * size * 0.55 * t + size * 0.12 * t * t },
+        { translateX: dx * size * (0.3 + 0.4 * t) },
+        { translateY: dy * size * (0.3 + 0.4 * t) + size * 0.12 * t * t },
         { scale: 1 - t * 0.5 },
       ],
     };
@@ -192,10 +225,37 @@ function Counter({
   );
 }
 
+// Duolingo's reveal, counted frame by frame at 30 fps (docs/MOTION_SPEC.md). The
+// fade crosses the receipt, so the grey reads from its middle; a beat starts a
+// frame before it shows, which is why the bead counts one less than the recording.
+const FADE = 6;
+const HOLD = FADE + 15;
+const SQUASH = 4;
+const BEAD_HOLD = 7;
+const POP = 1;
+const HOLD2 = 5;
+const STRETCH = 2;
+const BURST_AT = HOLD + SQUASH + BEAD_HOLD + POP + HOLD2 + STRETCH;
+const LIT_AT = HOLD + SQUASH;
+const END = BURST_AT + 14;
+const SHAPE_AT = [
+  0,
+  HOLD,
+  HOLD + SQUASH / 2,
+  HOLD + SQUASH,
+  HOLD + SQUASH + BEAD_HOLD,
+  HOLD + SQUASH + BEAD_HOLD + POP,
+  BURST_AT - STRETCH,
+  BURST_AT,
+  BURST_AT + 1,
+  BURST_AT + 5,
+  BURST_AT + 8,
+];
+const SHAPE = [0, 0, -0.25, -1, -0.85, 0, 0, 1, -0.3, 0.06, 0];
+
 /**
- * Full-screen streak celebration. Timings in milliseconds are frame counts
- * from the reference at 30 fps: hold 33, squash 6, bead 6, pop 1, hold 5,
- * stretch 3, burst and flip 1, sparks 8, settle 9, then the button.
+ * Full-screen streak celebration. One clock counts the frames of the reference
+ * at 30 fps, see the constants above; the button follows the sparks.
  */
 export function StreakCelebration({
   from,
@@ -211,54 +271,30 @@ export function StreakCelebration({
   reduced: boolean;
   onDone: () => void;
 }) {
-  const lit = useSharedValue(reduced ? 1 : 0);
-  const shape = useSharedValue(0);
-  const fire = useSharedValue(0);
-  const flip = useSharedValue(reduced ? 1 : 0);
+  // One clock, counted in frames of the 30 fps reference. It advances by at most
+  // one display frame's worth per tick: after a stall the animation carries on
+  // where it was instead of jumping, so no beat can be skipped by a slow frame.
+  const clock = useSharedValue(reduced ? END : 0);
+  useFrameCallback((frame) => {
+    if (clock.get() >= END) return;
+    const elapsed = Math.min(frame.timeSincePreviousFrame ?? 16.7, 34);
+    clock.set(clock.get() + elapsed / (1000 / 30));
+  });
+  const lit = useDerivedValue<number>(() => (clock.get() >= LIT_AT ? 1 : 0));
+  const shape = useDerivedValue(() =>
+    interpolate(clock.get(), SHAPE_AT, SHAPE, Extrapolation.CLAMP),
+  );
+  const fire = useDerivedValue(() =>
+    interpolate(clock.get(), [BURST_AT, BURST_AT + 13], [0, 1], Extrapolation.CLAMP),
+  );
+  const flip = useDerivedValue(() =>
+    interpolate(clock.get(), [BURST_AT, BURST_AT + 3], [0, 1], Extrapolation.CLAMP),
+  );
   const [ready, setReady] = useState(reduced);
   const [headline, setHeadline] = useState(reduced);
   const color = useDerivedValue(() =>
     lit.get() > 0.5 ? theme.accent : streakColors.dim,
   );
-  useEffect(() => {
-    if (reduced) return;
-    const ms = (frames: number) => Math.round((frames / 30) * 1000);
-    const HOLD = 19;
-    const SQUASH = 4;
-    const BEAD = 8;
-    const POP = 1;
-    const HOLD2 = 8;
-    const STRETCH = 2;
-    const burstAt = HOLD + SQUASH + BEAD + POP + HOLD2 + STRETCH;
-    shape.set(
-      withDelay(
-        ms(HOLD),
-        withSequence(
-          withTiming(-1, {
-            duration: ms(SQUASH),
-            easing: Easing.in(Easing.quad),
-          }),
-          withTiming(-0.85, { duration: ms(BEAD) }),
-          withTiming(0, { duration: ms(POP) }),
-          withTiming(0, { duration: ms(HOLD2) }),
-          withTiming(1, {
-            duration: ms(STRETCH),
-            easing: Easing.out(Easing.quad),
-          }),
-          withTiming(-0.3, { duration: ms(1) }),
-          withTiming(0.06, { duration: ms(4) }),
-          withTiming(0, { duration: ms(3) }),
-        ),
-      ),
-    );
-    lit.set(
-      withDelay(ms(HOLD + SQUASH + 2), withTiming(1, { duration: ms(1) })),
-    );
-    fire.set(withDelay(ms(burstAt), withTiming(1, { duration: ms(13) })));
-    flip.set(withDelay(ms(burstAt), withTiming(1, { duration: ms(3) })));
-    // Haptics, headline and the button follow the UI-thread clock (reactions
-    // below), not JS timers, so a stalled JS thread cannot pull them apart.
-  }, [reduced, shape, lit, fire, flip]);
   // Plain JS callbacks: a worklet may only hand scheduleOnRN a function it
   // captured from JS. Building the arrow inside the reaction would capture the
   // Haptics module, which cannot cross to the UI runtime and aborts the app.
@@ -373,7 +409,10 @@ export function StreakCelebration({
           </View>
         ))}
       </View>
-      <View style={{ position: "absolute", left: 24, right: 24, bottom: 48 }}>
+      <View
+        accessibilityElementsHidden={!ready}
+        style={{ position: "absolute", left: 24, right: 24, bottom: 48 }}
+      >
         <Touch
           label="Keep it going"
           onPress={onDone}

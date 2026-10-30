@@ -94,7 +94,6 @@ export type OnboardingStep =
 
 const order: OnboardingStep[] = [
   "name",
-  "helper",
   "goal",
   "body",
   "target",
@@ -456,7 +455,7 @@ export function Onboarding({
               </View>
             </View>
             {/* The list scrolls the focused field above the keyboard; the button
-                follows the content so it never covers a field. */}
+                stays under it, so a long list never pushes it off the screen. */}
             <KeyboardAwareScrollView
               ref={scroll}
               bottomOffset={28}
@@ -524,8 +523,8 @@ export function Onboarding({
                 )}
                 {step === "helper" && (
                   <Question
-                    title="Who’s coming with you?"
-                    detail="Six helpers, six voices. Hold yours on the composer any time to swap."
+                    title="Pick your mascot"
+                    detail="The lemon, or one of six friends. The app icon changes with your pick. Hold your mascot on the home screen to swap any time."
                   >
                     <HelperGrid
                       // Sheet inset 16 and content padding 22 on both sides, two 10 pt gaps.
@@ -837,87 +836,87 @@ export function Onboarding({
                   />
                 )}
               </Animated.View>
-              <View style={{ marginTop: 26 }}>
-                {step === "plan" && !editing && !preparing ? (
-                  <HoldToStart reduced={scene.reduced} onCommit={() => go(1)} />
-                ) : step === "account" && !editing ? (
-                  <View style={{ gap: 2 }}>
-                    <ContinueButton
-                      label="Continue"
-                      ready={ready}
-                      reduced={scene.reduced}
-                      onPress={() => go(1)}
-                    />
-                    <Touch
-                      label="Skip for now"
-                      onPress={() => {
-                        setPassword("");
-                        set({ email: "" });
-                        go(1, { email: "" });
-                      }}
-                      style={{
-                        height: 44,
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <Text style={{ fontSize: 15, color: theme.muted }}>
-                        Skip for now
-                      </Text>
-                    </Touch>
-                    {onLogin && (
-                      <Touch
-                        label="I already have an account"
-                        onPress={onLogin}
-                        style={{
-                          height: 44,
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <Text style={{ fontSize: 15, color: theme.muted }}>
-                          I already have an account
-                        </Text>
-                      </Touch>
-                    )}
-                  </View>
-                ) : step === "reminders" ? (
-                  <View style={{ gap: 6 }}>
-                    <ContinueButton
-                      label="Remind me"
-                      ready={draft.reminders.length > 0}
-                      reduced={scene.reduced}
-                      onPress={() => void acceptReminders()}
-                    />
-                    <Touch
-                      label="Not now"
-                      onPress={() => {
-                        set({ reminders: [] });
-                        go(1, { reminders: [] });
-                      }}
-                      style={{
-                        height: 44,
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <Text style={{ fontSize: 15, color: theme.muted }}>
-                        Not now
-                      </Text>
-                    </Touch>
-                  </View>
-                ) : (
+            </KeyboardAwareScrollView>
+            <View style={{ paddingHorizontal: 22, paddingTop: 10, paddingBottom: 12 }}>
+              {step === "plan" && !editing && !preparing ? (
+                <HoldToStart reduced={scene.reduced} onCommit={() => go(1)} />
+              ) : step === "account" && !editing ? (
+                <View style={{ gap: 2 }}>
                   <ContinueButton
-                    label={
-                      step === "plan" ? "Save" : editing ? "Save" : "Continue"
-                    }
+                    label="Continue"
                     ready={ready}
                     reduced={scene.reduced}
                     onPress={() => go(1)}
                   />
-                )}
-              </View>
-            </KeyboardAwareScrollView>
+                  <Touch
+                    label="Skip for now"
+                    onPress={() => {
+                      setPassword("");
+                      set({ email: "" });
+                      go(1, { email: "" });
+                    }}
+                    style={{
+                      height: 44,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Text style={{ fontSize: 15, color: theme.muted }}>
+                      Skip for now
+                    </Text>
+                  </Touch>
+                  {onLogin && (
+                    <Touch
+                      label="I already have an account"
+                      onPress={onLogin}
+                      style={{
+                        height: 44,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Text style={{ fontSize: 15, color: theme.muted }}>
+                        I already have an account
+                      </Text>
+                    </Touch>
+                  )}
+                </View>
+              ) : step === "reminders" ? (
+                <View style={{ gap: 6 }}>
+                  <ContinueButton
+                    label="Remind me"
+                    ready={draft.reminders.length > 0}
+                    reduced={scene.reduced}
+                    onPress={() => void acceptReminders()}
+                  />
+                  <Touch
+                    label="Not now"
+                    onPress={() => {
+                      set({ reminders: [] });
+                      go(1, { reminders: [] });
+                    }}
+                    style={{
+                      height: 44,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Text style={{ fontSize: 15, color: theme.muted }}>
+                      Not now
+                    </Text>
+                  </Touch>
+                </View>
+              ) : (
+                <ContinueButton
+                  label={
+                    step === "plan" ? "Save" : editing ? "Save" : "Continue"
+                  }
+                  ready={ready}
+                  reduced={scene.reduced}
+                  onPress={() => go(1)}
+                />
+              )}
+            </View>
           </View>
         </GlassSurface>
       </Animated.View>

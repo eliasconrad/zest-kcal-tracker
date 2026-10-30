@@ -101,32 +101,32 @@ Reduce Motion suppresses gaze drift and blinking and removes the calendar's long
 
 The streak brings people back to log one plate a day. Its design and motion follow Duolingo's streak reveal and streak screen, read frame by frame from the Appllama recording (30 fps, 8,602 frames; the reveal sits at 226-229 s). The counts below come from a per-frame bounding-box measurement of the flame (height, width, colour) run on both the reference clip and Zest's own simulator recording, so the two can be compared like for like and the Streak, Feed and Profile screens, recoloured to Zest's gold.
 
-| Beat | Duolingo (frames at 30 fps, measured per frame with a bounding-box script on the recording) | Zest |
+| Beat | Duolingo (frames at 30 fps, measured per frame on the recording) | Zest (code) |
 | --- | --- | --- |
-| Reveal | grey outline flame with a grey "0" fades in over 6 frames, then holds 19 frames (0.63 s) | 0.2 s fade, `StreakFlame` dim, `Counter` shows the old number, hold 19 |
-| Squash | ears retract and the flame flattens into a grey bead, 4 frames | `shape` to -1 over 4 frames |
-| Bead | the bead holds 8 frames; it turns gold 2 frames in (anticipation) | `shape` -0.85 for 8, `lit` flips after 2 |
-| Pop | full flame in 1 frame | `shape` 0 in 1 frame, medium haptic (UI-clock reaction) |
-| Hold | 10 frames, a tall stretch in the last 2 | `shape` 0 for 8, 1 for 2 |
-| Burst | the "0" squashes and the "1" rises over 3 frames; sparks fly 13 frames | `flip` over 3, `fire` 0→1 over 13, success haptic + headline (UI-clock reaction) |
-| Settle | the flame overshoots flat for 1 frame and settles over 7 | `shape` -0.3, 0.06, 0 |
-| Button | after the sparks | `ready` when `fire` reaches 1 |
+| Reveal | grey flame with a grey "0" and a soft shadow appears within a frame or two and stays 18 frames in all | `FADE` 6 across the receipt, then `HOLD`; `StreakFlame` dim, `Counter` shows the old number |
+| Squash | the ears retract and the flame flattens into a pill, 4 frames | `shape` to -1 over 4 frames; the path morphs from `FLAME` to `BEAD` |
+| Bead | a soft pill with a small pale spot; it turns gold 4 frames after the squash began | `BEAD_HOLD` 7, `lit` flips at the end of the squash |
+| Pop | full flame 11 frames after the squash began, in 1 frame | `shape` 0 in 1 frame, medium haptic (UI-clock reaction) |
+| Hold | 10 frames from the pop to the burst, a tall stretch at the end | `HOLD2` 5, `STRETCH` 2 |
+| Burst | the "0" squashes and the "1" rises over 3 frames; sparks fly at once | `flip` over 3, `fire` 0→1 over 13, sparks start at the flame's edge, success haptic + headline |
+| Settle | the flame overshoots flat and settles by about frame 8 | `shape` -0.3, 0.06, 0 |
+| Button | after the sparks | `ready` when `fire` reaches 1; hidden from VoiceOver until then |
 | Streak screen | orange band with the number, "day streak!", a flame-in-circle badge, a month calendar with orange dots, "Day practiced" and "Freezes used" tiles | `StreakBand` in the profile: gold band, number, word, flame badge, Monday-first week strip; the calendar sheet already marks logged days |
 | Feed card | orange card with a flame and four check dots: "Complete a lesson every day to maintain your streak!" | the lemon's home line carries the streak count |
 
-**Measured on Zest (October 30, 2026, iOS 26.4 simulator, Release build, flame crop resampled to 60 fps from the recording of the passing onboarding flow, converted to 30 fps):**
+**Measured side by side (October 30, 2026, iOS 26.4 simulator, Release build):** one script, flame bounding box and colour per 30 fps frame, on the reference clip and on Zest's recording. The first table of this section claimed a 6-frame fade and a 19-frame hold; the per-frame run on the reference gives 18 frames in all, so the code now follows the run.
 
-| Beat | Code and Duolingo | Measured on Zest | Reading |
+| Beat, in frames | Duolingo (frames 13-52) | Zest before | Zest now |
 | --- | --- | --- | --- |
-| Grey hold | 19 | about 35 | 16 frames (0.5 s) too long |
-| Squash | 4 | about 1 | collapses almost at once |
-| Bead | 8 | about 7 | matches |
-| Gold flip | 2 frames into the bead | at the start of the bead | about 2 frames early |
-| Pop | 1 | 1 | matches |
-| Hold with stretch | 10, the last 2 narrow | about 10, the last 2.5 narrow | matches |
-| Flat overshoot | 1 | 1 | matches |
+| Grey on screen | 18 | 23 | 18 in the flow, 20 on the `?streak=1` replay (no receipt to fade across) |
+| Squash | 4 | 4 | 4 |
+| Squash start to gold | 4 | 5 | 4 |
+| Squash start to pop | 11 | 12 | 11 |
+| Pop | 1 | 1 | 1 |
+| Pop to stretch | 9 | 9 | 10 |
+| Pop to sparks | 10 | 11 | 11 |
 
-The sequence from the bead onward matches Duolingo. The grey hold and the squash do not, and the cause is not established; a stalled first paint is a guess, not a finding. The simulator recording is also variable-rate. A recording on a device has to decide whether these two beats need a code change.
+Every beat is within one frame of the reference. Three things are left different on purpose or for lack of a reason to chase them: gold and pale instead of orange and yellow, round sparks instead of Duolingo's shards, and no device recording yet, since the simulator recording is variable-rate. `zest://?streak=1` replays the celebration for measuring (`scripts/streak-replay.yaml`).
 
 Zest's flame is gold (`theme.soft`) with a pale core; unlit it is warm grey on paper. The celebration plays once per day, 0.7 s after the first saved meal of that day (Duolingo waits about that long after "Learning legend!"), and never on the showcase diary. Reduce Motion shows the final state at once.
 

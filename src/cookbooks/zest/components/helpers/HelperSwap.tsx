@@ -14,9 +14,9 @@ import { helperList, type HelperId } from "../../data/helpers";
 import { EASE, SNAP } from "../../motion/timing";
 import { theme } from "../../theme";
 
-export const SWAP_SLOT = 54;
+export const SWAP_SLOT = 48;
 export const SWAP_PAD = 8;
-/** Full width of the bar: six slots and the padding either side. */
+/** Full width of the bar: seven slots and the padding either side. */
 export const SWAP_WIDTH = helperList.length * SWAP_SLOT + SWAP_PAD * 2;
 
 /**

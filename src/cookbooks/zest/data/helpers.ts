@@ -8,7 +8,7 @@
  */
 import type { MealType } from "./diary.ts";
 
-export const helperIds = ["pebble", "fig", "mochi", "bao", "olive", "pip"] as const;
+export const helperIds = ["zest", "pebble", "fig", "mochi", "bao", "olive", "pip"] as const;
 export type HelperId = (typeof helperIds)[number];
 
 export type HelperPalette = {
@@ -52,6 +52,32 @@ export type Helper = {
 };
 
 export const helpers: Record<HelperId, Helper> = {
+  zest: {
+    id: "zest",
+    name: "Zest",
+    species: "lemon",
+    role: "The original",
+    pitch: "Show me the plate. I’ll do the sums.",
+    palette: {
+      body: "#F3CE48",
+      shade: "#E6B838",
+      light: "#FFE389",
+      ink: "#35412E",
+      accent: "#7D945F",
+      cheek: "#D89A3B",
+    },
+    thinking: "Hmm, something tasty.",
+    tag: "Let’s eat.",
+    hello: (firstName) => (firstName ? `Nice to meet you, ${firstName}!` : "Hi! I’m Zest."),
+    // No lines of its own: the sheet's original copy is the lemon's voice.
+    lines: {},
+    reactions: {
+      [-1]: ["Noted. Plenty of room left.", "Good start."],
+      [0]: ["Nicely done.", "That one’s in."],
+      [1]: ["In the diary. Tomorrow’s a new page.", "Logged. No drama."],
+    },
+    persona: "You are Zest, a calm and friendly lemon.",
+  },
   pebble: {
     id: "pebble",
     name: "Pebble",
@@ -247,7 +273,7 @@ export const helpers: Record<HelperId, Helper> = {
 };
 
 export const helperList: Helper[] = helperIds.map((id) => helpers[id]);
-export const defaultHelper: HelperId = "pebble";
+export const defaultHelper: HelperId = "zest";
 
 export function isHelperId(value: unknown): value is HelperId {
   return typeof value === "string" && (helperIds as readonly string[]).includes(value);

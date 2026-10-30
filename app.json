@@ -144,6 +144,35 @@
           "resizeMode": "contain",
           "backgroundColor": "#F3F3F0"
         }
+      ],
+      [
+        "expo-alternate-app-icons",
+        [
+          {
+            "name": "Pebble",
+            "ios": "./assets/images/icons/pebble.png"
+          },
+          {
+            "name": "Fig",
+            "ios": "./assets/images/icons/fig.png"
+          },
+          {
+            "name": "Mochi",
+            "ios": "./assets/images/icons/mochi.png"
+          },
+          {
+            "name": "Bao",
+            "ios": "./assets/images/icons/bao.png"
+          },
+          {
+            "name": "Olive",
+            "ios": "./assets/images/icons/olive.png"
+          },
+          {
+            "name": "Pip",
+            "ios": "./assets/images/icons/pip.png"
+          }
+        ]
       ]
     ],
     "experiments": {

@@ -134,6 +134,15 @@ export function createProfileStore(storage: StateStorage) {
       }),
       {
         name: "zest-profile",
+        // Version 1: the lemon is the default again. Everyone on the penguin got
+        // it as a default from one interim build, not by choosing it.
+        version: 1,
+        migrate: (stored, version) => {
+          const old = stored as Partial<Profile>;
+          return (version < 1 && old.helper === "pebble"
+            ? { ...old, helper: "zest" }
+            : old) as ProfileState;
+        },
         storage: createJSONStorage(() => storage),
         partialize: ({ save, logWeight, finishOnboarding, reset, ...profile }) => profile,
       },

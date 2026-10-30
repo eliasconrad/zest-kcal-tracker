@@ -1,35 +1,28 @@
-appId: io.appllama.zestkcaltracker
-name: Pick a helper in setup, see it swap and speak in its own voice
+appId: eu.eliasconrad.zest
+name: Mascot picker in the profile, voice and icon follow the pick
 ---
 - launchApp:
     clearState: true
-- assertVisible: "What should I call you?"
-# Pebble is the default helper until one is picked.
-- extendedWaitUntil:
-    visible: "Pebble says: Hi. I’m Pebble."
-    timeout: 15000
-- tapOn: "Your name"
-- inputText: "Mia"
-- pressKey: Enter
-- extendedWaitUntil:
-    visible: "Who’s coming with you?"
-    timeout: 5000
-# Every card carries name, species and role.
-- assertVisible: "Pebble the penguin, Calm coach"
-- assertVisible: "Pip the frog, Hype"
-- tapOn: "Mochi the cat, Sassy"
-# The companion on the sheet edge swaps at once and greets in the new voice.
-# (The companion itself sits outside the modal sheet, so only the bubble is in the tree.)
-- assertVisible: "Mochi says: Mia, hm? I’m Mochi. Impress me."
-- takeScreenshot: helpers-pick-mochi
-- tapOn: "Fig the fox, Strict"
-- assertVisible: "Fig says: Mia. I’m Fig. I keep count."
-- tapOn: "Continue"
-- extendedWaitUntil:
-    visible: "What are you here for?"
-    timeout: 5000
-# The goal step is in the helper's voice, not the lemon's.
-- assertVisible: "Fig says: Pick one and mean it."
+- openLink: "zest://?demo=1"
 - tapOn:
-    text: "Back"
+    text: "Open|Öffnen"
     optional: true
+- extendedWaitUntil:
+    visible: "Log a meal"
+    timeout: 10000
+- tapOn: "Your profile"
+- scrollUntilVisible:
+    element: "Mascot: Zest. Edit"
+    direction: DOWN
+- tapOn: "Mascot: Zest. Edit"
+- extendedWaitUntil:
+    visible: "Pick your mascot"
+    timeout: 5000
+- assertVisible: "Zest the lemon, The original"
+- assertVisible: "Pip the frog, Hype"
+- tapOn: "Fig the fox, Strict"
+- assertVisible: "“.*”"
+- tapOn: "Save"
+- extendedWaitUntil:
+    visible: "Mascot: Fig. Edit"
+    timeout: 5000

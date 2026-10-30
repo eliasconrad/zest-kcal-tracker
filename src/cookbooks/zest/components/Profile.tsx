@@ -398,7 +398,7 @@ export function ProfileSheet({
                   onPress={promptName}
                 />
                 <Row
-                  label="Helper"
+                  label="Mascot"
                   value={helperFor(profile.helper).name}
                   onPress={() => onEdit("helper")}
                 />
