@@ -251,11 +251,11 @@ const ORBIT: { id: ArtId; ring: number; start: number; speed: number }[] = [
   { id: "sneaker", ring: 2, start: 2.7, speed: 0.22 },
   { id: "cookie", ring: 2, start: 4.8, speed: 0.22 },
 ];
-const RINGS = [44, 70, 96];
+const RINGS = [34, 54, 74];
 
 /** What the plan is made of, circling the plate while the number climbs. */
 export function PlanOrbit({ duration, reduced }: { duration: number; reduced: boolean }) {
-  const size = 216;
+  const size = 168;
   const middle = size / 2;
   const clock = useSharedValue(0);
   useFrameCallback((frame) => {
@@ -286,7 +286,7 @@ export function PlanOrbit({ duration, reduced }: { duration: number; reduced: bo
             strokeWidth={1}
           />
         ))}
-        <Group transform={[{ translate: [middle - 26, middle - 26] }, { scale: 52 / 64 }]}>
+        <Group transform={[{ translate: [middle - 20, middle - 20] }, { scale: 40 / 64 }]}>
           {artShapes.plate.map((shape, i) => (
             <Path key={i} path={shape.path} color={shape.color} />
           ))}
@@ -297,8 +297,8 @@ export function PlanOrbit({ duration, reduced }: { duration: number; reduced: bo
       </Canvas>
       <Text
         style={{
-          fontSize: 44,
-          lineHeight: 50,
+          fontSize: 34,
+          lineHeight: 38,
           fontWeight: "700",
           letterSpacing: -1.6,
           fontVariant: ["tabular-nums"],
@@ -326,7 +326,7 @@ function Orbiter({
   clock: SharedValue<number>;
   middle: number;
 }) {
-  const icon = 24;
+  const icon = 22;
   const r = RINGS[ring];
   const transform = useDerivedValue<Transforms3d>(() => {
     const angle = start + clock.get() * speed;

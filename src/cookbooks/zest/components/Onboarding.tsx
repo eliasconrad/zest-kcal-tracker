@@ -329,11 +329,12 @@ export function Onboarding({
     set({ reminders });
     go(1, { reminders });
   };
+  const intro = step === "intro";
   const firstName = draft.name.trim().split(/\s+/)[0] || "";
   const helper = helperFor(draft.helper);
   const plain = editing
     ? "Let’s adjust that."
-    : step === "name"
+    : step === "name" || intro
       ? "Hi! I’m Zest."
       : step === "helper"
         ? helper.hello(firstName)
@@ -411,7 +412,6 @@ export function Onboarding({
   const panelTop = Math.max(180, height - 616);
   // On a step with several fields the mascot makes room: there is too little left
   // between its feet and the keyboard to see the field being typed in.
-  const intro = step === "intro";
   const lift = useSharedValue(intro ? 1 : 0);
   // The first screen has the whole sheet; the mascot arrives with the first question.
   useEffect(() => {
@@ -601,7 +601,7 @@ export function Onboarding({
                     </View>
                   </Question>
                 )}
-                {intro && <Intro height={Math.max(240, height - insets.top - insets.bottom - 320)} />}
+                {intro && <Intro height={Math.max(240, height - insets.top - insets.bottom - 415)} />}
                 {step === "name" && (
                   <Question
                     title="What should I call you?"
@@ -961,7 +961,7 @@ export function Onboarding({
               </Animated.View>
             </KeyboardAwareScrollView>
             <View style={{ paddingHorizontal: 22, paddingTop: 10, paddingBottom: 12 }}>
-              {intro ? (
+              {preparing ? null : intro ? (
                 <View style={{ gap: 2 }}>
                   <ContinueButton
                     label="Get started"
@@ -1465,7 +1465,7 @@ function Question({
         style={{
           fontSize: 28,
           lineHeight: 33,
-          fontWeight: "600",
+          fontWeight: "700",
           letterSpacing: -0.9,
           color: theme.ink,
         }}
@@ -1545,7 +1545,7 @@ function Choice({
         >
           {art ? <ArtIcon id={art} size={34} /> : leading}
           <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 17, fontWeight: "500", color: theme.ink }}>
+            <Text style={{ fontSize: 17, fontWeight: "600", letterSpacing: -0.2, color: theme.ink }}>
               {label}
             </Text>
             {detail && (
@@ -1980,7 +1980,7 @@ function PlanStep({
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  minHeight: 44,
+                  minHeight: 36,
                   gap: 12,
                   opacity: done || active ? 1 : 0.45,
                 }}

@@ -38,3 +38,24 @@ Added in this round, with the reason:
 | Reminders: pick the meals to be reminded of, then the system notification ask, skippable | Cal AI, Lean, SnapCalorie; Lean explains before the alert | local notifications at the usual meal times |
 
 Left out on purpose: health conditions, medication, water, fasting, children, work schedule, "where did you hear of us", ratings and comparisons. Thirteen steps for a weight goal, eleven for maintenance.
+
+## Grow and Cal AI (October 30, 2026)
+
+Read frame by frame from a 110 s recording of Grow's onboarding, supplied by Elias, and Cal AI's onboarding video in Appllama (`onb_ip57t`). Screens are described, never copied.
+
+| What | Grow | Cal AI | Zest takes |
+| --- | --- | --- | --- |
+| First screen | awards, a watch with a living face, one button | a phone slides in tilted from the lower right, straightens and shows the camera working; one line, "Get Started", "Already have an account? Sign In" | Cal AI's: a phone with a real recording of Zest, one line, "Get started", "I already have an account" |
+| Story screens | one line and a moving drawing each: bubbles falling, a jar filling, a heartbeat, a seesaw | a chart of the weight curve | no extra screens; the pace step draws the way to the target |
+| Question list | big bold title top left, rows with a colourful icon, a label and a radio; Continue greyed until an answer | the same without icons | Grow's rows |
+| Choosing | the row turns white and lifts, the radio fills with a check, four pairs of short ticks fly off its corners in the icon's colour, about 0.4 s | the row turns black | Grow's, with the gold check |
+| Entering a question | content fades out, the title sharpens from blur, rows rise one by one about 70-100 ms apart | the same stagger | rows rise 70 ms apart; the title fades, no blur |
+| Progress | segmented bar under a back chevron | thin bar | the existing bar |
+| Computing | icons orbit a logo, a big percent climbs, a checklist ticks off | percent ring and checklist | orbit of food and body drawings, percent, the existing checklist |
+| Result | 2-column tiles with an icon each | grid of cards | the guide with a drawn icon per macro |
+| Haptics | cannot be read from a video | cannot be read from a video | selection tick on a choice, light impact on a step, as before |
+| Copy | titles of 3-7 words, one line of detail | the same | already there |
+
+Zest keeps its own questions, paper colour and mascot. Where Grow has no mascot, Zest's stands on the sheet's edge with props drawn for each step. Every drawing is in `components/onboarding/drawings.ts`.
+
+Minimum age: 16, as on the privacy page. A calorie deficit is not meant for a body still growing, the Mifflin-St Jeor formula is made for adults, and 16 is the age of digital consent in Germany. A finished date below that shows the reason under the field and Continue stays off.
