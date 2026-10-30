@@ -84,12 +84,11 @@ export type Answer = { text: string; followups: string[]; pendingMarker: boolean
 
 /** Splits streamed prose from the trailing `>> a | b | c` follow-up line, even mid-stream. */
 export function parseAnswer(text: string): Answer {
-  const marker = text.lastIndexOf("\n>>");
-  const startsWithMarker = text.startsWith(">>");
-  const at = startsWithMarker ? 0 : marker;
+  // Models usually start the marker on its own line, some keep it on the last one.
+  const at = [...text.matchAll(/(?:^|\s)>>/g)].pop()?.index ?? -1;
   if (at < 0) {
-    // A partial marker may be arriving ("\n>" or "\n>>"); hide it until it resolves.
-    const tail = text.match(/\n>?$/);
+    // A partial marker may be arriving ("\n>" or " >"); hide it until it resolves.
+    const tail = text.match(/(?:\n>?| >)$/);
     return {
       text: tail ? text.slice(0, tail.index).trimEnd() : text,
       followups: [],
@@ -97,7 +96,7 @@ export function parseAnswer(text: string): Answer {
     };
   }
   const prose = text.slice(0, at).trimEnd();
-  const line = text.slice(at).replace(/^\n?>>\s*/, "");
+  const line = text.slice(at).replace(/^\s*>>\s*/, "");
   const complete = line.includes("\n");
   const followups = line
     .split("\n")[0]

@@ -85,3 +85,10 @@ test("photos shrink to the long edge in either orientation", async () => {
   assert.deepEqual(fitLongEdge(4032, 3024, 1280), { width: 1280, height: 960 });
   assert.equal(fitLongEdge(800, 600, 1280), null);
 });
+
+test("follow-ups are found when the model keeps them on the last line", () => {
+  const done = parseAnswer("Try the tofu. >> More protein? | A soup?\n");
+  assert.equal(done.text, "Try the tofu.");
+  assert.deepEqual(done.followups, ["More protein?", "A soup?"]);
+  assert.equal(parseAnswer("Try the tofu. >").text, "Try the tofu.");
+});
