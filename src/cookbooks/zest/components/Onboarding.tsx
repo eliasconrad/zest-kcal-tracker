@@ -311,10 +311,6 @@ export function Onboarding({
       return;
     }
     setStep(next);
-    if (step === "intro" && direction === 1) {
-      setArrived(true);
-      setTimeout(() => setArrived(false), 1100);
-    }
     if (!scene.reduced) {
       if (next === "plan" && direction === 1) {
         setDoneItems(0);
@@ -973,7 +969,11 @@ export function Onboarding({
                     label="Get started"
                     ready
                     reduced={scene.reduced}
-                    onPress={() => go(1)}
+                    onPress={() => {
+                      setArrived(true);
+                      setTimeout(() => setArrived(false), 1100);
+                      go(1);
+                    }}
                   />
                   {onLogin && (
                     <Touch
