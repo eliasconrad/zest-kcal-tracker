@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StaticHelper } from "./StaticHelper";
@@ -5,12 +6,52 @@ import { frameIds } from "./frames";
 import { helperList } from "../../data/helpers";
 import { theme } from "../../theme";
 
+/** Milliseconds per frame when the gallery plays its frames in turn. */
+export const GALLERY_FRAME_MS = 350;
+/** Fixed row height while animating, so a recording can be cut per helper. */
+export const GALLERY_ROW = 128;
+
 /**
  * Every helper in every frame, for review and for the docs screenshot.
- * Opened with `?gallery=1`; never linked from the product.
+ * Opened with `?gallery=1`; `&animate=1` plays the seven frames in turn, one
+ * big drawing per helper in rows of a fixed height, so a screen recording
+ * cuts into one animated image per helper. Never linked from the product.
  */
-export function HelperGallery() {
+export function HelperGallery({ animate = false }: { animate?: boolean }) {
   const insets = useSafeAreaInsets();
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    if (!animate) return;
+    const id = setInterval(() => setTick((t) => t + 1), GALLERY_FRAME_MS);
+    return () => clearInterval(id);
+  }, [animate]);
+  if (animate) {
+    const frame = frameIds[tick % frameIds.length];
+    return (
+      <View
+        accessibilityLabel={`Frame ${frame}`}
+        style={{ flex: 1, backgroundColor: theme.paper, paddingTop: insets.top + 12 }}
+      >
+        {helperList.map((helper) => (
+          <View
+            key={helper.id}
+            style={{ height: GALLERY_ROW, flexDirection: "row", alignItems: "center", paddingLeft: 16, gap: 18 }}
+          >
+            <StaticHelper id={helper.id} size={120} frame={frame} />
+            <View>
+              <Text style={{ fontSize: 22, fontWeight: "600", letterSpacing: -0.5, color: theme.ink }}>
+                {helper.name}
+              </Text>
+              <Text style={{ fontSize: 14, color: theme.muted }}>
+                the {helper.species} · {helper.role}
+              </Text>
+              <Text style={{ fontSize: 13, color: theme.faint, marginTop: 6 }}>{frame}</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+    );
+  }
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: theme.paper }}

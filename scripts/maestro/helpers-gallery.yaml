@@ -1,0 +1,17 @@
+appId: io.appllama.zestkcaltracker
+name: "Animated gallery, recorded - seven frames per helper in turn"
+---
+- launchApp:
+    clearState: true
+- assertVisible: "What should I call you?"
+- openLink: "zest-kcal-tracker://?gallery=1&animate=1"
+- tapOn:
+    text: "Open|Öffnen"
+    optional: true
+- assertVisible: "Pip"
+- startRecording: helpers-gallery
+# Seven frames at 350 ms is one cycle of 2.45 s. The screen never settles while
+# it plays, so waitForAnimationToEnd runs to its timeout: three cycles.
+- waitForAnimationToEnd:
+    timeout: 7500
+- stopRecording
