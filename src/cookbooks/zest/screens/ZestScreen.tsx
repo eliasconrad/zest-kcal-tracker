@@ -104,9 +104,12 @@ function eventId(prefix: string) {
 export function ZestScreen({
   demo = false,
   displayName = "Jaimin",
+  debugSwapBar = false,
 }: {
   demo?: boolean;
   displayName?: string;
+  /** `?swapbar=1`: keeps the helper swap bar open for a screenshot; review only. */
+  debugSwapBar?: boolean;
 }) {
   const scene = useScene();
   const meals = useDiary((s) => s.meals);
@@ -123,7 +126,9 @@ export function ZestScreen({
   const [tagPlace, setTagPlace] = useState<"hero" | "perch">("hero");
   const helper = helperFor(profile.helper);
   /** The swap bar while the companion is held; `hover` is the helper under the finger. */
-  const [swap, setSwap] = useState<{ hover: HelperId | null } | null>(null);
+  const [swap, setSwap] = useState<{ hover: HelperId | null } | null>(
+    debugSwapBar ? { hover: "fig" } : null,
+  );
   const swapLeft = useRef<number | null>(null);
   const openSwap = () => {
     Keyboard.dismiss();

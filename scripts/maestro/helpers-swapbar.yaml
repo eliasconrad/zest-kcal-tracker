@@ -1,0 +1,13 @@
+appId: io.appllama.zestkcaltracker
+name: "The swap bar, held open for review"
+---
+- launchApp:
+    clearState: true
+- assertVisible: "What should I call you?"
+- openLink: "zest-kcal-tracker://?demo=1&swapbar=1"
+- tapOn:
+    text: "Open|Öffnen"
+    optional: true
+- assertVisible: "(Good|Still up).*,.*"
+- assertVisible: "Helper: Fig, Strict"
+- takeScreenshot: helpers-swapbar

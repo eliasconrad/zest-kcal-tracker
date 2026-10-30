@@ -122,6 +122,23 @@ custom action "Change helper"; the swap bar announces the hovered helper. Cards
 are "Pebble the penguin, Calm coach". The bubble on the setup sheet reads
 "<Helper> says: …", so Maestro and VoiceOver hear the same text.
 
+## Evidence on screen
+
+- `docs/images/helpers-swapbar.png`: the bar held open (`?demo=1&swapbar=1`,
+  flow `helpers-swapbar.yaml`): six helpers in one Liquid Glass pill, the
+  hovered one lifted and named, the current one marked with a dot.
+- `docs/images/helpers-motion-eyes.png`: 4 fps strip of the companion cropped
+  from a 15 s Maestro recording (`helpers-motion.yaml`): taps at the four
+  corners move the pupils first and the head after, a blink lands mid-way,
+  and the last frames are the crossfade into the next helper.
+- `docs/images/helpers-motion-swap.png`: 8 fps strip of the hold: the bar
+  forms under the finger, a helper lifts, the finger lets go, the companion
+  crossfades.
+- Tilt: the gaze reads the gravity and gyroscope sensors through `useScene`,
+  unchanged from the lemon; the simulator has no such sensors and reads zero,
+  so tilt is only visible on a device.
+- Every screen of both reference apps, one line each: `docs/APPLLAMA-CATALOGUE.md`.
+
 ## Verified / not verified
 
 - `npm run verify` and `cd server && npm test`: pass (30 Oct 2026).

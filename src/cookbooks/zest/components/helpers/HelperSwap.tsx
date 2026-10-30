@@ -53,7 +53,8 @@ export function HelperSwap({
       style={{
         position: "absolute",
         bottom,
-        alignSelf: "center",
+        left: 0,
+        right: 0,
         alignItems: "center",
         gap: 10,
         zIndex: 60,

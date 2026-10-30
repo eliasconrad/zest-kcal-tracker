@@ -1,0 +1,45 @@
+appId: io.appllama.zestkcaltracker
+name: "Live rig on screen, recorded - eyes follow taps, hop after a meal, crossfade on swap"
+---
+- launchApp:
+    clearState: true
+- assertVisible: "What should I call you?"
+- openLink: "zest-kcal-tracker://?demo=1"
+- tapOn:
+    text: "Open|Öffnen"
+    optional: true
+- assertVisible: "Pebble, open calorie calendar"
+- startRecording: helpers-motion
+# Taps around the companion: the eyes notice first, the head follows, the body leans.
+- tapOn:
+    point: "8%, 20%"
+- extendedWaitUntil:
+    visible: "Pebble, open calorie calendar"
+    timeout: 1500
+- tapOn:
+    point: "92%, 20%"
+- extendedWaitUntil:
+    visible: "Pebble, open calorie calendar"
+    timeout: 1500
+- tapOn:
+    point: "92%, 60%"
+- extendedWaitUntil:
+    visible: "Pebble, open calorie calendar"
+    timeout: 1500
+- tapOn:
+    point: "8%, 60%"
+- extendedWaitUntil:
+    visible: "Pebble, open calorie calendar"
+    timeout: 1500
+# Hold and slide: the bar forms, the finger lifts a helper, the swap crossfades.
+- swipe:
+    start: "50%, 31%"
+    end: "30%, 77%"
+    duration: 4000
+- extendedWaitUntil:
+    visible: "(Fig|Mochi|Bao|Olive|Pip), open calorie calendar"
+    timeout: 3000
+- extendedWaitUntil:
+    visible: "(Fig|Mochi|Bao|Olive|Pip), open calorie calendar"
+    timeout: 1500
+- stopRecording
