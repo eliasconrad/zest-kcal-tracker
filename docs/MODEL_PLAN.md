@@ -21,6 +21,8 @@ Harness: `server/scripts/eval/` (`prepare.mjs` fetches the photos, `run.mjs` sco
 - **A scan is an estimate, with a typical error of about half the dish's calories on this data.** "Always accurate" is not reachable with a prompt. The app must keep calling the number an estimate and keep the edit a tap away.
 - Nutrition5k plates are small and photographed from straight above, so these numbers do not transfer directly to a phone photo of a full dinner.
 
+Two free open models were tried as well. `gemma-4-31b:free` answered 429 to all 15 requests. `nemotron-3.5-super-vl:free` used up its 160 tokens on reasoning before it gave a line, so 0 of 15 could be read. Neither says anything about accuracy.
+
 Costs are real OpenRouter charges reported per request. Failed requests count as zero in the mean, so runs with failures read slightly low.
 
 ## Blocked: the OpenRouter account has no credit
