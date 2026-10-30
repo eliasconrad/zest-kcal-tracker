@@ -43,6 +43,8 @@ export const sampleEstimates = {
 };
 export type Meal = {
   id: string;
+  /** Set by the store; the newer version wins when an account syncs. */
+  updatedAt?: number;
   date: string;
   name: string;
   type: MealType;

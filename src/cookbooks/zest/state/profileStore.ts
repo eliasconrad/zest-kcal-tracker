@@ -47,6 +47,8 @@ export type Profile = {
   pastObstacles: Obstacle[];
   /** Meals with a daily local reminder. */
   reminders: MealType[];
+  /** Recipe ids, from the recipes sheet. */
+  favouriteRecipes: string[];
   /** When set, replaces the computed daily guide. */
   manualGuide?: number;
   weights: WeightEntry[];
@@ -81,6 +83,7 @@ export const defaultProfile: Profile = {
   usualMeals: ["Breakfast", "Lunch", "Dinner"],
   pastObstacles: [],
   reminders: [],
+  favouriteRecipes: [],
   weights: [],
 };
 

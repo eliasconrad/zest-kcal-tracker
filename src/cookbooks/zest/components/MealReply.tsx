@@ -1,3 +1,4 @@
+import { CountUp } from "./ui/CountUp";
 import {
   createContext,
   useContext,
@@ -297,21 +298,36 @@ function MealReplyBody({
                   }}
                 />
                 <Reveal active={complete} delay={100}>
-                  <Text
-                    accessibilityLabel={`${meal.kcal} estimated kilocalories`}
-                    maxFontSizeMultiplier={1.1}
-                    numberOfLines={1}
-                    style={{
-                      fontSize: meal.kcal >= 10000 ? 43 : 54,
-                      lineHeight: 65,
-                      fontWeight: "500",
-                      letterSpacing: -2.6,
-                      color: theme.ink,
-                      fontVariant: ["tabular-nums"],
-                    }}
-                  >
-                    {meal.kcal}
-                  </Text>
+                  {complete ? (
+                    <CountUp
+                      value={meal.kcal}
+                      accessibilityLabel={`${meal.kcal} estimated kilocalories`}
+                      style={{
+                        fontSize: meal.kcal >= 10000 ? 43 : 54,
+                        lineHeight: 65,
+                        fontWeight: "500",
+                        letterSpacing: -2.6,
+                        color: theme.ink,
+                        fontVariant: ["tabular-nums"],
+                      }}
+                    />
+                  ) : (
+                    <Text
+                      accessibilityLabel={`${meal.kcal} estimated kilocalories`}
+                      maxFontSizeMultiplier={1.1}
+                      numberOfLines={1}
+                      style={{
+                        fontSize: meal.kcal >= 10000 ? 43 : 54,
+                        lineHeight: 65,
+                        fontWeight: "500",
+                        letterSpacing: -2.6,
+                        color: theme.ink,
+                        fontVariant: ["tabular-nums"],
+                      }}
+                    >
+                      {meal.kcal}
+                    </Text>
+                  )}
                 </Reveal>
                 <Reveal active={complete} delay={210}>
                   <View

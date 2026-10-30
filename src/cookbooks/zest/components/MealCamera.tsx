@@ -26,6 +26,7 @@ import { File, Paths } from "expo-file-system";
 import { GlassSurface } from "./ui/GlassSurface";
 import { GlassButton } from "./ui/GlassButton";
 import { Touch, Symbol } from "./ui/Touch";
+import { Selectable, SelectableText } from "./ui/Selectable";
 import { stickerSource } from "./Stickers";
 import { MealImage } from "../data/photos";
 import { theme } from "../theme";
@@ -377,7 +378,8 @@ export function MealCamera({
                 expand
                 style={{ flex: 1 }}
               >
-                <View
+                <Selectable
+                  selected={selected}
                   style={{
                     height: 46,
                     borderRadius: 23,
@@ -385,7 +387,6 @@ export function MealCamera({
                     alignItems: "center",
                     justifyContent: "center",
                     gap: 6,
-                    backgroundColor: selected ? theme.heavy : "#FFFFFF",
                   }}
                 >
                   {/* A plain image: a wrapper marked hidden for assistive tech
@@ -397,17 +398,13 @@ export function MealCamera({
                     transition={0}
                     style={{ width: 20, height: 20 }}
                   />
-                  <Text
+                  <SelectableText
                     numberOfLines={1}
-                    style={{
-                      fontSize: 13,
-                      fontWeight: "500",
-                      color: selected ? theme.onHeavy : theme.ink,
-                    }}
+                    style={{ fontSize: 13, fontWeight: "500" }}
                   >
                     {option}
-                  </Text>
-                </View>
+                  </SelectableText>
+                </Selectable>
               </Touch>
             );
           })}

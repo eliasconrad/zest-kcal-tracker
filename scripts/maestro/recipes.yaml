@@ -1,0 +1,29 @@
+appId: eu.eliasconrad.zest
+name: Recipes: search, servings, log
+---
+- launchApp:
+    clearState: true
+- openLink: "zest://?demo=1"
+- tapOn:
+    text: "Open|Öffnen"
+    optional: true
+- extendedWaitUntil:
+    visible: "Log a meal"
+    timeout: 10000
+- tapOn: "Recipes"
+- extendedWaitUntil:
+    visible: "Search recipes"
+    timeout: 5000
+- tapOn: "Search recipes"
+- inputText: "salmon"
+- tapOn:
+    text: "Roast salmon with sweet potato.*"
+- extendedWaitUntil:
+    visible: "Servings"
+    timeout: 5000
+- tapOn: "More servings"
+- assertVisible: "1.5"
+- tapOn: "Log this"
+- extendedWaitUntil:
+    visible: "Log a meal"
+    timeout: 8000

@@ -19,6 +19,7 @@ import {
   type MealType,
 } from "./prompts.ts";
 import { createLineCalibrator } from "./calibrate.ts";
+import { legalPages } from "./legal.ts";
 import { authenticate, handleAccount, spend, type AccountEnv } from "./account.ts";
 import { streamChat, type ChatMessage } from "./openrouter.ts";
 
@@ -85,6 +86,7 @@ export default {
     const url = new URL(request.url);
     if (request.method === "GET" && url.pathname === "/health")
       return json(200, { ok: true, model: env.OPENROUTER_MODEL });
+    if (request.method === "GET" && legalPages[url.pathname]) return legalPages[url.pathname]();
     if (url.pathname === "/v1/appstore/notifications") {
       // Apple is the caller; it proves itself with the signature, not our app token.
       return (await handleAccount(request, url, env)) ?? json(404, { error: "route" });

@@ -82,7 +82,7 @@ test("root mounts only Zest and keeps sample seeding explicit", () => {
   const routes = files(resolve(root, "src/app"))
     .map((path) => relative(root, path))
     .sort();
-  assert.deepEqual(routes, ["src/app/_layout.tsx", "src/app/index.tsx"]);
+  assert.deepEqual(routes, ["src/app/+native-intent.ts", "src/app/_layout.tsx", "src/app/index.tsx"]);
   assert.match(text("src/app/index.tsx"), /demo={demo === "1"}/);
   const screen = text("src/cookbooks/zest/screens/ZestScreen.tsx");
   assert.doesNotMatch(

@@ -116,6 +116,27 @@ export function isDiaryQuestion(question: string) {
   );
 }
 
+export type RecipeIdea = {
+  name: string;
+  kcal: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  minutes: number;
+};
+
+/** Each finished line of a /v1/recipe reply; anything else is skipped. */
+export function parseRecipes(text: string): RecipeIdea[] {
+  return text.split("\n").flatMap((line) => {
+    const parts = line.replace(/^[\s\-*\d.`]+/, "").replace(/`\s*$/, "").split("|").map((part) => part.trim());
+    if (parts.length !== 6) return [];
+    const [name, ...rest] = parts;
+    const [kcal, protein, carbs, fat, minutes] = rest.map(Number);
+    if (!name || ![kcal, protein, carbs, fat, minutes].every((n) => Number.isFinite(n) && n >= 0) || kcal <= 0) return [];
+    return [{ name, kcal: Math.round(kcal), protein, carbs, fat, minutes }];
+  });
+}
+
 /** The size that brings the long edge down to `max`, or null when it already fits. */
 export function fitLongEdge(width: number, height: number, max: number) {
   const long = Math.max(width, height);

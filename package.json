@@ -19,6 +19,7 @@
     "@shopify/flash-list": "2.0.2",
     "@shopify/react-native-skia": "2.6.2",
     "expo": "~57.0.26",
+    "expo-apple-authentication": "~57.0.2",
     "expo-blur": "~57.0.3",
     "expo-build-properties": "~57.0.21",
     "expo-camera": "~57.0.6",
@@ -28,6 +29,7 @@
     "expo-font": "~57.0.4",
     "expo-glass-effect": "~57.0.3",
     "expo-haptics": "~57.0.3",
+    "expo-iap": "^6.3.0",
     "expo-image": "~57.0.5",
     "expo-image-manipulator": "~57.0.21",
     "expo-image-picker": "~57.0.20",
@@ -56,11 +58,11 @@
   "devDependencies": {
     "@types/react": "~19.2.2",
     "babel-preset-expo": "^57.0.12",
+    "decode-uri-component": "file:packages/decode-uri-component-compat",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~57.0.2",
     "prettier": "^3.9.8",
-    "typescript": "~6.0.3",
-    "decode-uri-component": "file:packages/decode-uri-component-compat"
+    "typescript": "~6.0.3"
   },
   "reanimated": {
     "staticFeatureFlags": {

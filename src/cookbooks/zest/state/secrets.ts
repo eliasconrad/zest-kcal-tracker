@@ -1,8 +1,9 @@
 import * as SecureStore from "expo-secure-store";
 
 /**
- * The password never enters the profile store or its JSON on disk. It sits in
- * the device keychain until an account service exists to hand it to.
+ * The password never enters the profile store or its JSON on disk. It waits in
+ * the device keychain only until the account exists on the server (onboarding
+ * may happen offline), then it is deleted.
  */
 const KEY = "zest-password";
 const options: SecureStore.SecureStoreOptions = {
@@ -11,6 +12,11 @@ const options: SecureStore.SecureStoreOptions = {
 
 export async function savePassword(password: string) {
   await SecureStore.setItemAsync(KEY, password, options);
+}
+
+/** Only ever read to finish creating the account; deleted right after. */
+export function readPassword() {
+  return SecureStore.getItemAsync(KEY, options);
 }
 
 export async function hasPassword() {

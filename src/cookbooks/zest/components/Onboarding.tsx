@@ -27,6 +27,7 @@ import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GlassSurface } from "./ui/GlassSurface";
 import { Symbol, Touch } from "./ui/Touch";
+import { Selectable, SelectableText } from "./ui/Selectable";
 import { FoodSticker, type StickerKind } from "./Stickers";
 import { Thinking } from "./Thinking";
 import { cardFloor, FIGURE, SCALE } from "../hooks/useScene";
@@ -68,6 +69,8 @@ import {
   type MealType,
 } from "../data/diary";
 import { askForReminders } from "../data/reminders";
+import { AppleButton } from "./AccountSheet";
+import { session } from "../state/useSession";
 import { theme } from "../theme";
 import type { Scene } from "../hooks/useScene";
 
@@ -129,6 +132,7 @@ export function Onboarding({
   editing = false,
   onDone,
   onCancel,
+  onLogin,
   revealing = false,
   burst = false,
 }: {
@@ -140,6 +144,8 @@ export function Onboarding({
   /** The password travels beside the profile; it is kept in the keychain, not the store. */
   onDone: (fields: Partial<Profile>, secrets?: { password?: string }) => void;
   onCancel?: () => void;
+  /** "I already have an account": hands over to the account sheet. */
+  onLogin?: () => void;
   /** The lemon is still hidden behind the sheet; no bubble yet. */
   revealing?: boolean;
   /** Food stickers scatter from the sheet edge as the lemon pops out. */
@@ -150,6 +156,7 @@ export function Onboarding({
   const [draft, setDraft] = useState<Profile>(profile);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [accountError, setAccountError] = useState("");
   const [step, setStep] = useState<OnboardingStep>(startAt ?? "name");
   const steps = useMemo(() => stepsFor(draft.goal), [draft.goal]);
   const index = Math.max(0, steps.indexOf(step));
@@ -738,8 +745,16 @@ export function Onboarding({
                 {step === "account" && (
                   <Question
                     title="Keep your diary yours"
-                    detail="An e-mail and a password, so your guide can follow you to another phone later. Both stay on this device for now."
+                    detail="An account lets your diary follow you to a new phone and lets friends find you. You can also start without one."
                   >
+                    {!editing && (
+                      <AppleButton
+                        onDone={() => {
+                          go(1, { email: session.user()?.email ?? draft.email });
+                        }}
+                        onError={setAccountError}
+                      />
+                    )}
                     <TextField
                       label="E-mail"
                       value={draft.email}
@@ -763,6 +778,11 @@ export function Onboarding({
                         onPress: () => setShowPassword((v) => !v),
                       }}
                     />
+                    {!!accountError && (
+                      <Text style={{ color: "#A63A26", fontSize: 14 }}>
+                        {accountError}
+                      </Text>
+                    )}
                     {password.length > 0 && password.length < PASSWORD_MIN && (
                       <Text
                         style={{ color: theme.muted, fontSize: 13, marginTop: 2 }}
@@ -785,6 +805,47 @@ export function Onboarding({
               <View style={{ marginTop: 26 }}>
                 {step === "plan" && !editing && !preparing ? (
                   <HoldToStart reduced={scene.reduced} onCommit={() => go(1)} />
+                ) : step === "account" && !editing ? (
+                  <View style={{ gap: 2 }}>
+                    <ContinueButton
+                      label="Continue"
+                      ready={ready}
+                      reduced={scene.reduced}
+                      onPress={() => go(1)}
+                    />
+                    <Touch
+                      label="Skip for now"
+                      onPress={() => {
+                        setPassword("");
+                        set({ email: "" });
+                        go(1, { email: "" });
+                      }}
+                      style={{
+                        height: 44,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Text style={{ fontSize: 15, color: theme.muted }}>
+                        Skip for now
+                      </Text>
+                    </Touch>
+                    {onLogin && (
+                      <Touch
+                        label="I already have an account"
+                        onPress={onLogin}
+                        style={{
+                          height: 44,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Text style={{ fontSize: 15, color: theme.muted }}>
+                          I already have an account
+                        </Text>
+                      </Touch>
+                    )}
+                  </View>
                 ) : step === "reminders" ? (
                   <View style={{ gap: 6 }}>
                     <ContinueButton
@@ -954,26 +1015,20 @@ function TagChip({
 }) {
   return (
     <Touch label={label} onPress={onPress} selected={selected} expand>
-      <View
+      <Selectable
+        selected={selected}
         style={{
           height: 44,
           borderRadius: 22,
           paddingHorizontal: 16,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: selected ? theme.heavy : "#FFFFFF",
         }}
       >
-        <Text
-          style={{
-            fontSize: 15,
-            fontWeight: "500",
-            color: selected ? theme.onHeavy : theme.ink,
-          }}
-        >
+        <SelectableText style={{ fontSize: 15, fontWeight: "500" }}>
           {label}
-        </Text>
-      </View>
+        </SelectableText>
+      </Selectable>
     </Touch>
   );
 }
@@ -1164,45 +1219,39 @@ function Choice({
 }) {
   return (
     <Touch label={label} onPress={onPress} expand selected={selected}>
-      <View
+      <Selectable
+        selected={selected}
         style={{
           minHeight: 58,
           borderRadius: 20,
           borderCurve: "continuous",
           paddingHorizontal: 18,
           paddingVertical: 14,
-          backgroundColor: selected ? theme.heavy : "#FFFFFF",
           flexDirection: "row",
           alignItems: "center",
           gap: 12,
         }}
       >
         <View style={{ flex: 1 }}>
-          <Text
-            style={{
-              fontSize: 17,
-              fontWeight: "500",
-              color: selected ? theme.onHeavy : theme.ink,
-            }}
-          >
+          <SelectableText style={{ fontSize: 17, fontWeight: "500" }}>
             {label}
-          </Text>
+          </SelectableText>
           {detail && (
-            <Text
-              style={{
-                fontSize: 13,
-                marginTop: 2,
-                color: selected ? "#D9DAD3" : theme.muted,
-              }}
+            <SelectableText
+              from={theme.muted}
+              to="#D9DAD3"
+              style={{ fontSize: 13, marginTop: 2 }}
             >
               {detail}
-            </Text>
+            </SelectableText>
           )}
         </View>
         {selected && (
-          <Symbol name="checkmark" size={14} color={theme.onHeavy} />
+          <Animated.View entering={FadeIn.duration(120)}>
+            <Symbol name="checkmark" size={14} color={theme.onHeavy} />
+          </Animated.View>
         )}
-      </View>
+      </Selectable>
     </Touch>
   );
 }
@@ -1223,26 +1272,22 @@ function Chip({
       selected={selected}
       style={{ flex: 1 }}
     >
-      <View
+      <Selectable
+        selected={selected}
         style={{
           height: 44,
           borderRadius: 22,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: selected ? theme.heavy : "#FFFFFF",
         }}
       >
-        <Text
+        <SelectableText
           numberOfLines={1}
-          style={{
-            fontSize: 13,
-            fontWeight: "500",
-            color: selected ? theme.onHeavy : theme.ink,
-          }}
+          style={{ fontSize: 13, fontWeight: "500" }}
         >
           {label}
-        </Text>
-      </View>
+        </SelectableText>
+      </Selectable>
     </Touch>
   );
 }
@@ -1594,7 +1639,7 @@ function PlanStep({
   return (
     <Question
       title={`${draft.name.trim() || "There"}, here’s your guide.`}
-      detail="An estimate to lean on, not a grade. Edit it any time from your profile."
+      detail="An estimate to lean on, not a grade or medical advice. Edit it any time from your profile."
     >
       <View
         style={{

@@ -1,0 +1,25 @@
+appId: eu.eliasconrad.zest
+name: Friends ask a guest for an account first
+---
+- launchApp:
+    clearState: true
+- openLink: "zest://?demo=1"
+- tapOn:
+    text: "Open|Öffnen"
+    optional: true
+- extendedWaitUntil:
+    visible: "Log a meal"
+    timeout: 10000
+- tapOn: "Friends"
+- extendedWaitUntil:
+    visible: "Create account"
+    timeout: 5000
+- tapOn: "Create account"
+- extendedWaitUntil:
+    visible: "Keep your diary yours"
+    timeout: 5000
+- assertVisible: "I already have an account"
+- tapOn: "Close account"
+- extendedWaitUntil:
+    visible: "Log a meal"
+    timeout: 5000

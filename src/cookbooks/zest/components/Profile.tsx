@@ -1,6 +1,11 @@
 import { Alert, ScrollView, Text, View } from "react-native";
 import { BlurView } from "expo-blur";
-import Animated, { useAnimatedStyle } from "react-native-reanimated";
+import { useEffect } from "react";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { GlassSurface } from "./ui/GlassSurface";
 import { GlassButton } from "./ui/GlassButton";
 import { Symbol, Touch } from "./ui/Touch";
@@ -48,6 +53,12 @@ export function ProfileSheet({
   profile,
   apiConfigured,
   passwordSet,
+  covered = false,
+  account,
+  onAccount,
+  onFriends,
+  onRecipes,
+  onPro,
   onClose,
   onEdit,
   onName,
@@ -62,6 +73,14 @@ export function ProfileSheet({
   apiConfigured: boolean;
   /** A password sits in the keychain (never shown, only whether it exists). */
   passwordSet: boolean;
+  /** Another sheet sits on top. Glass is see-through, so this one's content steps aside. */
+  covered?: boolean;
+  /** Signed in with a real account, not a guest. */
+  account?: { email: string | null; pro: boolean } | null;
+  onAccount: () => void;
+  onFriends: () => void;
+  onRecipes: () => void;
+  onPro: () => void;
   onClose: () => void;
   onEdit: (step: OnboardingStep) => void;
   onName: (name: string) => void;
@@ -93,6 +112,14 @@ export function ProfileSheet({
   const blur = useAnimatedStyle(() => ({
     opacity: open ? Math.max(0, Math.min(1, pick.get())) : 0,
   }));
+  // Opacity on the content, never on the glass: the material must stay untouched.
+  const content = useSharedValue(1);
+  useEffect(() => {
+    content.set(
+      reduced ? (covered ? 0 : 1) : withTiming(covered ? 0 : 1, { duration: 160 }),
+    );
+  }, [covered, reduced, content]);
+  const contentStyle = useAnimatedStyle(() => ({ opacity: content.get() }));
   const closeControl = useAnimatedStyle(() => ({
     transform: [{ translateY: (1 - (open ? pick.get() : 0)) * -130 }],
   }));
@@ -163,10 +190,12 @@ export function ProfileSheet({
 
   return (
     <View
-      pointerEvents={open ? "box-none" : "none"}
-      accessibilityViewIsModal={open}
-      accessibilityElementsHidden={!open}
-      importantForAccessibility={open ? "auto" : "no-hide-descendants"}
+      pointerEvents={open && !covered ? "box-none" : "none"}
+      accessibilityViewIsModal={open && !covered}
+      accessibilityElementsHidden={!open || covered}
+      importantForAccessibility={
+        open && !covered ? "auto" : "no-hide-descendants"
+      }
       style={{ position: "absolute", inset: 0, zIndex: 30 }}
     >
       <Animated.View
@@ -179,6 +208,7 @@ export function ProfileSheet({
         style={[
           { position: "absolute", top: scene.top, right: 18 },
           closeControl,
+          contentStyle,
         ]}
       >
         <GlassButton name="xmark" label="Close profile" onPress={onClose} />
@@ -196,7 +226,12 @@ export function ProfileSheet({
         ]}
       >
         <GlassSurface style={{ flex: 1, borderRadius: 36 }}>
-          <View style={{ flex: 1, borderRadius: 36, overflow: "hidden" }}>
+          <Animated.View
+            style={[
+              { flex: 1, borderRadius: 36, overflow: "hidden" },
+              contentStyle,
+            ]}
+          >
             <ScrollView
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{
@@ -363,15 +398,30 @@ export function ProfileSheet({
                 />
                 <Row
                   label="E-mail"
-                  value={profile.email.trim() || "Add"}
-                  onPress={() => onEdit("account")}
+                  value={account?.email ?? (profile.email.trim() || "Add")}
+                  onPress={account ? onAccount : () => onEdit("account")}
                 />
                 <Row
                   label="Password"
                   value={passwordSet ? "••••••••" : "Set"}
-                  onPress={() => onEdit("account")}
+                  onPress={account ? onAccount : () => onEdit("account")}
+                />
+                <Row
+                  label="Zest Pro"
+                  value={account?.pro ? "Active" : "See plans"}
+                  onPress={onPro}
+                />
+                <Row
+                  label={account ? "Manage" : "Log in"}
+                  value={account ? "Account" : "I have an account"}
+                  onPress={onAccount}
                   last
                 />
+              </Card>
+
+              <Card title="Together">
+                <Row label="Friends" value="Streaks" onPress={onFriends} />
+                <Row label="Recipes" value="40 dishes" onPress={onRecipes} last />
               </Card>
 
               <Card title="Your plan">
@@ -462,7 +512,7 @@ export function ProfileSheet({
                   style={{ fontSize: 13, lineHeight: 19, color: theme.muted }}
                 >
                   {apiConfigured
-                    ? "Meal photos are sent to the configured model to estimate calories; the diary itself stays on this phone."
+                    ? "Meal photos are sent to the model to estimate calories and are not kept. Numbers are estimates, not medical advice; talk to a doctor if food feels hard right now."
                     : "Everything stays on this phone. No account, no upload."}
                 </Text>
                 <Touch
@@ -480,7 +530,7 @@ export function ProfileSheet({
                 </Touch>
               </Card>
             </ScrollView>
-          </View>
+          </Animated.View>
         </GlassSurface>
       </Animated.View>
     </View>

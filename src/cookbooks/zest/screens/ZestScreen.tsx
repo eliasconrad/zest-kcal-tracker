@@ -11,6 +11,7 @@ import { File, Paths } from "expo-file-system";
 import { FlashList, type FlashListRef } from "@shopify/flash-list";
 import Animated, {
   FadeIn,
+  FadeInDown,
   FadeOut,
   useAnimatedReaction,
   useAnimatedStyle,
@@ -45,7 +46,12 @@ import {
 import { theme } from "../theme";
 import { MealPhotosProvider } from "../data/photos";
 import { MealCamera } from "../components/MealCamera";
-import { clearPassword, hasPassword, savePassword } from "../state/secrets";
+import {
+  clearPassword,
+  hasPassword,
+  readPassword,
+  savePassword,
+} from "../state/secrets";
 import { ZestChatScroll } from "../components/ChatScroll";
 import { CHOICE_RETIRE_MS } from "../components/MealReply";
 
@@ -69,6 +75,13 @@ import {
   streak,
 } from "../data/nutrition";
 import { syncReminders } from "../data/reminders";
+import { AccountSheet, type AccountMode } from "../components/AccountSheet";
+import { FriendsSheet } from "../components/FriendsSheet";
+import { Paywall } from "../components/Paywall";
+import { RecipesSheet } from "../components/RecipesSheet";
+import { AccountError } from "../data/session";
+import { pushProfile, reportDay, syncDiary } from "../data/sync";
+import { session, useSessionUser } from "../state/useSession";
 import { StreakCelebration } from "../components/Streak";
 import { loggedDays, relativeDay } from "../data/diary";
 
@@ -99,9 +112,12 @@ function eventId(prefix: string) {
 export function ZestScreen({
   demo = false,
   displayName = "Jaimin",
+  inviteCode,
 }: {
   demo?: boolean;
   displayName?: string;
+  /** From an invite link. */
+  inviteCode?: string;
 }) {
   const scene = useScene();
   const meals = useDiary((s) => s.meals);
@@ -137,10 +153,19 @@ export function ZestScreen({
   const [photoMenu, setPhotoMenu] = useState(false);
   /** The branded camera: live feed, or the bundled plate for the demo and simulators. */
   const [camera, setCamera] = useState<"live" | "sample" | null>(null);
-  const [passwordSet, setPasswordSet] = useState(false);
-  useEffect(() => {
-    void hasPassword().then(setPasswordSet);
-  }, []);
+  const [localPassword, setLocalPassword] = useState(false);
+  const user = useSessionUser();
+  const account = user?.email || user?.apple ? user : null;
+  const passwordSet = localPassword || !!user?.hasPassword;
+  /** Secondary sheets over the diary or the profile. */
+  const [sheet, setSheet] = useState<
+    | { kind: "account"; mode: AccountMode }
+    | { kind: "paywall"; reason: "soft" | "limit" }
+    | { kind: "friends" }
+    | { kind: "recipes" }
+    | null
+  >(null);
+  const [pendingInvite, setPendingInvite] = useState(inviteCode);
   const [editor, setEditor] = useState<EditRequest | null>(null);
   const [focused, setFocused] = useState(false);
   const [inputHeight, setInputHeight] = useState(108);
@@ -165,6 +190,62 @@ export function ZestScreen({
     release,
     expression,
   } = scene;
+  const liftForSheet = () => {
+    Keyboard.dismiss();
+    setPhotoMenu(false);
+    pick.set(withSpring(1, { damping: 26, stiffness: 180, mass: 0.9 }));
+  };
+  const closeSheet = () => {
+    setSheet(null);
+    setPendingInvite(undefined);
+    if (!profileOpen && !setup)
+      pick.set(withSpring(0, { damping: 27, stiffness: 230, mass: 0.85 }));
+  };
+  const openSheet = (next: NonNullable<typeof sheet>) => {
+    liftForSheet();
+    setSheet(next);
+  };
+  /**
+   * An account begun on an earlier launch (or offline during onboarding) is
+   * finished quietly the next time there is a connection.
+   */
+  const finishAccount = async (password?: string) => {
+    const { email, name } = useProfile.getState();
+    const stored = password ?? (await readPassword());
+    if (!email || !stored || session.hasAccount()) return;
+    try {
+      await session.signup({ email, password: stored, name });
+      await clearPassword();
+      setLocalPassword(false);
+      await pushProfile().catch(() => {});
+      await syncDiary().catch(() => {});
+    } catch (error) {
+      if (error instanceof AccountError && error.code === "taken") {
+        await clearPassword();
+        setLocalPassword(false);
+        openSheet({ kind: "account", mode: "login" });
+      }
+      // Offline: the password waits in the keychain for the next launch.
+    }
+  };
+  useEffect(() => {
+    if (demo || !apiConfigured) return;
+    void hasPassword().then(setLocalPassword);
+    void session.refresh().then(() => {
+      void finishAccount().catch(() => {});
+      void syncDiary().catch(() => {});
+    });
+    // Once per launch.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [demo]);
+  useEffect(() => {
+    if (demo || !apiConfigured) return;
+    const timer = setTimeout(() => {
+      void syncDiary().catch(() => {});
+      void reportDay().catch(() => {});
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [meals, demo]);
   const clearTimers = useCallback(() => {
     pending.current.forEach(clearTimeout);
     pending.current = [];
@@ -342,10 +423,13 @@ export function ZestScreen({
     const store = useProfile.getState();
     store.save(fields);
     if (secrets?.password) {
-      setPasswordSet(true);
-      void savePassword(secrets.password);
+      setLocalPassword(true);
+      void savePassword(secrets.password).then(() =>
+        apiConfigured ? finishAccount(secrets.password) : undefined,
+      );
     }
     void syncReminders(useProfile.getState().reminders).catch(() => {});
+    if (apiConfigured) void pushProfile().catch(() => {});
     if (!setup?.editing) store.finishOnboarding();
     // The diary's guide follows the plan unless a manual guide is set.
     const next = profilePlan(useProfile.getState());
@@ -356,6 +440,9 @@ export function ZestScreen({
       // the page settles and stays briefly.
       later(() => setTag("Let’s eat."), 1000);
       later(() => setTag(""), 2400);
+      // Cal AI, Calo and YAZIO ask right after the plan. Here it can be closed.
+      if (!demo)
+        later(() => openSheet({ kind: "paywall", reason: "soft" }), 2600);
     }
     if (!profileOpen)
       pick.set(withSpring(0, { damping: 27, stiffness: 230, mass: 0.85 }));
@@ -374,7 +461,7 @@ export function ZestScreen({
     if (!profileOpen)
       pick.set(withSpring(0, { damping: 27, stiffness: 230, mass: 0.85 }));
   };
-  const anySheet = calendar || profileOpen || !!setup;
+  const anySheet = calendar || profileOpen || !!setup || !!sheet;
   // What the lemon would say about today: the diary's numbers, never a verdict.
   const todayTotal = totalOn(meals, dayKey());
   const days = streak(loggedDays(meals), dayKey(), relativeDay(-1));
@@ -684,6 +771,7 @@ export function ZestScreen({
             patch({ live: false });
             return;
           }
+          const limited = error instanceof ApiError && error.kind === "limit";
           patch({
             kind: "question",
             state: "failed",
@@ -691,8 +779,11 @@ export function ZestScreen({
             pendingMeal: undefined,
             mealId: undefined,
             failedType: type,
-            text: failureText(error),
+            text: limited
+              ? "That’s today’s free scans. You can still type it in."
+              : failureText(error),
           });
+          if (limited) openSheet({ kind: "paywall", reason: "limit" });
         } finally {
           endRequest(controller);
           if (!controller.signal.aborted) activity(false);
@@ -1064,6 +1155,22 @@ export function ZestScreen({
                 </Text>
               </GlassSurface>
             </Touch>
+            <View style={{ flexDirection: "row", gap: 22, marginTop: 14 }}>
+              <Touch
+                label="Recipes"
+                onPress={() => openSheet({ kind: "recipes" })}
+                style={{ minHeight: 44, justifyContent: "center" }}
+              >
+                <Text style={{ fontSize: 15, color: theme.muted }}>Recipes</Text>
+              </Touch>
+              <Touch
+                label="Friends"
+                onPress={() => openSheet({ kind: "friends" })}
+                style={{ minHeight: 44, justifyContent: "center" }}
+              >
+                <Text style={{ fontSize: 15, color: theme.muted }}>Friends</Text>
+              </Touch>
+            </View>
           </Animated.View>
           <Animated.View
             pointerEvents={anySheet ? "none" : "box-none"}
@@ -1141,6 +1248,23 @@ export function ZestScreen({
             apiConfigured={apiConfigured}
             onClose={closeProfile}
             passwordSet={passwordSet}
+            covered={!!setup || !!sheet}
+            account={
+              account ? { email: account.email, pro: account.pro } : null
+            }
+            onAccount={() =>
+              openSheet({
+                kind: "account",
+                mode: account ? "manage" : "login",
+              })
+            }
+            onFriends={() => openSheet({ kind: "friends" })}
+            onRecipes={() => openSheet({ kind: "recipes" })}
+            onPro={() =>
+              account?.pro
+                ? openSheet({ kind: "account", mode: "manage" })
+                : openSheet({ kind: "paywall", reason: "soft" })
+            }
             onEdit={(step) => setSetup({ step, editing: true })}
             onName={(name) => useProfile.getState().save({ name })}
             onGuide={(manualGuide) => {
@@ -1155,8 +1279,9 @@ export function ZestScreen({
             onReset={() => {
               useDiary.getState().reset();
               useProfile.getState().reset();
-              setPasswordSet(false);
+              setLocalPassword(false);
               void clearPassword();
+              void session.logout();
               void syncReminders([]).catch(() => {});
               setProfileOpen(false);
               fresh();
@@ -1172,8 +1297,99 @@ export function ZestScreen({
               editing={setup.editing}
               onDone={finishSetup}
               onCancel={setup.editing ? cancelSetup : undefined}
+              onLogin={() => openSheet({ kind: "account", mode: "login" })}
               revealing={revealing}
               burst={burst}
+            />
+          )}
+          {sheet?.kind === "account" && (
+            <AccountSheet
+              scene={scene}
+              initial={sheet.mode}
+              onClose={closeSheet}
+              onLoggedIn={() => {
+                closeSheet();
+                // A login on a new phone brings its onboarding with it.
+                if (setup && useProfile.getState().onboarded) {
+                  setSetup(null);
+                  useDiary
+                    .getState()
+                    .setGuide(profilePlan(useProfile.getState()).guide);
+                  pick.set(withSpring(0, { damping: 27, stiffness: 230, mass: 0.85 }));
+                }
+              }}
+              onDeleted={() => {
+                closeSheet();
+                useDiary.getState().reset();
+                useProfile.getState().reset();
+                setLocalPassword(false);
+                void clearPassword();
+                void syncReminders([]).catch(() => {});
+                setProfileOpen(false);
+                fresh();
+                setSetup({ editing: false });
+              }}
+            />
+          )}
+          {sheet?.kind === "paywall" && (
+            <Paywall
+              scene={scene}
+              reason={sheet.reason}
+              goal={profile.goal}
+              targetKg={profile.targetWeightKg}
+              units={profile.units}
+              onClose={closeSheet}
+              onPro={closeSheet}
+            />
+          )}
+          {(sheet?.kind === "friends" || (pendingInvite && !setup && !sheet)) && (
+            <FriendsSheet
+              scene={scene}
+              pendingCode={pendingInvite}
+              onClose={closeSheet}
+              onCreateAccount={() =>
+                setSheet({ kind: "account", mode: "create" })
+              }
+            />
+          )}
+          {sheet?.kind === "recipes" && (
+            <RecipesSheet
+              scene={scene}
+              context={() => {
+                const diary = useDiary.getState();
+                return diaryContext(diary.meals, diary.guide, undefined, new Date(), {
+                  targets: {
+                    protein: plan.protein,
+                    carbs: plan.carbs,
+                    fat: plan.fat,
+                  },
+                  person: {
+                    diet:
+                      profile.diet === "none"
+                        ? undefined
+                        : dietLabel[profile.diet],
+                    avoid: [
+                      ...profile.allergies,
+                      profile.allergyNote.trim(),
+                    ].filter(Boolean),
+                  },
+                });
+              }}
+              onClose={closeSheet}
+              onLimit={() => setSheet({ kind: "paywall", reason: "limit" })}
+              onLog={(fields) => {
+                const before = useDiary.getState().meals;
+                useDiary.getState().add({
+                  ...fields,
+                  id: eventId("recipe"),
+                  date: dayKey(),
+                  time: new Date().toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "2-digit",
+                  }),
+                });
+                celebrateIfNewDay(before);
+              }}
             />
           )}
           {celebration && (
@@ -1251,13 +1467,25 @@ export function ZestScreen({
                 onPress={() => setPhotoMenu(false)}
                 style={{ position: "absolute", inset: 0 }}
               />
-              <GlassSurface
-                interactive
+              <Animated.View
+                entering={
+                  scene.reduced
+                    ? undefined
+                    : FadeInDown.duration(160).withInitialValues({
+                        opacity: 0,
+                        transform: [{ translateY: 8 }],
+                      })
+                }
                 style={{
                   position: "absolute",
                   left: 24,
                   bottom: scene.bottom + 72,
                   width: 232,
+                }}
+              >
+              <GlassSurface
+                interactive
+                style={{
                   borderRadius: 28,
                   paddingVertical: 8,
                 }}
@@ -1307,6 +1535,7 @@ export function ZestScreen({
                   </Touch>
                 ))}
               </GlassSurface>
+              </Animated.View>
             </View>
           )}
           {camera && (

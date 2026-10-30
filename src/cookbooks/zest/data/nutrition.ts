@@ -225,7 +225,7 @@ export function formatHeight(cm: number, units: Units) {
 export const limits = {
   heightCm: { min: 100, max: 250 },
   weightKg: { min: 30, max: 300 },
-  birthYear: (now = new Date()) => ({ min: now.getFullYear() - 100, max: now.getFullYear() - 13 }),
+  birthYear: (now = new Date()) => ({ min: now.getFullYear() - 100, max: now.getFullYear() - 16 }),
 };
 
 /** Monday-first booleans for the current week: which days have a logged meal. */

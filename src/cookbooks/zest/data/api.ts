@@ -9,9 +9,18 @@ import { fetch } from "expo/fetch";
 import { File } from "expo-file-system";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 import { getLocales } from "expo-localization";
-import { createEventParser, fitLongEdge, parseAnswer, parseEstimate, type Estimate } from "./replies.ts";
+import {
+  createEventParser,
+  fitLongEdge,
+  parseAnswer,
+  parseEstimate,
+  parseRecipes,
+  type Estimate,
+  type RecipeIdea,
+} from "./replies.ts";
 import type { DiaryContext } from "./context.ts";
 import type { MealType } from "./diary.ts";
+import { session } from "../state/useSession";
 
 const base = (process.env.EXPO_PUBLIC_ZEST_API_URL ?? "").replace(/\/$/, "");
 const token = process.env.EXPO_PUBLIC_ZEST_APP_TOKEN;
@@ -23,7 +32,7 @@ const MAX_IMAGE_CHARS = 6_000_000;
 export class ApiError extends Error {
   constructor(
     message: string,
-    readonly kind: "offline" | "server" | "aborted" | "format",
+    readonly kind: "offline" | "server" | "aborted" | "format" | "limit",
   ) {
     super(message);
   }
@@ -40,7 +49,8 @@ async function stream(
   onText: (full: string) => void,
   signal: AbortSignal,
   timeoutMs: number,
-) {
+  retried = false,
+): Promise<string> {
   if (!apiConfigured) throw new ApiError("Zest API is not configured", "server");
   const timeout = setTimeout(() => {
     if (!signal.aborted) controller.abort();
@@ -50,6 +60,12 @@ async function stream(
   signal.addEventListener("abort", forward, { once: true });
   try {
     let response: Awaited<ReturnType<typeof fetch>>;
+    let bearer: string;
+    try {
+      bearer = await session.ensure();
+    } catch (error) {
+      throw new ApiError(error instanceof Error ? error.message : "offline", "offline");
+    }
     try {
       response = await fetch(`${base}${path}`, {
         method: "POST",
@@ -57,6 +73,7 @@ async function stream(
         headers: {
           "content-type": "application/json",
           ...(token ? { "x-zest-token": token } : {}),
+          authorization: `Bearer ${bearer}`,
         },
         body: JSON.stringify(body),
       });
@@ -64,6 +81,12 @@ async function stream(
       if (signal.aborted) throw new ApiError("stopped", "aborted");
       throw new ApiError(error instanceof Error ? error.message : "offline", "offline");
     }
+    if (response.status === 401 && !retried) {
+      // The session ended on the server; start a new one once.
+      await session.invalidate();
+      return await stream(path, body, onText, signal, timeoutMs, true);
+    }
+    if (response.status === 429) throw new ApiError("limit", "limit");
     if (!response.ok) {
       const detail = await response.text().catch(() => "");
       throw new ApiError(`${response.status} ${detail.slice(0, 200)}`, "server");
@@ -163,4 +186,20 @@ export async function askZest(
     40_000,
   );
   return parseAnswer(`${full}\n`);
+}
+
+/** Three dishes for what is left of today, streamed line by line. */
+export async function suggestRecipes(
+  diary: DiaryContext,
+  onIdeas: (ideas: RecipeIdea[]) => void,
+  signal: AbortSignal,
+) {
+  const full = await stream(
+    "/v1/recipe",
+    { diary: { ...diary, locale: locale() } },
+    (text) => onIdeas(parseRecipes(text.includes("\n") ? text.slice(0, text.lastIndexOf("\n")) : "")),
+    signal,
+    40_000,
+  );
+  return parseRecipes(full);
 }
