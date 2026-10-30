@@ -19,6 +19,8 @@ export function ChatTurn({
   onEdit,
   onCalendar,
   onAsk,
+  onRetry,
+  onManual,
 }: {
   turn: Turn;
   meals: Meal[];
@@ -29,6 +31,10 @@ export function ChatTurn({
   onCalendar: () => void;
   /** Sends a tapped follow-up question as if typed. */
   onAsk?: (question: string) => void;
+  /** A failed estimate: send the same photo again. */
+  onRetry?: (turn: Turn) => void;
+  /** A failed estimate: type the name and number instead. */
+  onManual?: (turn: Turn) => void;
 }) {
   const streaming = turn.state === "thinking" && !!turn.text;
   return (
@@ -99,6 +105,51 @@ export function ChatTurn({
           >
             {turn.text}
           </Text>
+        </View>
+      ) : turn.kind === "question" && turn.state === "failed" ? (
+        <View>
+          <Text
+            accessibilityLiveRegion="polite"
+            style={{ fontSize: 17, lineHeight: 24, color: theme.ink }}
+          >
+            {turn.text}
+          </Text>
+          <View style={{ flexDirection: "row", gap: 8, marginTop: 14 }}>
+            <Touch
+              label="Try the photo again"
+              onPress={() => onRetry?.(turn)}
+              style={{
+                height: 44,
+                paddingHorizontal: 18,
+                borderRadius: 22,
+                backgroundColor: theme.heavy,
+                justifyContent: "center",
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 15,
+                  fontWeight: "600",
+                  color: theme.onHeavy,
+                }}
+              >
+                Try again
+              </Text>
+            </Touch>
+            <Touch
+              label="Type the meal in"
+              onPress={() => onManual?.(turn)}
+              style={{
+                height: 44,
+                paddingHorizontal: 18,
+                borderRadius: 22,
+                backgroundColor: "#F3F3F0",
+                justifyContent: "center",
+              }}
+            >
+              <Text style={{ fontSize: 15, color: theme.ink }}>Type it in</Text>
+            </Touch>
+          </View>
         </View>
       ) : turn.kind === "question" && turn.state === "thinking" ? (
         <Thinking />

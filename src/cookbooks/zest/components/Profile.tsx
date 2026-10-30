@@ -16,7 +16,8 @@ import {
 } from "../data/diary";
 import {
   activityLabel,
-  age,
+  ageOf,
+  dietLabel,
   formatHeight,
   formatWeight,
   goalLabel,
@@ -245,7 +246,7 @@ export function ProfileSheet({
                   <Text
                     style={{ fontSize: 13, color: theme.muted, marginTop: 1 }}
                   >
-                    {age(profile.birthYear)} years · {goalLabel[profile.goal]}
+                    {ageOf(profile)} years · {goalLabel[profile.goal]}
                     {days > 1 ? ` · ${days}-day streak` : ""}
                   </Text>
                 </View>
@@ -381,7 +382,7 @@ export function ProfileSheet({
                 />
                 <Row
                   label="Body"
-                  value={`${formatHeight(profile.heightCm, profile.units)} · ${formatWeight(profile.weightKg, profile.units)} · ${age(profile.birthYear)} y`}
+                  value={`${formatHeight(profile.heightCm, profile.units)} · ${formatWeight(profile.weightKg, profile.units)} · ${ageOf(profile)} y`}
                   onPress={() => onEdit("body")}
                 />
                 {tracking && (
@@ -407,6 +408,34 @@ export function ProfileSheet({
                   label="Daily guide"
                   value={`${plan.guide.toLocaleString()} kcal${profile.manualGuide ? " (manual)" : ""}`}
                   onPress={promptGuide}
+                  last
+                />
+              </Card>
+
+              <Card title="Food and routine">
+                <Row
+                  label="Way of eating"
+                  value={dietLabel[profile.diet]}
+                  onPress={() => onEdit("diet")}
+                />
+                <Row
+                  label="Avoid"
+                  value={
+                    [...profile.allergies, profile.allergyNote.trim()]
+                      .filter(Boolean)
+                      .join(", ") || "Nothing"
+                  }
+                  onPress={() => onEdit("allergies")}
+                />
+                <Row
+                  label="Meals"
+                  value={profile.usualMeals.join(", ")}
+                  onPress={() => onEdit("meals")}
+                />
+                <Row
+                  label="Reminders"
+                  value={profile.reminders.join(", ") || "Off"}
+                  onPress={() => onEdit("reminders")}
                   last
                 />
               </Card>

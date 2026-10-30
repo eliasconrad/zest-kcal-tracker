@@ -58,7 +58,17 @@ import { useProfile } from "../state/useProfile";
 import { profilePlan, type Profile } from "../state/profileStore";
 import { Onboarding, type OnboardingStep } from "../components/Onboarding";
 import { ProfileSheet } from "../components/Profile";
-import { goalLabel, loggedThisWeek, streak } from "../data/nutrition";
+import {
+  activityLabel,
+  ageOf,
+  dietLabel,
+  goalLabel,
+  loggedThisWeek,
+  obstacleLine,
+  paceLabel,
+  streak,
+} from "../data/nutrition";
+import { syncReminders } from "../data/reminders";
 import { StreakCelebration } from "../components/Streak";
 import { loggedDays, relativeDay } from "../data/diary";
 
@@ -335,6 +345,7 @@ export function ZestScreen({
       setPasswordSet(true);
       void savePassword(secrets.password);
     }
+    void syncReminders(useProfile.getState().reminders).catch(() => {});
     if (!setup?.editing) store.finishOnboarding();
     // The diary's guide follows the plan unless a manual guide is set.
     const next = profilePlan(useProfile.getState());
@@ -370,7 +381,9 @@ export function ZestScreen({
   const lemonLine = !todayTotal
     ? days > 1
       ? `${days} days in a row. Nothing yet today.`
-      : "Nothing logged yet. Show me a plate."
+      : profile.pastObstacles[0]
+        ? obstacleLine[profile.pastObstacles[0]]
+        : "Nothing logged yet. Show me a plate."
     : `${todayTotal.toLocaleString()} of ${guide.toLocaleString()} kcal${days > 1 ? ` · ${days} days in a row` : ""}`;
   const dock = useAnimatedStyle(() => ({
     transform: [
@@ -481,8 +494,13 @@ export function ZestScreen({
       onSave: (name, kcal) => useDiary.getState().edit(meal.id, { name, kcal }),
       onDelete: () => useDiary.getState().remove(meal.id),
     });
-  const chooseType = (turn: Turn, type: MealType) => {
-    if (active.current || turn.state !== "choosing") return;
+  const chooseType = (
+    turn: Turn,
+    type: MealType,
+    how: "estimate" | "manual" = "estimate",
+  ) => {
+    if (active.current) return;
+    if (turn.state !== "choosing" && turn.state !== "failed") return;
     const complete = (name: string, kcal: number) => {
       activity(true);
       const meal: Meal = {
@@ -668,20 +686,21 @@ export function ZestScreen({
           }
           patch({
             kind: "question",
-            state: "choosing",
+            state: "failed",
             live: false,
             pendingMeal: undefined,
             mealId: undefined,
-            text: `${failureText(error)} Or type it in.`,
+            failedType: type,
+            text: failureText(error),
           });
-          setEditor({ name: "", onSave: complete });
         } finally {
           endRequest(controller);
           if (!controller.signal.aborted) activity(false);
         }
       })();
     };
-    if (turn.photo?.sample) {
+    if (how === "manual") setEditor({ name: "", onSave: complete });
+    else if (turn.photo?.sample) {
       const estimate = sampleEstimates[turn.photo.asset ?? "breakfast"];
       complete(estimate.name, estimate.kcal);
     } else if (apiConfigured && turn.photo?.uri)
@@ -732,6 +751,25 @@ export function ZestScreen({
               person: {
                 name: profile.name || undefined,
                 goal: goalLabel[profile.goal],
+                sex: profile.sex === "unspecified" ? undefined : profile.sex,
+                age: ageOf(profile),
+                heightCm: profile.heightCm,
+                weightKg: profile.weightKg,
+                targetWeightKg:
+                  profile.goal === "lose" || profile.goal === "gain"
+                    ? profile.targetWeightKg
+                    : undefined,
+                activity: activityLabel[profile.activity].title,
+                pace:
+                  profile.goal === "lose" || profile.goal === "gain"
+                    ? paceLabel[profile.pace]
+                    : undefined,
+                diet:
+                  profile.diet === "none" ? undefined : dietLabel[profile.diet],
+                avoid: [...profile.allergies, profile.allergyNote.trim()].filter(
+                  Boolean,
+                ),
+                usualMeals: profile.usualMeals,
                 streak: streak(
                   loggedDays(diary.meals),
                   dayKey(),
@@ -882,6 +920,13 @@ export function ZestScreen({
                   guide={guide}
                   reduced={scene.reduced}
                   onChoose={chooseType}
+                  onRetry={(item) =>
+                    item.failedType && chooseType(item, item.failedType)
+                  }
+                  onManual={(item) =>
+                    item.failedType &&
+                    chooseType(item, item.failedType, "manual")
+                  }
                   onEdit={editMeal}
                   onCalendar={openCalendar}
                   onAsk={(question) => void send(question)}
@@ -1112,6 +1157,7 @@ export function ZestScreen({
               useProfile.getState().reset();
               setPasswordSet(false);
               void clearPassword();
+              void syncReminders([]).catch(() => {});
               setProfileOpen(false);
               fresh();
               setSetup({ editing: false });
@@ -1266,6 +1312,7 @@ export function ZestScreen({
           {camera && (
             <MealCamera
               source={camera}
+              usualMeals={profile.usualMeals}
               onClose={() => setCamera(null)}
               onUse={(photo, type) => {
                 setCamera(null);

@@ -1,4 +1,4 @@
-import type { Meal, MealPhoto, IntakeAnswer } from "./diary";
+import type { Meal, MealPhoto, MealType, IntakeAnswer } from "./diary";
 
 export type Turn = {
   id: string;
@@ -15,5 +15,13 @@ export type Turn = {
   followups?: string[];
   /** True while a model is still streaming into `text` or `note`. */
   live?: boolean;
-  state?: "thinking" | "choosing" | "confirming" | "complete" | "stopped";
+  /** The meal a failed estimate was for, so a retry needs no second question. */
+  failedType?: MealType;
+  state?:
+    | "thinking"
+    | "choosing"
+    | "confirming"
+    | "complete"
+    | "stopped"
+    | "failed";
 };

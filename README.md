@@ -54,7 +54,7 @@ Native glass APIs require iOS 26+ and an SDK that provides them. The published p
 
 ### Try the sample diary
 
-An ordinary first launch opens the onboarding sheet (eight short steps, the seventh an account with e-mail and a password kept in the keychain) and then an empty diary. “Log a meal” → “Take a photo” opens Zest’s own camera (plate ring, meal chips under the finder); “Try a sample meal” opens the same camera on the bundled dinner plate without requesting camera access. To reproduce the populated showcase:
+An ordinary first launch opens the onboarding sheet (thirteen short steps for a weight goal, eleven otherwise, ending in an account with e-mail and a password kept in the keychain) and then an empty diary. “Log a meal” → “Take a photo” opens Zest’s own camera (plate ring, meal chips under the finder); “Try a sample meal” opens the same camera on the bundled dinner plate without requesting camera access. To reproduce the populated showcase:
 
 ```bash
 xcrun simctl openurl <simulator-udid> 'zest-kcal-tracker://?demo=1'

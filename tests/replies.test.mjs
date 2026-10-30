@@ -78,3 +78,10 @@ test("diary context carries only numbers and names, never photos", () => {
   assert.deepEqual(context.week, { total: 1060, loggedDays: 2 });
   assert.equal(JSON.stringify(context).includes("secret"), false);
 });
+
+test("photos shrink to the long edge in either orientation", async () => {
+  const { fitLongEdge } = await import("../src/cookbooks/zest/data/replies.ts");
+  assert.deepEqual(fitLongEdge(3024, 4032, 1280), { width: 960, height: 1280 });
+  assert.deepEqual(fitLongEdge(4032, 3024, 1280), { width: 1280, height: 960 });
+  assert.equal(fitLongEdge(800, 600, 1280), null);
+});

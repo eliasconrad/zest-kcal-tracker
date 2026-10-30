@@ -115,3 +115,11 @@ export function isDiaryQuestion(question: string) {
     q,
   );
 }
+
+/** The size that brings the long edge down to `max`, or null when it already fits. */
+export function fitLongEdge(width: number, height: number, max: number) {
+  const long = Math.max(width, height);
+  if (long <= max) return null;
+  const scale = max / long;
+  return { width: Math.round(width * scale), height: Math.round(height * scale) };
+}

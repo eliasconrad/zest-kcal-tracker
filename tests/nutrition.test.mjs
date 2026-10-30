@@ -114,3 +114,52 @@ test("camera pre-selects the meal from the clock and the e-mail check is lenient
   store.getState().save({ email: "mia@example.com" });
   assert.equal(createProfileStore(storage).getState().email, "mia@example.com");
 });
+
+test("the exact birth date decides the age, and only real dates count", async () => {
+  const { ageOf, parseBirthDate } = await import("../src/cookbooks/zest/data/nutrition.ts");
+  const today = new Date(2026, 9, 30, 12);
+  assert.equal(ageOf({ birthYear: 1994, birthDate: "1994-05-12" }, today), 32);
+  assert.equal(ageOf({ birthYear: 1994, birthDate: "1994-11-12" }, today), 31);
+  assert.equal(ageOf({ birthYear: 1994 }, today), 32);
+  assert.equal(parseBirthDate(12, 5, 1994, today), "1994-05-12");
+  assert.equal(parseBirthDate(31, 2, 1994, today), null);
+  assert.equal(parseBirthDate(1, 1, 2020, today), null);
+  assert.equal(parseBirthDate(0, 0, 0, today), null);
+});
+
+test("plant-based diets lower the protein target, raise carbs and leave the guide alone", () => {
+  const omnivore = plan(body, "lose", "light", "steady", now);
+  const vegan = plan(body, "lose", "light", "steady", now, "vegan");
+  const pescatarian = plan(body, "lose", "light", "steady", now, "pescatarian");
+  assert.equal(vegan.guide, omnivore.guide);
+  assert.equal(vegan.protein, Math.round(80 * 1.4));
+  assert.ok(vegan.carbs > omnivore.carbs);
+  assert.deepEqual(pescatarian, omnivore);
+});
+
+test("new onboarding fields persist and the camera default respects usual meals", async () => {
+  const { defaultMealType } = await import("../src/cookbooks/zest/data/diary.ts");
+  const storage = memoryStorage();
+  const store = createProfileStore(storage);
+  store.getState().save({
+    birthDate: "1994-05-12",
+    diet: "vegan",
+    allergies: ["Peanuts"],
+    allergyNote: "Kiwi",
+    usualMeals: ["Lunch", "Dinner"],
+    pastObstacles: ["Cravings"],
+    reminders: ["Lunch"],
+  });
+  const reopened = createProfileStore(storage).getState();
+  assert.equal(reopened.diet, "vegan");
+  assert.deepEqual(reopened.allergies, ["Peanuts"]);
+  assert.equal(reopened.allergyNote, "Kiwi");
+  assert.deepEqual(reopened.pastObstacles, ["Cravings"]);
+  assert.deepEqual(reopened.reminders, ["Lunch"]);
+  assert.equal(profilePlan(reopened, now).protein, Math.round(reopened.weightKg * 1.2));
+  const morning = new Date(2026, 9, 30, 8);
+  assert.equal(defaultMealType(morning), "Breakfast");
+  assert.equal(defaultMealType(morning, ["Lunch", "Dinner"]), "Lunch");
+  const night = new Date(2026, 9, 30, 21);
+  assert.equal(defaultMealType(night, ["Breakfast", "Lunch"]), "Breakfast");
+});

@@ -41,11 +41,13 @@ import { defaultMealType, mealTypes, type MealPhoto, type MealType } from "../da
  */
 export function MealCamera({
   source,
+  usualMeals,
   onClose,
   onUse,
   onLibrary,
 }: {
   source: "live" | "sample";
+  usualMeals?: MealType[];
   onClose: () => void;
   onUse: (photo: MealPhoto, type: MealType) => void;
   onLibrary: () => void;
@@ -55,7 +57,7 @@ export function MealCamera({
   const camera = useRef<CameraView>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const [type, setType] = useState<MealType>(() =>
-    source === "sample" ? "Dinner" : defaultMealType(),
+    source === "sample" ? "Dinner" : defaultMealType(new Date(), usualMeals),
   );
   const [ready, setReady] = useState(false);
   const [unavailable, setUnavailable] = useState(false);

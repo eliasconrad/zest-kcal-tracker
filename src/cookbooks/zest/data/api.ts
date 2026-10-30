@@ -9,7 +9,7 @@ import { fetch } from "expo/fetch";
 import { File } from "expo-file-system";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 import { getLocales } from "expo-localization";
-import { createEventParser, parseAnswer, parseEstimate, type Estimate } from "./replies.ts";
+import { createEventParser, fitLongEdge, parseAnswer, parseEstimate, type Estimate } from "./replies.ts";
 import type { DiaryContext } from "./context.ts";
 import type { MealType } from "./diary.ts";
 
@@ -17,6 +17,8 @@ const base = (process.env.EXPO_PUBLIC_ZEST_API_URL ?? "").replace(/\/$/, "");
 const token = process.env.EXPO_PUBLIC_ZEST_APP_TOKEN;
 
 export const apiConfigured = base.length > 0;
+/** Mirrors the Worker's ZEST_MAX_IMAGE_BYTES. */
+const MAX_IMAGE_CHARS = 6_000_000;
 
 export class ApiError extends Error {
   constructor(
@@ -95,22 +97,35 @@ async function stream(
   }
 }
 
-/** Downscales a local photo and returns a JPEG data URL small enough for a vision model. */
-export async function photoDataUrl(uri: string, maxEdge = 1024) {
-  const context = ImageManipulator.manipulate(uri).resize({ width: maxEdge });
+/**
+ * A JPEG data URL for the model: long edge at most 1280 px, re-encoded so no
+ * EXIF (location, device) leaves the phone, and small enough for the Worker's
+ * limit. The diary keeps its own full-size copy.
+ */
+export async function photoDataUrl(uri: string, maxEdge = 1280) {
+  const probe = await ImageManipulator.manipulate(uri).renderAsync();
+  const size = fitLongEdge(probe.width, probe.height, maxEdge);
+  probe.release();
+  const context = ImageManipulator.manipulate(uri);
+  if (size) context.resize(size);
   const image = await context.renderAsync();
-  const saved = await image.saveAsync({ format: SaveFormat.JPEG, compress: 0.8, base64: true });
-  image.release();
-  context.release();
-  const base64 = saved.base64 ?? (await new File(saved.uri).base64());
-  if (saved.uri !== uri) {
-    try {
-      new File(saved.uri).delete();
-    } catch {
-      // temp file; the OS clears it anyway
+  try {
+    for (const compress of [0.8, 0.6, 0.4]) {
+      const saved = await image.saveAsync({ format: SaveFormat.JPEG, compress, base64: true });
+      const base64 = saved.base64 ?? (await new File(saved.uri).base64());
+      try {
+        new File(saved.uri).delete();
+      } catch {
+        // temp file; the OS clears it anyway
+      }
+      const url = `data:image/jpeg;base64,${base64}`;
+      if (url.length <= MAX_IMAGE_CHARS) return url;
     }
+  } finally {
+    image.release();
+    context.release();
   }
-  return `data:image/jpeg;base64,${base64}`;
+  throw new ApiError("photo too large", "format");
 }
 
 /** Streams the estimate for one photo; `onEstimate` fires on every update until settled. */

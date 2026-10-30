@@ -48,6 +48,7 @@
           "configureAndroidBackup": false
         }
       ],
+      "expo-notifications",
       "./plugins/with-quoted-ios-paths",
       "expo-localization"
     ],

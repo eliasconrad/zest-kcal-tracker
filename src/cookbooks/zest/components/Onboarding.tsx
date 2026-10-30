@@ -33,7 +33,12 @@ import { cardFloor, FIGURE, SCALE } from "../hooks/useScene";
 import {
   activities,
   activityLabel,
-  age,
+  ageOf,
+  allergens,
+  dietLabel,
+  diets,
+  obstacles,
+  parseBirthDate,
   cmToFeetInches,
   feetInchesToCm,
   formatHeight,
@@ -56,7 +61,13 @@ import {
   type Units,
 } from "../data/nutrition";
 import { type Profile } from "../state/profileStore";
-import { validEmail } from "../data/diary";
+import {
+  mealTypes,
+  reminderTime,
+  validEmail,
+  type MealType,
+} from "../data/diary";
+import { askForReminders } from "../data/reminders";
 import { theme } from "../theme";
 import type { Scene } from "../hooks/useScene";
 
@@ -67,6 +78,11 @@ export type OnboardingStep =
   | "target"
   | "activity"
   | "pace"
+  | "diet"
+  | "allergies"
+  | "meals"
+  | "obstacles"
+  | "reminders"
   | "account"
   | "plan";
 
@@ -77,6 +93,11 @@ const order: OnboardingStep[] = [
   "target",
   "activity",
   "pace",
+  "diet",
+  "allergies",
+  "meals",
+  "obstacles",
+  "reminders",
   "account",
   "plan",
 ];
@@ -200,20 +221,21 @@ export function Onboarding({
   // A step change needs 400 ms before the next; a repeated return key or a
   // double tap must not skip questions.
   const lastGo = useRef(0);
-  const go = (direction: 1 | -1) => {
+  const go = (direction: 1 | -1, fields: Partial<Profile> = {}) => {
     const now = Date.now();
     if (now - lastGo.current < 400) return;
     lastGo.current = now;
     Keyboard.dismiss();
     const secrets = { password: password || undefined };
+    const finished = { ...draft, ...fields };
     if (editing) {
       if (direction === -1) onCancel?.();
-      else onDone(draft, secrets);
+      else onDone(finished, secrets);
       return;
     }
     const next = steps[index + direction];
     if (!next) {
-      if (direction === 1) onDone(draft, secrets);
+      if (direction === 1) onDone(finished, secrets);
       else onCancel?.();
       return;
     }
@@ -228,6 +250,13 @@ export function Onboarding({
       } else hop(1);
     }
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+  /** The explanation came first; only now the system asks. A refusal simply means no reminders. */
+  const acceptReminders = async () => {
+    const granted = await askForReminders().catch(() => false);
+    const reminders = granted ? draft.reminders : [];
+    set({ reminders });
+    go(1, { reminders });
   };
   const firstName = draft.name.trim().split(/\s+/)[0] || "";
   const line = editing
@@ -246,9 +275,19 @@ export function Onboarding({
               ? "Honest answers make better guides."
               : step === "pace"
                 ? "Steady wins. I’m patient."
-                : step === "account"
-                  ? "Your diary, your key."
-                  : preparing
+                : step === "diet"
+                  ? "Eat how you eat."
+                  : step === "allergies"
+                    ? "I’ll keep those off your plate."
+                    : step === "meals"
+                      ? "When does the kitchen open?"
+                      : step === "obstacles"
+                        ? "No shame. Just useful."
+                        : step === "reminders"
+                          ? "A small nudge, if you like."
+                          : step === "account"
+                            ? "Your diary, your key."
+                            : preparing
                   ? "Working it out…"
                   : firstName
                     ? `Here’s your guide, ${firstName}.`
@@ -264,14 +303,15 @@ export function Onboarding({
           (password.length >= PASSWORD_MIN ||
             (editing && password.length === 0))
         );
+      case "meals":
+        return draft.usualMeals.length > 0;
       case "body":
         return (
+          !!draft.birthDate &&
           draft.heightCm >= limits.heightCm.min &&
           draft.heightCm <= limits.heightCm.max &&
           draft.weightKg >= limits.weightKg.min &&
-          draft.weightKg <= limits.weightKg.max &&
-          draft.birthYear >= limits.birthYear().min &&
-          draft.birthYear <= limits.birthYear().max
+          draft.weightKg <= limits.weightKg.max
         );
       case "target":
         return (
@@ -291,12 +331,15 @@ export function Onboarding({
     {
       sex: draft.sex,
       birthYear: draft.birthYear,
+      birthDate: draft.birthDate,
       heightCm: draft.heightCm,
       weightKg: draft.weightKg,
     },
     draft.goal,
     draft.activity,
     draft.pace,
+    new Date(),
+    draft.diet,
   );
 
   return (
@@ -502,12 +545,11 @@ export function Onboarding({
                       units={draft.units}
                       onChange={(units) => update({ units })}
                     />
-                    <NumberField
-                      label="Birth year"
-                      value={String(draft.birthYear)}
-                      unit={`${age(draft.birthYear)} years`}
-                      maxLength={4}
-                      onChange={(text) => set({ birthYear: Number(text) || 0 })}
+                    <BirthDateField
+                      draft={draft}
+                      onChange={(birthDate, birthYear) =>
+                        set({ birthDate, birthYear })
+                      }
                     />
                     {draft.units === "metric" ? (
                       <NumberField
@@ -591,6 +633,105 @@ export function Onboarding({
                     onChange={(pace) => update({ pace })}
                   />
                 )}
+                {step === "diet" && (
+                  <Question
+                    title="Do you follow a way of eating?"
+                    detail="It shifts your macros and what I’ll suggest."
+                  >
+                    {diets.map((diet) => (
+                      <Choice
+                        key={diet}
+                        label={dietLabel[diet]}
+                        selected={draft.diet === diet}
+                        onPress={() => update({ diet })}
+                      />
+                    ))}
+                  </Question>
+                )}
+                {step === "allergies" && (
+                  <Question
+                    title="Anything your body says no to?"
+                    detail="Pick any that apply, or none. I won’t suggest them, but always check a label yourself."
+                  >
+                    <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                      {allergens.map((item) => (
+                        <TagChip
+                          key={item}
+                          label={item}
+                          selected={draft.allergies.includes(item)}
+                          onPress={() =>
+                            update({ allergies: toggle(draft.allergies, item) })
+                          }
+                        />
+                      ))}
+                    </View>
+                    <TextField
+                      label="Other"
+                      value={draft.allergyNote}
+                      onChange={(allergyNote) => set({ allergyNote })}
+                      placeholder="Something else"
+                      capitalize
+                    />
+                  </Question>
+                )}
+                {step === "meals" && (
+                  <Question
+                    title="Which meals are usually yours?"
+                    detail="The camera starts on the right one for the time of day."
+                  >
+                    {mealTypes.map((meal) => (
+                      <Choice
+                        key={meal}
+                        label={meal}
+                        selected={draft.usualMeals.includes(meal)}
+                        onPress={() =>
+                          update({
+                            usualMeals: toggle(draft.usualMeals, meal),
+                            reminders: draft.reminders.filter((r) => r !== meal),
+                          })
+                        }
+                      />
+                    ))}
+                  </Question>
+                )}
+                {step === "obstacles" && (
+                  <Question
+                    title="What got in the way before?"
+                    detail="Pick any, or none. It only changes what I say to you."
+                  >
+                    {obstacles.map((item) => (
+                      <Choice
+                        key={item}
+                        label={item}
+                        selected={draft.pastObstacles.includes(item)}
+                        onPress={() =>
+                          update({
+                            pastObstacles: toggle(draft.pastObstacles, item),
+                          })
+                        }
+                      />
+                    ))}
+                  </Question>
+                )}
+                {step === "reminders" && (
+                  <Question
+                    title="Want a nudge at mealtimes?"
+                    detail="One quiet line per meal. Streaks are easier when something reminds you."
+                  >
+                    <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                      {draft.usualMeals.map((meal) => (
+                        <TagChip
+                          key={meal}
+                          label={`${meal} ${reminderLabel(meal)}`}
+                          selected={draft.reminders.includes(meal)}
+                          onPress={() =>
+                            update({ reminders: toggle(draft.reminders, meal) })
+                          }
+                        />
+                      ))}
+                    </View>
+                  </Question>
+                )}
                 {step === "account" && (
                   <Question
                     title="Keep your diary yours"
@@ -641,6 +782,31 @@ export function Onboarding({
               <View style={{ marginTop: 26 }}>
                 {step === "plan" && !editing && !preparing ? (
                   <HoldToStart reduced={scene.reduced} onCommit={() => go(1)} />
+                ) : step === "reminders" ? (
+                  <View style={{ gap: 6 }}>
+                    <ContinueButton
+                      label="Remind me"
+                      ready={draft.reminders.length > 0}
+                      reduced={scene.reduced}
+                      onPress={() => void acceptReminders()}
+                    />
+                    <Touch
+                      label="Not now"
+                      onPress={() => {
+                        set({ reminders: [] });
+                        go(1, { reminders: [] });
+                      }}
+                      style={{
+                        height: 44,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Text style={{ fontSize: 15, color: theme.muted }}>
+                        Not now
+                      </Text>
+                    </Touch>
+                  </View>
                 ) : (
                   <ContinueButton
                     label={
@@ -676,6 +842,136 @@ export function Onboarding({
         }}
       />
     </View>
+  );
+}
+
+function toggle<T>(list: T[], item: T) {
+  return list.includes(item)
+    ? list.filter((value) => value !== item)
+    : [...list, item];
+}
+
+function reminderLabel(meal: MealType) {
+  const [hour, minute] = reminderTime[meal];
+  return `${hour}:${String(minute).padStart(2, "0")}`;
+}
+
+/** Day, month and year as three small fields; the age appears once the date is real. */
+function BirthDateField({
+  draft,
+  onChange,
+}: {
+  draft: Profile;
+  onChange: (birthDate: string, birthYear: number) => void;
+}) {
+  const [y, m, d] = draft.birthDate ? draft.birthDate.split("-") : [];
+  const [day, setDay] = useState(d ? String(Number(d)) : "");
+  const [month, setMonth] = useState(m ? String(Number(m)) : "");
+  const [year, setYear] = useState(
+    y ?? (draft.onboarded ? String(draft.birthYear) : ""),
+  );
+  const commit = (nextDay: string, nextMonth: string, nextYear: string) => {
+    const iso = parseBirthDate(Number(nextDay), Number(nextMonth), Number(nextYear));
+    onChange(iso ?? "", iso ? Number(nextYear) : draft.birthYear);
+  };
+  const part = (
+    label: string,
+    placeholder: string,
+    value: string,
+    width: number,
+    set: (text: string) => void,
+  ) => (
+    <TextInput
+      accessibilityLabel={label}
+      placeholder={placeholder}
+      placeholderTextColor={theme.faint}
+      value={value}
+      onChangeText={(text) => set(text.replace(/\D/g, ""))}
+      keyboardType="number-pad"
+      selectTextOnFocus
+      maxLength={placeholder.length}
+      style={{
+        width,
+        fontSize: 26,
+        fontWeight: "500",
+        color: theme.ink,
+        fontVariant: ["tabular-nums"],
+        paddingVertical: 8,
+      }}
+    />
+  );
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        borderBottomWidth: 0.5,
+        borderColor: theme.line,
+        minHeight: 56,
+      }}
+    >
+      <Text
+        accessible={false}
+        style={{ width: 104, fontSize: 15, color: theme.muted }}
+      >
+        Born
+      </Text>
+      <View style={{ flex: 1, flexDirection: "row", gap: 8 }}>
+        {part("Birth day", "DD", day, 44, (text) => {
+          setDay(text);
+          commit(text, month, year);
+        })}
+        {part("Birth month", "MM", month, 44, (text) => {
+          setMonth(text);
+          commit(day, text, year);
+        })}
+        {part("Birth year", "YYYY", year, 76, (text) => {
+          setYear(text);
+          commit(day, month, text);
+        })}
+      </View>
+      {!!draft.birthDate && (
+        <Text style={{ fontSize: 14, color: theme.muted }}>
+          {ageOf(draft)} years
+        </Text>
+      )}
+    </View>
+  );
+}
+
+/** A compact on-off chip for lists that may wrap. */
+function TagChip({
+  label,
+  selected,
+  onPress,
+}: {
+  label: string;
+  selected: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Touch label={label} onPress={onPress} selected={selected} expand>
+      <View
+        style={{
+          height: 44,
+          borderRadius: 22,
+          paddingHorizontal: 16,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: selected ? theme.heavy : "#FFFFFF",
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 15,
+            fontWeight: "500",
+            color: selected ? theme.onHeavy : theme.ink,
+          }}
+        >
+          {label}
+        </Text>
+      </View>
+    </Touch>
   );
 }
 
@@ -730,6 +1026,7 @@ function TextField({
   placeholder,
   secure = false,
   autoFocus = false,
+  capitalize = false,
   keyboardType,
   textContentType,
   autoComplete,
@@ -741,6 +1038,7 @@ function TextField({
   placeholder?: string;
   secure?: boolean;
   autoFocus?: boolean;
+  capitalize?: boolean;
   keyboardType?: React.ComponentProps<typeof TextInput>["keyboardType"];
   textContentType?: React.ComponentProps<typeof TextInput>["textContentType"];
   autoComplete?: React.ComponentProps<typeof TextInput>["autoComplete"];
@@ -779,7 +1077,7 @@ function TextField({
           placeholderTextColor={theme.faint}
           secureTextEntry={secure}
           autoFocus={autoFocus}
-          autoCapitalize="none"
+          autoCapitalize={capitalize ? "sentences" : "none"}
           autoCorrect={false}
           spellCheck={false}
           keyboardType={keyboardType}
@@ -1136,12 +1434,15 @@ function PaceStep({
     {
       sex: draft.sex,
       birthYear: draft.birthYear,
+      birthDate: draft.birthDate,
       heightCm: draft.heightCm,
       weightKg: draft.weightKg,
     },
     draft.goal,
     draft.activity,
     draft.pace,
+    new Date(),
+    draft.diet,
   );
   return (
     <Question

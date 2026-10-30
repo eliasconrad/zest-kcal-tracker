@@ -4,10 +4,13 @@ import {
   persist,
   type StateStorage,
 } from "zustand/middleware";
+import type { MealType } from "../data/diary.ts";
 import {
   plan,
   type Activity,
+  type Diet,
   type Goal,
+  type Obstacle,
   type Pace,
   type Plan,
   type Sex,
@@ -23,6 +26,8 @@ export type Profile = {
   email: string;
   sex: Sex;
   birthYear: number;
+  /** ISO date; empty until the onboarding asks. `birthYear` follows it. */
+  birthDate: string;
   heightCm: number;
   weightKg: number;
   /** Only meaningful for lose/gain; equals weightKg otherwise. */
@@ -31,6 +36,17 @@ export type Profile = {
   activity: Activity;
   pace: Pace;
   units: Units;
+  diet: Diet;
+  /** Picked from `allergens`; kept off anything the model suggests. */
+  allergies: string[];
+  /** Anything the list misses, in the person's own words. */
+  allergyNote: string;
+  /** The meals this person usually eats; the camera's default stays inside them. */
+  usualMeals: MealType[];
+  /** What got in the way before. Only ever changes the lemon's lines. */
+  pastObstacles: Obstacle[];
+  /** Meals with a daily local reminder. */
+  reminders: MealType[];
   /** When set, replaces the computed daily guide. */
   manualGuide?: number;
   weights: WeightEntry[];
@@ -51,6 +67,7 @@ export const defaultProfile: Profile = {
   email: "",
   sex: "unspecified",
   birthYear: new Date().getFullYear() - 30,
+  birthDate: "",
   heightCm: 170,
   weightKg: 70,
   targetWeightKg: 70,
@@ -58,6 +75,12 @@ export const defaultProfile: Profile = {
   activity: "light",
   pace: "steady",
   units: "metric",
+  diet: "none",
+  allergies: [],
+  allergyNote: "",
+  usualMeals: ["Breakfast", "Lunch", "Dinner"],
+  pastObstacles: [],
+  reminders: [],
   weights: [],
 };
 
@@ -67,6 +90,7 @@ export function profilePlan(profile: Profile, now = new Date()): Plan {
     {
       sex: profile.sex,
       birthYear: profile.birthYear,
+      birthDate: profile.birthDate,
       heightCm: profile.heightCm,
       weightKg: profile.weightKg,
     },
@@ -74,6 +98,7 @@ export function profilePlan(profile: Profile, now = new Date()): Plan {
     profile.activity,
     profile.pace,
     now,
+    profile.diet,
   );
   if (!profile.manualGuide) return computed;
   const guide = profile.manualGuide;

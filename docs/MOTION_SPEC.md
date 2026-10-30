@@ -114,7 +114,19 @@ The streak brings people back to log one plate a day. Its design and motion foll
 | Streak screen | orange band with the number, "day streak!", a flame-in-circle badge, a month calendar with orange dots, "Day practiced" and "Freezes used" tiles | `StreakBand` in the profile: gold band, number, word, flame badge, Monday-first week strip; the calendar sheet already marks logged days |
 | Feed card | orange card with a flame and four check dots: "Complete a lesson every day to maintain your streak!" | the lemon's home line carries the streak count |
 
-**Measured on Zest (October 30, 2026, simulator recording of the passing onboarding flow, flame crop at a constant 60 fps, counts converted to 30 fps):** receipt fades out over 3; grey flame visible 40 (the 6-frame fade plus the hold); squash 1; gold bead 4-5 (the colour flips with the squash); pop 2 with the sparks appearing in the same frame; full flame held 11 with a 3-frame narrowing (the stretch) at its end; the 1-frame flat overshoot; settle over the following 7. Against Duolingo (19 / 4 / 8 / 1 / 10 / 2): the hold reads 15 frames longer and the squash and bead 6 frames shorter together, while their sum matches the code's sum within 9 frames, so the recording shows the UI thread painting nothing for about a third of a second around the colour flip and then catching up, not a different design; the code's counts equal Duolingo's. The two recorded haptics and the headline fire from the UI-thread reactions, so they stay attached to the frame they belong to even when the paint stalls. A device recording should be taken before shipping to confirm the squash is seen at its full 4 frames.
+**Measured on Zest (October 30, 2026, iOS 26.4 simulator, Release build, flame crop resampled to 60 fps from the recording of the passing onboarding flow, converted to 30 fps):**
+
+| Beat | Code and Duolingo | Measured on Zest | Reading |
+| --- | --- | --- | --- |
+| Grey hold | 19 | about 35 | 16 frames (0.5 s) too long |
+| Squash | 4 | about 1 | collapses almost at once |
+| Bead | 8 | about 7 | matches |
+| Gold flip | 2 frames into the bead | at the start of the bead | about 2 frames early |
+| Pop | 1 | 1 | matches |
+| Hold with stretch | 10, the last 2 narrow | about 10, the last 2.5 narrow | matches |
+| Flat overshoot | 1 | 1 | matches |
+
+The sequence from the bead onward matches Duolingo. The grey hold and the squash do not, and the cause is not established; a stalled first paint is a guess, not a finding. The simulator recording is also variable-rate. A recording on a device has to decide whether these two beats need a code change.
 
 Zest's flame is gold (`theme.soft`) with a pale core; unlit it is warm grey on paper. The celebration plays once per day, 0.7 s after the first saved meal of that day (Duolingo waits about that long after "Learning legend!"), and never on the showcase diary. Reduce Motion shows the final state at once.
 

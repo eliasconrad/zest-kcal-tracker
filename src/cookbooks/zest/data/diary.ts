@@ -2,13 +2,30 @@ export const mealTypes = ["Breakfast", "Lunch", "Dinner", "Snack"] as const;
 export type MealType = (typeof mealTypes)[number];
 
 /** The meal the camera pre-selects from the clock: breakfast until 11, lunch until 15, a snack until 17:30, then dinner. */
-export function defaultMealType(now = new Date()): MealType {
+export function defaultMealType(now = new Date(), usual?: MealType[]): MealType {
   const minutes = now.getHours() * 60 + now.getMinutes();
-  if (minutes < 11 * 60) return "Breakfast";
-  if (minutes < 15 * 60) return "Lunch";
-  if (minutes < 17 * 60 + 30) return "Snack";
-  return "Dinner";
+  const byClock: MealType =
+    minutes < 11 * 60
+      ? "Breakfast"
+      : minutes < 15 * 60
+        ? "Lunch"
+        : minutes < 17 * 60 + 30
+          ? "Snack"
+          : "Dinner";
+  if (!usual?.length || usual.includes(byClock)) return byClock;
+  // Someone who skips this meal is most likely logging the next one they eat.
+  const day: MealType[] = ["Breakfast", "Lunch", "Snack", "Dinner"];
+  const from = day.indexOf(byClock);
+  return day.slice(from).find((meal) => usual.includes(meal)) ?? usual[0];
 }
+
+/** When a daily reminder fires for each meal, as local [hour, minute]. */
+export const reminderTime: Record<MealType, [number, number]> = {
+  Breakfast: [8, 30],
+  Lunch: [12, 30],
+  Snack: [16, 0],
+  Dinner: [19, 0],
+};
 
 /** True for a plausible e-mail address: one @, something on both sides, a dot in the domain. */
 export function validEmail(text: string) {
