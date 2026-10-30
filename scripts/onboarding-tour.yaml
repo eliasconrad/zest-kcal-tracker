@@ -134,6 +134,7 @@ name: Onboarding tour, one screenshot per step
     optional: true
 # Four plan items at 1.5 s each ("Working it out…"), then the reveal. iOS may
 # cover the computation with its save-password sheet, so only the reveal is asserted.
+- takeScreenshot: "working"
 - extendedWaitUntil:
     visible: "Mia, here’s your guide."
     timeout: 12000
