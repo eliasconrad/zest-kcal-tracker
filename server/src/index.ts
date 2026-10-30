@@ -1,8 +1,9 @@
 /**
  * Zest API: a thin streaming proxy in front of OpenRouter.
  *
- *   POST /v1/meal  { image: data-URL, type, hint?, locale? }  → SSE of {type:"text",delta} … {type:"done"}
- *   POST /v1/ask   { question, diary }                         → same wire format
+ *   POST /v1/meal  { image: data-URL, type, hint?, helper?, locale? }  → SSE of {type:"text",delta} … {type:"done"}
+ *   POST /v1/ask   { question, diary, helper? }                        → same wire format
+ *   `helper` is one of the six ids in prompts.ts; it only changes the voice of the reply.
  *   GET  /health
  *
  * The app parses the model's text itself (see src/cookbooks/zest/data/replies.ts),
@@ -102,7 +103,7 @@ export default {
       if (!image.startsWith("data:image/")) return json(400, { error: "image must be a data URL" });
       if (image.length > limit) return json(413, { error: "image too large" });
       const messages: ChatMessage[] = [
-        { role: "system", content: mealSystemPrompt() },
+        { role: "system", content: mealSystemPrompt(body.helper) },
         {
           role: "user",
           content: [
@@ -133,7 +134,7 @@ export default {
       if (!question) return json(400, { error: "question" });
       if (!isDiary(body.diary)) return json(400, { error: "diary" });
       const messages: ChatMessage[] = [
-        { role: "system", content: askSystemPrompt(body.diary) },
+        { role: "system", content: askSystemPrompt(body.diary, body.helper) },
         { role: "user", content: question },
       ];
       return sse(async (send, signal) => {
