@@ -48,5 +48,35 @@
     "path": "assets/images/icon.svg",
     "bytes": 1931,
     "sha256": "bfbfb5b1f20fc5300f96a6b300448183911464a182dc9021477a70b4b05bfb24"
+  },
+  {
+    "path": "assets/images/icons/bao.png",
+    "bytes": 45714,
+    "sha256": "607761c9c83d7da55e3b751a39a0c2f9bc85c615f8e02514456c85598e34677a"
+  },
+  {
+    "path": "assets/images/icons/fig.png",
+    "bytes": 52137,
+    "sha256": "854830e8dc4fbd3e47abd76a879a0eb361aa573695eb97261824583e3b9f9e57"
+  },
+  {
+    "path": "assets/images/icons/mochi.png",
+    "bytes": 45542,
+    "sha256": "d0783240a74c419f00d92ba965c319c6e1654186edeb104eb154b9fae02ba3d1"
+  },
+  {
+    "path": "assets/images/icons/olive.png",
+    "bytes": 65363,
+    "sha256": "518aa7a60c4e295d52b870edf8f880c833ddcc0b302eddaf0d8a456adb26e4a5"
+  },
+  {
+    "path": "assets/images/icons/pebble.png",
+    "bytes": 44902,
+    "sha256": "9554e2a2d4a6422c87cf94c3c6c0dffa53a0089f299e0370119fcbbbdec66376"
+  },
+  {
+    "path": "assets/images/icons/pip.png",
+    "bytes": 48157,
+    "sha256": "193bd4c9b263d710b95f43402a0b899f6ec185a921406133b0641e50ad1afaf9"
   }
 ]

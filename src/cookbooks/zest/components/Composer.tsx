@@ -10,6 +10,7 @@ import type { Scene } from "../hooks/useScene";
 const message = z.string().trim().min(1).max(2000);
 export function ZestComposer({
   scene,
+  helperName,
   busy,
   onSend,
   onStop,
@@ -18,6 +19,7 @@ export function ZestComposer({
   onHeight,
 }: {
   scene: Scene;
+  helperName: string;
   busy: boolean;
   onSend: (text: string) => Promise<boolean>;
   onStop: () => void;
@@ -89,7 +91,7 @@ export function ZestComposer({
           ref={input}
           value={text}
           accessibilityLabel="Message Zest"
-          placeholder="Ask about your day"
+          placeholder={`Ask ${helperName}`}
           placeholderTextColor={theme.faint}
           keyboardAppearance="light"
           autoCapitalize="sentences"

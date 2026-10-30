@@ -34,6 +34,8 @@ export type Helper = {
   species: string;
   /** Two or three words, shown under the name when picking. */
   role: string;
+  /** One lowercase line on who it is, shown under the name in the swap mode. */
+  tagline: string;
   /** One sentence in the helper’s own voice, shown on its card. */
   pitch: string;
   palette: HelperPalette;
@@ -57,6 +59,7 @@ export const helpers: Record<HelperId, Helper> = {
     name: "Zest",
     species: "lemon",
     role: "The original",
+    tagline: "the original",
     pitch: "Show me the plate. I’ll do the sums.",
     palette: {
       body: "#F3CE48",
@@ -83,6 +86,7 @@ export const helpers: Record<HelperId, Helper> = {
     name: "Pebble",
     species: "penguin",
     role: "Calm coach",
+    tagline: "the calm coach",
     pitch: "One meal at a time. We’ve got all day.",
     palette: {
       body: "#2E333B",
@@ -115,6 +119,7 @@ export const helpers: Record<HelperId, Helper> = {
     name: "Fig",
     species: "fox",
     role: "Strict",
+    tagline: "the strict one",
     pitch: "I’ll tell you the truth. You’ll thank me later.",
     palette: {
       body: "#D9742B",
@@ -147,6 +152,7 @@ export const helpers: Record<HelperId, Helper> = {
     name: "Mochi",
     species: "cat",
     role: "Sassy",
+    tagline: "the sassy one",
     pitch: "I count your calories. I also have opinions.",
     palette: {
       body: "#F2E9DC",
@@ -179,6 +185,7 @@ export const helpers: Record<HelperId, Helper> = {
     name: "Bao",
     species: "bear",
     role: "Chill",
+    tagline: "the easygoing one",
     pitch: "Eat, log, nap. In any order.",
     palette: {
       body: "#8C6A4F",
@@ -211,6 +218,7 @@ export const helpers: Record<HelperId, Helper> = {
     name: "Olive",
     species: "owl",
     role: "Macro nerd",
+    tagline: "the macro nerd",
     pitch: "Protein, carbs, fat. Let’s talk grams.",
     palette: {
       body: "#6F7A4A",
@@ -243,6 +251,7 @@ export const helpers: Record<HelperId, Helper> = {
     name: "Pip",
     species: "frog",
     role: "Hype",
+    tagline: "the hype one",
     pitch: "You logged a meal? LEGEND.",
     palette: {
       body: "#5FBF5A",
@@ -273,6 +282,11 @@ export const helpers: Record<HelperId, Helper> = {
 };
 
 export const helperList: Helper[] = helperIds.map((id) => helpers[id]);
+
+/** The six animals of the swap mode, in its order; the lemon stays the default and lives in the profile. */
+export const swapHelpers: Helper[] = helperIds
+  .filter((id) => id !== "zest")
+  .map((id) => helpers[id]);
 export const defaultHelper: HelperId = "zest";
 
 export function isHelperId(value: unknown): value is HelperId {

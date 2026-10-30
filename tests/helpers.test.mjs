@@ -4,6 +4,7 @@ import {
   helperFor,
   helperIds,
   helperList,
+  swapHelpers,
   helperReaction,
   helperLine,
   isHelperId,
@@ -53,4 +54,12 @@ test("setup lines fall back to the lemon's", () => {
   const bao = helperFor("bao");
   assert.equal(helperLine(bao, "name", "x"), bao.lines.name);
   assert.equal(helperLine(bao, "reminders", "A small nudge, if you like."), "A small nudge, if you like.");
+});
+
+test("the swap mode shows the six animals, each with a tagline", () => {
+  assert.deepEqual(
+    swapHelpers.map((helper) => helper.id),
+    ["pebble", "fig", "mochi", "bao", "olive", "pip"],
+  );
+  for (const helper of swapHelpers) assert.match(helper.tagline, /^the /);
 });

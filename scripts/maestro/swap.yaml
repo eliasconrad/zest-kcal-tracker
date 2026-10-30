@@ -1,0 +1,54 @@
+appId: eu.eliasconrad.zest
+name: Hold the mascot, swipe the six, choose one, it lands on the composer
+---
+- launchApp:
+    clearState: true
+- openLink: "zest://?demo=1"
+- tapOn:
+    text: "Open|Öffnen"
+    optional: true
+- extendedWaitUntil:
+    visible: "Log a meal"
+    timeout: 10000
+- assertVisible: ".*Ask Zest"
+# With a meal in the chat the mascot perches on the composer, over the last message.
+- tapOn: "Log a meal"
+- tapOn: "Try a sample meal"
+- extendedWaitUntil:
+    visible: "Take dinner photo"
+    timeout: 10000
+- tapOn: "Take dinner photo"
+- tapOn: "Use meal photo"
+- extendedWaitUntil:
+    visible: "Edit Pasta & garlic bread.*"
+    timeout: 15000
+- takeScreenshot: "perched"
+- longPressOn: ".*open calorie calendar"
+- extendedWaitUntil:
+    visible: "Choose Pebble"
+    timeout: 5000
+- assertVisible: "the calm coach"
+- takeScreenshot: "overlay"
+- swipe:
+    start: 85%, 45%
+    end: 15%, 45%
+    duration: 400
+- extendedWaitUntil:
+    visible: "Choose Fig"
+    timeout: 5000
+- assertVisible: "the strict one"
+- takeScreenshot: "swiped"
+- swipe:
+    start: 85%, 45%
+    end: 15%, 45%
+    duration: 400
+- extendedWaitUntil:
+    visible: "Choose Mochi"
+    timeout: 5000
+- tapOn: "Choose Mochi"
+- extendedWaitUntil:
+    notVisible: "the sassy one"
+    timeout: 5000
+- assertVisible: ".*Ask Mochi"
+- takeScreenshot: "landed"
+- assertVisible: "Mochi, open calorie calendar"

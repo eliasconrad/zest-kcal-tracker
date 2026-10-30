@@ -29,11 +29,8 @@ import { Symbol, Touch } from "../components/ui/Touch";
 import { useScene } from "../hooks/useScene";
 import { ZestBackdrop } from "../components/Backdrop";
 import { Companion } from "../components/Companion";
-import {
-  HelperSwap,
-  SWAP_SLOT,
-} from "../components/helpers/HelperSwap";
-import { helperFor, helperIds, helperReaction, type HelperId } from "../data/helpers";
+import { HelperSwap } from "../components/helpers/HelperSwap";
+import { helperFor, helperReaction, type HelperId } from "../data/helpers";
 import { ZestComposer } from "../components/Composer";
 import { CalorieCalendar } from "../components/Calendar";
 import { MealEditor, type EditRequest } from "../components/MealEditor";
@@ -139,42 +136,24 @@ export function ZestScreen({
   /** Where the tag sits: by the hero companion, or by the one perched on the composer. */
   const [tagPlace, setTagPlace] = useState<"hero" | "perch">("hero");
   const helper = helperFor(profile.helper);
-  /** The swap bar while the companion is held; `hover` is the helper under the finger. */
-  const [swap, setSwap] = useState<{ hover: HelperId | null } | null>(null);
-  const swapLeft = useRef<number | null>(null);
+  /** The swap mode, opened by holding the companion. */
+  const [swap, setSwap] = useState(false);
   const openSwap = () => {
     Keyboard.dismiss();
     setPhotoMenu(false);
-    swapLeft.current = null;
-    setSwap({ hover: null });
+    setSwap(true);
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   };
-  const moveSwap = (x: number) => {
-    const left = swapLeft.current;
-    if (left === null) return;
-    const index = Math.floor((x - left) / SWAP_SLOT);
-    const hover = index >= 0 && index < helperIds.length ? helperIds[index] : null;
-    setSwap((old) => {
-      if (!old || old.hover === hover) return old;
-      if (hover) void Haptics.selectionAsync();
-      return { hover };
-    });
-  };
-  const endSwap = (commit: boolean) => {
-    setSwap((old) => {
-      const pick = commit ? old?.hover : null;
-      if (pick && pick !== useProfile.getState().helper) {
-        useProfile.getState().save({ helper: pick });
-        scene.hop.set(
-          withSequence(
-            withTiming(0.3, { duration: 130 }),
-            withTiming(0, { duration: 210 }),
-          ),
-        );
-        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      }
-      return null;
-    });
+  // The new helper drops onto the composer while the overlay dissolves above it.
+  const chooseHelper = (pick: HelperId) => {
+    setSwap(false);
+    if (pick === useProfile.getState().helper) return;
+    useProfile.getState().save({ helper: pick });
+    if (!scene.reduced) {
+      scene.hop.set(3);
+      scene.hop.set(withSpring(0, { duration: 420, dampingRatio: 0.62 }));
+    }
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
   /** What the helper says once a meal is in the diary, placed beside it on the composer. */
   const react = (meal: Meal) => {
@@ -249,7 +228,9 @@ export function ZestScreen({
   const choosingMascot = !!setup;
   useEffect(() => {
     if (demo || choosingMascot) return;
-    void syncAppIcon(profile.helper);
+    // iOS confirms an icon change with its own alert; the landing plays first.
+    const id = setTimeout(() => void syncAppIcon(profile.helper), 900);
+    return () => clearTimeout(id);
   }, [profile.helper, choosingMascot, demo]);
   const liftForSheet = () => {
     Keyboard.dismiss();
@@ -1270,6 +1251,7 @@ export function ZestScreen({
             <ZestComposer
               key={conversation}
               scene={scene}
+              helperName={helper.name}
               busy={busy}
               onSend={send}
               onStop={stop}
@@ -1522,6 +1504,7 @@ export function ZestScreen({
               scene={scene}
               helper={profile.helper}
               calendarOpen={anySheet}
+              hidden={swap}
               onPress={
                 calendar
                   ? closeCalendar
@@ -1532,19 +1515,14 @@ export function ZestScreen({
                       : openCalendar
               }
               onHold={setup || anySheet ? undefined : openSwap}
-              onHoldMove={moveSwap}
-              onHoldEnd={endSwap}
             />
           </View>
           {swap && (
             <HelperSwap
+              scene={scene}
               selected={profile.helper}
-              hovered={swap.hover}
-              bottom={scene.bottom + inputHeight + 28}
-              reduced={scene.reduced}
-              onLayout={(left) => {
-                swapLeft.current = left;
-              }}
+              onChoose={chooseHelper}
+              onClose={() => setSwap(false)}
             />
           )}
           {photoMenu && (

@@ -1,5 +1,5 @@
 appId: eu.eliasconrad.zest
-name: Recipes: search, servings, log
+name: "Recipes: search, servings, log"
 ---
 - launchApp:
     clearState: true
@@ -16,6 +16,11 @@ name: Recipes: search, servings, log
     timeout: 5000
 - tapOn: "Search recipes"
 - inputText: "salmon"
+# The result sits under the keyboard; Return closes it, or the tap lands on a key.
+- pressKey: Enter
+- extendedWaitUntil:
+    notVisible: "Return"
+    timeout: 3000
 - tapOn:
     text: "Roast salmon with sweet potato.*"
 - extendedWaitUntil:

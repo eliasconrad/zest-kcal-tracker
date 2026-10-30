@@ -23,7 +23,7 @@ name: Helper reacts to a logged meal, glows while busy, and the frame gallery re
     timeout: 10000
 # The default helper speaks in its own voice once the meal is in the diary.
 - extendedWaitUntil:
-    visible: "Pebble says: .*"
+    visible: "Zest says: .*"
     timeout: 4000
 - takeScreenshot: helpers-reaction
 # Every helper in every frame, for the docs.

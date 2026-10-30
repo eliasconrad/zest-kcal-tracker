@@ -19,32 +19,28 @@ import { helpers, type HelperId } from "../data/helpers";
 import { EASE } from "../motion/timing";
 
 const [footX, footY] = feetIn(FIGURE.hero);
-/** How long a finger rests before the swap bar forms. iOS context menus use ~0.5 s; the companion is a character, not a menu, so a touch sooner. */
+/** How long a finger rests before the swap mode opens. iOS context menus use ~0.5 s; the companion is a character, not a menu, so a touch sooner. */
 export const HOLD_MS = 380;
 
 /**
  * The chosen helper, live: one drawing shared between its hero, composer and
- * calendar positions. A tap opens the diary; a hold brings up the swap bar
- * and the finger slides across it to pick another helper.
+ * calendar positions. A tap opens the diary; a hold opens the swap mode.
  */
 export function Companion({
   scene,
   helper,
   onPress,
   calendarOpen,
+  hidden = false,
   onHold,
-  onHoldMove,
-  onHoldEnd,
 }: {
   scene: Scene;
   helper: HelperId;
   onPress: () => void;
   calendarOpen: boolean;
+  /** Gone while the swap mode holds the helpers; it lands again when that closes. */
+  hidden?: boolean;
   onHold?: () => void;
-  /** Absolute finger position while holding. */
-  onHoldMove?: (x: number, y: number) => void;
-  /** `commit` is false when the gesture was cancelled. */
-  onHoldEnd?: (commit: boolean) => void;
 }) {
   const {
     gazeX,
@@ -64,6 +60,10 @@ export function Companion({
   const lid = useSharedValue(1);
   const pressure = useSharedValue(0);
   const holding = useSharedValue(0);
+  const gone = useSharedValue(0);
+  useEffect(() => {
+    gone.set(withTiming(hidden ? 1 : 0, { duration: hidden ? 180 : 120, easing: EASE }));
+  }, [gone, hidden]);
   useEffect(() => {
     if (reduced) return;
     const id = setInterval(
@@ -111,6 +111,7 @@ export function Companion({
   }, [shown.leaving, reduced, arrive, depart]);
 
   const place = useAnimatedStyle(() => ({
+    opacity: 1 - gone.get(),
     transformOrigin: [footX, footY, 0],
     transform: [
       { translateX: feetX.get() - footX },
@@ -152,22 +153,15 @@ export function Companion({
       pressure.set(withTiming(0, { duration: 170 }));
       if (success) scheduleOnRN(onPress);
     });
-  const hold = Gesture.Pan()
-    .activateAfterLongPress(HOLD_MS)
+  const hold = Gesture.LongPress()
+    .minDuration(HOLD_MS)
     .onStart(() => {
       pressure.set(withTiming(0, { duration: 120 }));
       holding.set(withTiming(1, { duration: 160, easing: EASE }));
       if (onHold) scheduleOnRN(onHold);
     })
-    .onUpdate((event) => {
-      if (onHoldMove) scheduleOnRN(onHoldMove, event.absoluteX, event.absoluteY);
-    })
-    .onEnd(() => {
-      if (onHoldEnd) scheduleOnRN(onHoldEnd, true);
-    })
-    .onFinalize((_event, success) => {
+    .onFinalize(() => {
       holding.set(withTiming(0, { duration: 180, easing: EASE }));
-      if (!success && onHoldEnd) scheduleOnRN(onHoldEnd, false);
     });
   const gesture = onHold ? Gesture.Race(hold, tap) : tap;
   const Current = figures[shown.current];
