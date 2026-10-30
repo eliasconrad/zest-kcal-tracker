@@ -151,11 +151,12 @@ are "Pebble the penguin, Calm coach". The bubble on the setup sheet reads
 - `scripts/maestro/helpers.yaml`, `helpers-diary.yaml` and `helpers-swap.yaml`
   passed together in one run on 30 Oct 2026 (45 s, 49 s, 1 m 24 s). Run them:
   `SIMULATOR_UDID=<udid> npm run test:ios -- scripts/maestro/helpers.yaml scripts/maestro/helpers-diary.yaml scripts/maestro/helpers-swap.yaml`.
-- `scripts/maestro/helpers-swap.yaml`: hold-and-slide, passing. The gesture
-  is a long press with 60 pt of slack (`HOLD_SLACK`) that opens the bar, and a
-  manual pan that takes over on the first move after it; Maestro's 4 s swipe
-  keeps the first 380 ms inside that slack. XCTest lets go a little short of
-  the swipe's end point, so the flow asserts that the helper changed (it lands
-  on Mochi, one slot right of the aimed Fig), not which slot.
+- `scripts/maestro/helpers-swap.yaml`: hold-and-slide, passing twice in a
+  row. The gesture is a long press with 60 pt of slack (`HOLD_SLACK`) that
+  opens the bar, and a manual pan that takes over on the first move after it.
+  XCTest holds at the start until the long press fires, then moves quickly and
+  lets go a little early; the swipe aims at the centre of Mochi's slot (third
+  of six, 43 % across) and the flow asserts that Mochi, and no other helper,
+  was chosen.
 - Not verified: the model's voice per helper through a deployed Worker (needs
   a real photo and the OpenRouter key).

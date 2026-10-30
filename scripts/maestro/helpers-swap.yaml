@@ -10,17 +10,17 @@ name: Hold the companion, slide along the glass bar, let go on another helper
     optional: true
 - assertVisible: "(Good|Still up).*,.*"
 # The companion stands in the middle of the empty page. XCTest's drag holds at
-# the start point before moving; a 4 s travel keeps the first 380 ms inside the
-# 60 pt slack, so the hold completes and the pan takes over. XCTest lets go a
-# little short of the end point, so the flow checks that the helper changed,
-# not which slot the finger stopped on (it has landed on Mochi, one right of Fig).
+# the start point until the hold completes (the 380 ms long press with 60 pt
+# of slack), then moves quickly and lets go a little early. Mochi's slot is
+# the third of six (x 147-201 pt, centre 174 pt = 43 %); the swipe aims at its
+# centre and the flow asserts that Mochi, and no other helper, was chosen.
 - assertVisible: "Pebble, open calorie calendar"
 - swipe:
     start: "50%, 31%"
-    end: "30%, 77%"
+    end: "43%, 77%"
     duration: 4000
 - extendedWaitUntil:
-    visible: "(Fig|Mochi|Bao|Olive|Pip), open calorie calendar"
+    visible: "Mochi, open calorie calendar"
     timeout: 3000
 - assertNotVisible: "Pebble, open calorie calendar"
 - takeScreenshot: helpers-swapped
