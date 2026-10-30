@@ -69,3 +69,7 @@ Maestro is the default; IDB is optional. Both native scripts were verified on iP
 ## Limits
 
 This is a UI template with local fixture answers. Android/web, a nutrition model or backend, hardware camera/sensors/haptics, and physical-device frame-rate measurement are not verified. CI performs install, TypeScript, lint, regression checks, and iOS JavaScript export; native builds and motion review run separately on macOS. Live workflow results are available in the repository's [Actions tab](https://github.com/Appllama/zest-kcal-tracker/actions).
+
+## Master video
+
+`scripts/master-video/` records the whole first run in one take on the simulator (`rec.py`), shortens still stretches and draws the touch marks from the driver's log (`cut.py`), and checks the result with Apple's decoder (`avcheck.swift`). Set `.env` to the production URL first; the correction talks to the live Worker.

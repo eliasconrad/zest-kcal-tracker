@@ -1,0 +1,126 @@
+appId: eu.eliasconrad.zest
+name: master
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Snap it. Zest does the sums."
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 4000
+- tapOn: "Get started"
+- assertVisible: "What should I call you?"
+# The lemon pops out of the sheet 1.6 s after launch; its first line follows.
+# The lemon pops out of the sheet 1.6 s after launch; its first line follows.
+- extendedWaitUntil:
+    visible: "Zest says: Hi! I’m Zest."
+    timeout: 15000
+- inputText: "Mia"
+# Return submits the name; the sheet shortens above the keyboard so Continue stays reachable too.
+- pressKey: Enter
+# A 1.3 s greeting interlude precedes the first question.
+- extendedWaitUntil:
+    visible: "What are you here for?"
+    timeout: 5000
+- assertVisible: "Zest says: This sets your daily guide."
+- tapOn: "Lose weight"
+- tapOn: "Continue"
+- assertVisible: "A little about you"
+- tapOn: "Female"
+- tapOn: "Birth day"
+- inputText: "12"
+# The keyboard toolbar moves focus; the next field is otherwise under the keyboard.
+- tapOn: "Next"
+- inputText: "5"
+- tapOn: "Next"
+- inputText: "1994"
+- assertVisible: "32 years"
+- tapOn: "Next"
+- eraseText: 3
+- inputText: "168"
+- tapOn: "Next"
+- eraseText: 5
+- inputText: "70"
+- tapOn: "Done"
+# Let the keyboard and its toolbar leave before the button underneath is tapped.
+- extendedWaitUntil:
+    notVisible: "Previous"
+    timeout: 5000
+- tapOn: "Continue"
+- assertVisible: "Where would you like to land?"
+- tapOn: "Target weight"
+- eraseText: 5
+- inputText: "64"
+- tapOn: "Done"
+# Let the keyboard and its toolbar leave before the button underneath is tapped.
+- extendedWaitUntil:
+    notVisible: "Previous"
+    timeout: 5000
+- tapOn: "Continue"
+- assertVisible: "How do your weeks move?"
+- tapOn: "Lightly active"
+- tapOn: "Continue"
+- assertVisible: "How quickly?"
+- tapOn: "Steady, 0.5 kilograms a week"
+- assertVisible: "About 12 weeks.*"
+- tapOn: "Continue"
+# What the plan and the model need beyond the body.
+- assertVisible: "Do you follow a way of eating?"
+- tapOn: "Vegetarian"
+- tapOn: "Continue"
+- assertVisible: "Anything your body says no to?"
+- tapOn: "Peanuts"
+- tapOn: "Continue"
+- assertVisible: "Which meals are usually yours?"
+- tapOn: "Snack"
+- tapOn: "Continue"
+- assertVisible: "What got in the way before?"
+- tapOn: "Cravings"
+- tapOn: "Continue"
+- assertVisible: "Want a nudge at mealtimes?"
+- tapOn: "Not now"
+- assertVisible: "Keep your diary yours"
+- tapOn: "Skip for now"
+- extendedWaitUntil:
+    visible: "Mia, here’s your guide."
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 1500
+- longPressOn: "Start logging"
+- extendedWaitUntil:
+    visible: "Close paywall"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 1500
+- tapOn: "Close paywall"
+- extendedWaitUntil:
+    visible: "(?s)(Good|Still up).*Mia\\..*"
+    timeout: 5000
+- waitForAnimationToEnd:
+    timeout: 1500
+- tapOn: "Log a meal"
+- tapOn: "Try a sample meal"
+- extendedWaitUntil:
+    visible: "Take .* photo"
+    timeout: 10000
+- tapOn: "Take .* photo"
+- tapOn: "Use meal photo"
+- extendedWaitUntil:
+    visible: "Keep it going"
+    timeout: 15000
+- tapOn: "Keep it going"
+- extendedWaitUntil:
+    visible: "Edit Pasta & garlic bread.*"
+    timeout: 8000
+- waitForAnimationToEnd:
+    timeout: 1500
+- tapOn: "Missed something"
+- inputText: "There was also a fried egg on it"
+- tapOn:
+    text: "Send message"
+    retryTapIfNoChange: false
+- extendedWaitUntil:
+    visible: "Copy Zest’s answer"
+    timeout: 25000
+- waitForAnimationToEnd:
+    timeout: 2500
