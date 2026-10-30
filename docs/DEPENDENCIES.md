@@ -22,3 +22,7 @@ The template retains the verified Expo SDK 57 / React Native 0.86 / Reanimated 4
 These are reached through the Expo/Metro development and native-build tooling graph, not imported by Zest's feature code. The audit is **not clean**. The registry's force-fix suggestions downgrade Expo/React Native to older incompatible major releases; those were not applied. Recheck with `npm audit` before publishing or upgrading and adopt patched compatible releases once available. CI currently checks functional compatibility, not a clean security audit.
 
 Dependencies retain their own license terms. The project-owned MIT license is not a replacement for those notices.
+
+## Evaluation data
+
+Nutrition5k (Thames et al., CVPR 2021), Creative Commons Attribution 4.0. Used by `server/scripts/eval/` to measure estimates. The photos are downloaded on demand and are not part of this repository or the app.

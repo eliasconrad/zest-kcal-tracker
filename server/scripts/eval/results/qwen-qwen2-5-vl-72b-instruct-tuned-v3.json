@@ -1,0 +1,174 @@
+{
+  "summary": {
+    "model": "qwen/qwen2.5-vl-72b-instruct",
+    "prompt": "tuned",
+    "dishes": 30,
+    "parsed": 28,
+    "kcalMaeRaw": 110,
+    "kcalMaeCalibrated": 113,
+    "kcalBiasRaw": 76,
+    "kcalMapePercent": 48,
+    "proteinMae": 9,
+    "carbsMae": 13,
+    "fatMae": 6,
+    "costPer1000Scans": 0.582,
+    "meanTokens": [
+      958,
+      41
+    ]
+  },
+  "rows": [
+    {
+      "id": "dish_1558550218",
+      "truth": 230.001999,
+      "text": "\nFruit and nuts | 280 | 4 | 36 | 16\nOne apple, 10 almonds, 10 grapes. A light and healthy choice."
+    },
+    {
+      "id": "dish_1563565454",
+      "truth": 350.788818,
+      "text": "Chicken, corn and greens | 350 | 25 | 30 | 10\nAbout 100 g chicken, 100 g corn, 150 g greens. Nice variety."
+    },
+    {
+      "id": "dish_1565724620",
+      "truth": 473.953308,
+      "text": "Chicken, potatoes and broccoli | 550 | 35 | 40 | 25\nAbout 150 g chicken, 200 g potatoes, 100 g broccoli, some oil."
+    },
+    {
+      "id": "dish_1568044634",
+      "truth": 413.19339,
+      "text": "Eggs with sweet potato | 350 | 20 | 30 | 10\nAbout 150 g eggs, 100 g sweet potato, 100 g watermelon, sauce."
+    },
+    {
+      "id": "dish_1558380181",
+      "truth": 374.936005,
+      "text": "\nFruit and nuts | 320 | 6 | 40 | 16\nOne apple, 100 g grapes, 30 g almonds. A healthy choice."
+    },
+    {
+      "id": "dish_1565797723",
+      "truth": 202.928879,
+      "text": "Fruit salad with eggs | 350 | 15 | 40 | 10\nAbout 150 g mixed fruit, 100 g greens, and two boiled eggs."
+    },
+    {
+      "id": "dish_1562963289",
+      "truth": 349.917969,
+      "text": "Pizza and pasta | 550 | 20 | 60 | 20\nTwo slices pizza, 150 g pasta mix. Enjoy your lunch!"
+    },
+    {
+      "id": "dish_1562875273",
+      "truth": 495.910278,
+      "text": "Chicken, greens, pizza | 550 | 35 | 40 | 20\nAbout 150 g chicken, 100 g greens, one slice pizza. Enjoy your lunch!"
+    },
+    {
+      "id": "dish_1562690112",
+      "truth": 428.202332,
+      "text": "Sausage, spinach and bacon | 450 | 25 | 15 | 30\nAbout 150 g sausage, 100 g spinach mix, and 50 g bacon."
+    },
+    {
+      "id": "dish_1563220767",
+      "truth": 265.894379,
+      "text": "Chicken pieces | 240 | 30 | 0 | 12\nAbout 100 g chicken, lightly cooked. A lean choice."
+    },
+    {
+      "id": "dish_1560456853",
+      "truth": 405.703369,
+      "text": "Caesar salad with rice | 550 | 28 | 56 | 22\nAbout 100 g chicken, 150 g rice, salad and broccoli."
+    },
+    {
+      "id": "dish_1562946006",
+      "truth": 535.984009,
+      "text": "Scrambled eggs and meatballs | 350 | 20 | 20 | 15\nAbout 150 g eggs and 100 g meatballs. A hearty lunch."
+    },
+    {
+      "id": "dish_1560526514",
+      "truth": 183.252747,
+      "text": "Vegetable salad with potatoes | 350 | 10 | 40 | 12\nAbout 200 g mixed vegetables and 100 g roasted potatoes. Fresh and colorful."
+    },
+    {
+      "id": "dish_1562173247",
+      "truth": 290.550018,
+      "text": "Fried chicken | 350 | 25 | 10 | 20\nAbout 150 g chicken pieces. Likely breaded and fried."
+    },
+    {
+      "id": "dish_1562777099",
+      "truth": 303.718628,
+      "text": "Scrambled eggs with potatoes | 450 | 20 | 40 | 18\nAbout 150 g eggs, 150 g potatoes, some berries and olives."
+    },
+    {
+      "id": "dish_1565811390",
+      "truth": 205.092285,
+      "text": "Lentils, chicken and greens | 420 | 28 | 40 | 12\nAbout 100 g lentils, 100 g chicken, 150 g greens, some sauce."
+    },
+    {
+      "id": "dish_1562603598",
+      "truth": 175.259506,
+      "text": "Fruit plate with pastry | 320 | 6 | 50 | 10\nAbout 150 g mixed fruits and two small pastries. Sweet delight."
+    },
+    {
+      "id": "dish_1563219035",
+      "truth": 410.209686,
+      "text": "Chicken, rice and veggies | 520 | 30 | 50 | 14\nAbout 150 g chicken, 150 g rice, 100 g veggies, 50 g pizza."
+    },
+    {
+      "id": "dish_1566933226",
+      "truth": 245.449509,
+      "text": "Chicken drumstick with couscous | 350 | 25 | 35 | 8\nOne drumstick, about 100 g, and 150 g couscous."
+    },
+    {
+      "id": "dish_1561148042",
+      "truth": 370.755463,
+      "text": "Vegetable platter | 400 | 18 | 40 | 12\nAbout 150 g mixed vegetables, greens, and a slice of pizza."
+    },
+    {
+      "id": "dish_1561576737",
+      "truth": 357.472565,
+      "text": "Vegetable platter | 420 | 15 | 40 | 18\nAbout 200 g mixed vegetables, some dressing. A colorful lunch."
+    },
+    {
+      "id": "dish_1566847043",
+      "truth": 434.877106,
+      "text": "Pork with zucchini | 350 | 25 | 15 | 15\nAbout 100 g pork and 150 g zucchini. A light lunch."
+    },
+    {
+      "id": "dish_1558725403",
+      "truth": 289.050018,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1562183151",
+      "truth": 108.392403,
+      "text": "\nVegetable plate | 250 | 10 | 20 | 15\nAbout 250 g mixed vegetables, some greens, and a bit of oil."
+    },
+    {
+      "id": "dish_1558725786",
+      "truth": 113.527,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1563897087",
+      "truth": 102.440002,
+      "text": "Broccoli and cheese | 220 | 10 | 16 | 14\nAbout 150 g broccoli with some melted cheese. Likely a snack."
+    },
+    {
+      "id": "dish_1562777566",
+      "truth": 263.003998,
+      "text": "Toast with jam | 200 | 4 | 36 | 4\nOne slice, about 30 g bread and 20 g jam. Sweet and simple."
+    },
+    {
+      "id": "dish_1560973958",
+      "truth": 145.313232,
+      "text": "Lentil salad | 320 | 12 | 40 | 8\nAbout 150 g lentils and 100 g arugula with some dressing."
+    },
+    {
+      "id": "dish_1561580406",
+      "truth": 203.281494,
+      "text": "Pasta salad | 450 | 15 | 50 | 15\nAbout 150 g pasta, greens, and a creamy dressing."
+    },
+    {
+      "id": "dish_1565210009",
+      "truth": 263.816223,
+      "text": "Chicken stir-fry | 450 | 35 | 20 | 15\nAbout 150 g chicken, 100 g veggies, some sauce. Balanced lunch."
+    }
+  ]
+}

@@ -18,10 +18,21 @@ Use GestureHandlerRootView, SafeAreaProvider, and KeyboardProvider from `_layout
 
 `data/api.ts` is the only network code. It streams from the Worker in `server/` through `expo/fetch` and is active only when `EXPO_PUBLIC_ZEST_API_URL` is set at bundle time.
 
-- `ZestScreen.chooseType` → `estimateWithModel` for real photos: the photo is downscaled to 1024 px JPEG (`expo-image-manipulator`), sent as a data URL, and the receipt is saved the moment the first line (`name | kcal | protein`) settles. The note streams into `turn.note` afterwards. Stop aborts; a saved receipt keeps its number. Failures fall back to the manual editor with plain copy.
+- `ZestScreen.chooseType` → `estimateWithModel` for real photos: `photoDataUrl` brings the long edge to 1280 px and re-encodes as JPEG, so no EXIF leaves the phone, lowering the quality if the result would pass the Worker's limit. The receipt is saved the moment the first line settles and the note streams into `turn.note` afterwards. Stop aborts; a saved receipt keeps its number. A failure leaves the `failed` turn state with Try again and Type it in, and no thinking receipt behind.
+- The Worker holds back the model's first line and corrects it in `server/src/calibrate.ts`: macros win over a total that disagrees by more than 15 %, meal-type bounds and a table of common foods stop impossible numbers, and a hint from the person turns the bounds off. `docs/MODEL_PLAN.md` holds the measured accuracy.
 - `ZestScreen.send` → `askZest` for questions `isDiaryQuestion` does not claim. The model sees `diaryContext` (totals, names, times, guide; never photos or paths) and streams prose plus a trailing `>> a | b | c` follow-up line, which `parseAnswer` hides until complete. Diary questions keep the exact local `answerAbout` path.
 - `data/replies.ts` holds every parser (SSE events, estimate line, follow-up marker) and is covered by `tests/replies.test.mjs`. The Worker's prompts in `server/src/prompts.ts` define that format; change both together.
 - The Worker is model-agnostic: `OPENROUTER_MODEL` selects any OpenRouter model with image input, `OPENROUTER_BASE_URL` can point at a fine-tuned OpenAI-compatible endpoint or the bundled mock. `ZEST_APP_TOKEN` is a shared header secret; set it in production.
+
+Production: `https://zest-api.hallo-e53.workers.dev` (deployed; answers 503 until its secrets are set). Set them once, each command asks for the value:
+
+```bash
+cd server
+npx wrangler secret put OPENROUTER_API_KEY
+npx wrangler secret put ZEST_APP_TOKEN
+```
+
+Then put the same token and the production URL in `.env` and rebuild the app.
 
 Still yours to design before shipping: retention of uploaded photos on the provider side, rate limiting per user, and a privacy notice covering photo upload.
 

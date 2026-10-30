@@ -1,0 +1,200 @@
+{
+  "summary": {
+    "model": "qwen/qwen2.5-vl-72b-instruct",
+    "prompt": "tuned",
+    "dishes": 30,
+    "parsed": 2,
+    "kcalMaeRaw": 181,
+    "kcalMaeCalibrated": 181,
+    "kcalBiasRaw": -140,
+    "kcalMapePercent": 31,
+    "proteinMae": 25,
+    "carbsMae": 25,
+    "fatMae": 23,
+    "costPer1000Scans": 0.049,
+    "meanTokens": [
+      68,
+      3
+    ]
+  },
+  "rows": [
+    {
+      "id": "dish_1560961385",
+      "truth": 249.519989,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1568401233",
+      "truth": 490.393372,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1567789230",
+      "truth": 689.428406,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1566850142",
+      "truth": 464.951172,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1563909580",
+      "truth": 544.311523,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1561654756",
+      "truth": 256.980011,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1559678457",
+      "truth": 624.236084,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1558629444",
+      "truth": 225.459,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1567526814",
+      "truth": 408.25,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1560961012",
+      "truth": 191.699997,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1565640576",
+      "truth": 307.28656,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1562691409",
+      "truth": 225.98999,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1566328724",
+      "truth": 275.549988,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1558722780",
+      "truth": 142.838989,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1561577177",
+      "truth": 234.606445,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1561739623",
+      "truth": 156.240005,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1562012048",
+      "truth": 278.973877,
+      "text": "Fried fish | 320 | 20 | 10 | 20\nAbout 150 g fish fillet, battered. Likely some oil used."
+    },
+    {
+      "id": "dish_1559849412",
+      "truth": 352.641022,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1562603626",
+      "truth": 201.759506,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1566587714",
+      "truth": 347.536987,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1567537212",
+      "truth": 432.506653,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1558633221",
+      "truth": 176.878998,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1562009182",
+      "truth": 306.229919,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1563302420",
+      "truth": 435.626282,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1563550614",
+      "truth": 132.824387,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1563395510",
+      "truth": 415.627411,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1565021104",
+      "truth": 291.309021,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1566331914",
+      "truth": 589.501648,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1558122740",
+      "truth": 260.149994,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1558376984",
+      "truth": 671.67804,
+      "text": "Fruit and nuts | 350 | 6 | 42 | 14\nAbout 1 apple, 30 g almonds, 100 g grapes, dates, greens."
+    }
+  ]
+}

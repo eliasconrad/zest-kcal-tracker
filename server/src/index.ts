@@ -16,6 +16,7 @@ import {
   type DiaryContext,
   type MealType,
 } from "./prompts.ts";
+import { createLineCalibrator } from "./calibrate.ts";
 import { streamChat, type ChatMessage } from "./openrouter.ts";
 
 export interface Env {
@@ -111,10 +112,19 @@ export default {
         },
       ];
       return sse(async (send, signal) => {
-        await streamChat(env, messages, (delta) => send({ type: "text", delta }), signal, {
-          maxTokens: 120,
-          temperature: 0.2,
-        });
+        const calibrator = createLineCalibrator(type, hint);
+        await streamChat(
+          env,
+          messages,
+          async (delta) => {
+            const text = calibrator.push(delta);
+            if (text) await send({ type: "text", delta: text });
+          },
+          signal,
+          { maxTokens: 160, temperature: 0.2 },
+        );
+        const rest = calibrator.flush();
+        if (rest) await send({ type: "text", delta: rest });
       });
     }
 

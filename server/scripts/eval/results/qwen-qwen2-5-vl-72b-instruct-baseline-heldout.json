@@ -1,0 +1,176 @@
+{
+  "summary": {
+    "model": "qwen/qwen2.5-vl-72b-instruct",
+    "prompt": "baseline",
+    "dishes": 30,
+    "parsed": 26,
+    "kcalMaeRaw": 119,
+    "kcalMaeCalibrated": 122,
+    "kcalBiasRaw": 32,
+    "kcalMapePercent": 43,
+    "proteinMae": 8,
+    "carbsMae": 13,
+    "fatMae": 8,
+    "costPer1000Scans": 0.37,
+    "meanTokens": [
+      491,
+      29
+    ]
+  },
+  "rows": [
+    {
+      "id": "dish_1560961385",
+      "truth": 249.519989,
+      "text": "\nBreakfast Plate | 450 | 20 | 35 | 20  \nA balanced start with veggies, eggs, and fruit. Enjoy!"
+    },
+    {
+      "id": "dish_1566850142",
+      "truth": 464.951172,
+      "text": "\nSalad with chicken | 450 | 30 | 35 | 15  \nA colorful mix for a balanced lunch today!"
+    },
+    {
+      "id": "dish_1567789230",
+      "truth": 689.428406,
+      "text": "\nScrambled Eggs Salad | 450 | 25 | 30 | 20\nA balanced meal with protein, carbs, and greens. Enjoy!"
+    },
+    {
+      "id": "dish_1568401233",
+      "truth": 490.393372,
+      "text": "\nTuna salad lunch | 450 | 30 | 35 | 15  \nA balanced meal with protein and veggies! Enjoy your lunch."
+    },
+    {
+      "id": "dish_1561654756",
+      "truth": 256.980011,
+      "text": "\nScrambled Eggs | 450 | 25 | 30 | 25  \nA hearty breakfast with vegetables and eggs. Enjoy!"
+    },
+    {
+      "id": "dish_1562012048",
+      "truth": 278.973877,
+      "text": "\nChicken salad | 350 | 25 | 20 | 15  \nA light, refreshing choice for your lunch today!"
+    },
+    {
+      "id": "dish_1563909580",
+      "truth": 544.311523,
+      "text": "\nBurrito with sides | 650 | 25 | 70 | 20\nA balanced lunch with vegetables, rice, and protein. Enjoy!"
+    },
+    {
+      "id": "dish_1558629444",
+      "truth": 225.459,
+      "text": "\nAlmonds snack | 250 | 10 | ? | 22  \nA healthy, crunchy choice for midday munching."
+    },
+    {
+      "id": "dish_1559678457",
+      "truth": 624.236084,
+      "text": "\nVegetable Beef Bowl | 450 | 30 | 45 | 15  \nA balanced meal with greens, grains, and protein. Enjoy!"
+    },
+    {
+      "id": "dish_1567526814",
+      "truth": 408.25,
+      "text": "\nCottage cheese salad | 350 | 25 | 20 | 10  \nA refreshing mix of textures and flavors. Enjoy!"
+    },
+    {
+      "id": "dish_1565640576",
+      "truth": 307.28656,
+      "text": "\nBalanced lunch | 450 | 30 | 35 | 15  \nEnjoy your nutritious meal with variety and flavor!"
+    },
+    {
+      "id": "dish_1562691409",
+      "truth": 225.98999,
+      "text": "\nScrambled Eggs Sweet Potatoes | 350 | 15 | 30 | 15  \nA hearty breakfast choice for a good start."
+    },
+    {
+      "id": "dish_1566328724",
+      "truth": 275.549988,
+      "text": "\nGrilled chicken cubes | 250 | 40 | 0 | 5  \nA lean protein choice for your lunch today."
+    },
+    {
+      "id": "dish_1560961012",
+      "truth": 191.699997,
+      "text": "\nBagel with cream | 350 | 8 | 45 | 10\nA classic combo for a satisfying snack or breakfast."
+    },
+    {
+      "id": "dish_1558722780",
+      "truth": 142.838989,
+      "text": "\nVegetable Platter | 100 | 3 | 15 | 2  \nEnjoy your colorful and fresh vegetable platter today!"
+    },
+    {
+      "id": "dish_1561739623",
+      "truth": 156.240005,
+      "text": "\nVegetable Stir Fry | 250 | 10 | 30 | 8  \nA colorful mix for a nutritious lunch today."
+    },
+    {
+      "id": "dish_1561577177",
+      "truth": 234.606445,
+      "text": "\nPizza salad tofu | 350 | 15 | 40 | 10\nA balanced mix of flavors and textures here."
+    },
+    {
+      "id": "dish_1562603626",
+      "truth": 201.759506,
+      "text": "\nFruit and pastries | 450 | 10 | 60 | 15  \nA colorful mix for a delightful lunch treat."
+    },
+    {
+      "id": "dish_1559849412",
+      "truth": 352.641022,
+      "text": "\nAlmonds snack | 200 | 8 | 8 | 17  \nA healthy, crunchy treat for midday munching."
+    },
+    {
+      "id": "dish_1566587714",
+      "truth": 347.536987,
+      "text": "\nChicken salad | 450 | 30 | 25 | 15  \nA balanced lunch with greens and protein. Enjoy!"
+    },
+    {
+      "id": "dish_1558633221",
+      "truth": 176.878998,
+      "text": "\nVegetable Platter | 150 | 4 | 25 | 3  \nA colorful mix for a refreshing lunch bite."
+    },
+    {
+      "id": "dish_1567537212",
+      "truth": 432.506653,
+      "text": "\nSteak with broccoli | 350 | 30 | 10 | 15  \nA balanced choice for a satisfying lunch today."
+    },
+    {
+      "id": "dish_1558376984",
+      "truth": 671.67804,
+      "text": "\nHealthy Snack | 400 | 15 | 30 | 18  \nA balanced mix for energy and nutrition."
+    },
+    {
+      "id": "dish_1563302420",
+      "truth": 435.626282,
+      "text": "\nChicken with veggies | 450 | 30 | 35 | 15  \nA balanced meal with protein and vegetables. Enjoy!"
+    },
+    {
+      "id": "dish_1563550614",
+      "truth": 132.824387,
+      "text": "\nCottage cheese potatoes | 350 | 25 | 20 | 15  \nA simple, hearty lunch with protein and carbs."
+    },
+    {
+      "id": "dish_1562009182",
+      "truth": 306.229919,
+      "text": "\nVegetable Stir-Fry | 450 | 25 | 30 | 20  \nA colorful mix, perfect for a balanced lunch."
+    },
+    {
+      "id": "dish_1565021104",
+      "truth": 291.309021,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1566331914",
+      "truth": 589.501648,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1558122740",
+      "truth": 260.149994,
+      "text": "",
+      "error": 402
+    },
+    {
+      "id": "dish_1563395510",
+      "truth": 415.627411,
+      "text": "",
+      "error": 402
+    }
+  ]
+}
