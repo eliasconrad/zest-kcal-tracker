@@ -95,7 +95,8 @@
             ]
           }
         ]
-      }
+      },
+      "appleTeamId": "W767M6TSQ7"
     },
     "plugins": [
       "expo-router",

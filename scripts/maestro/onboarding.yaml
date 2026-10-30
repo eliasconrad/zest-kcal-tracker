@@ -6,17 +6,24 @@ name: First launch onboarding, computed guide and profile sheet
 - assertVisible: "What should I call you?"
 # The lemon pops out of the sheet 1.6 s after launch; its first line follows.
 - extendedWaitUntil:
-    visible: "Zest says: Hi! I’m Zest."
+    visible: "Pebble says: Hi. I’m Pebble."
     timeout: 15000
 - tapOn: "Your name"
 - inputText: "Mia"
 # Return submits the name; the sheet shortens above the keyboard so Continue stays reachable too.
 - pressKey: Enter
+# Six helpers; picking one swaps the companion on the sheet edge at once.
+- extendedWaitUntil:
+    visible: "Who’s coming with you?"
+    timeout: 5000
+- tapOn: "Fig the fox, Strict"
+- assertVisible: "Fig says: Mia. I’m Fig. I keep count."
+- tapOn: "Continue"
 # A 1.3 s greeting interlude precedes the first question.
 - extendedWaitUntil:
     visible: "What are you here for?"
     timeout: 5000
-- assertVisible: "Zest says: Nice to meet you, Mia!"
+- assertVisible: "Fig says: Pick one and mean it."
 - tapOn: "Lose weight"
 - tapOn: "Continue"
 - assertVisible: "A little about you"

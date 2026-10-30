@@ -1,8 +1,9 @@
 /**
  * Zest API: a thin streaming proxy in front of OpenRouter.
  *
- *   POST /v1/meal  { image: data-URL, type, hint?, locale? }  → SSE of {type:"text",delta} … {type:"done"}
- *   POST /v1/ask   { question, diary }                         → same wire format
+ *   POST /v1/meal  { image: data-URL, type, hint?, helper?, locale? }  → SSE of {type:"text",delta} … {type:"done"}
+ *   POST /v1/ask   { question, diary, helper? }                        → same wire format
+ *   `helper` is one of the six ids in prompts.ts; it only changes the voice of the reply.
  *   /v1/auth/*, /v1/me, /v1/sync/*, /v1/friends, /v1/purchase, /v1/config → see account.ts
  *   GET  /health
  *
@@ -117,7 +118,7 @@ export default {
       const scan = await spend(env, session.user, "scans", Date.now());
       if (!scan.allowed) return json(429, { error: "limit", kind: "scans", limit: scan.limit });
       const messages: ChatMessage[] = [
-        { role: "system", content: mealSystemPrompt() },
+        { role: "system", content: mealSystemPrompt(body.helper) },
         {
           role: "user",
           content: [
@@ -150,7 +151,7 @@ export default {
       const ask = await spend(env, session.user, "asks", Date.now());
       if (!ask.allowed) return json(429, { error: "limit", kind: "asks", limit: ask.limit });
       const messages: ChatMessage[] = [
-        { role: "system", content: askSystemPrompt(body.diary) },
+        { role: "system", content: askSystemPrompt(body.diary, body.helper) },
         { role: "user", content: question },
       ];
       return sse(async (send, signal) => {

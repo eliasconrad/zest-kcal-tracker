@@ -21,11 +21,14 @@ export function ChatTurn({
   onAsk,
   onRetry,
   onManual,
+  thinkingLine = "Hmm, something tasty.",
 }: {
   turn: Turn;
   meals: Meal[];
   guide: number;
   reduced: boolean;
+  /** The helper's own line beside the dots while a photo is with the model. */
+  thinkingLine?: string;
   onChoose: (turn: Turn, type: MealType) => void;
   onEdit: (meal: Meal) => void;
   onCalendar: () => void;
@@ -182,7 +185,7 @@ export function ChatTurn({
                   <Thinking />
                   {turn.live && (
                     <Text style={{ fontSize: 13, color: theme.muted }}>
-                      Hmm, something tasty.
+                      {thinkingLine}
                     </Text>
                   )}
                 </View>
