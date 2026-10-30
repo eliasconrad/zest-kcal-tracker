@@ -71,7 +71,9 @@ GEMINI.*.md
 .codex/
 .claude/
 .agents/
-.cursor/
+# Cursor Cloud Agents need their environment file in the repo; editor state stays out.
+.cursor/*
+!.cursor/environment.json
 .cursorrules
 .mcp.json
 .github/copilot-instructions.md

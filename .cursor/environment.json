@@ -1,0 +1,4 @@
+{
+  "install": "npm ci && cd server && npm ci",
+  "terminals": []
+}
