@@ -944,13 +944,13 @@ export function ZestScreen({
           );
           if (controller.signal.aborted) return;
           if (answer.correction && lastMeal) {
-            const { name, kcal, protein, carbs, fat, note } = answer.correction;
+            const { name, kcal, protein, carbs, fat, note, followups } = answer.correction;
             useDiary.getState().edit(lastMeal.id, { name, kcal, protein, carbs, fat });
             patch({
               state: "complete",
               live: false,
               text: note || `Now ${kcal} kcal.`,
-              followups: [],
+              followups,
             });
             scene.hop.set(
               withSequence(

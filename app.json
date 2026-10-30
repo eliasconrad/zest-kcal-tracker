@@ -105,7 +105,7 @@
         {
           "photosPermission": "Choose a meal photo to add to your food diary.",
           "cameraPermission": "Take a photo of your meal to log it with Zest.",
-          "microphonePermission": false
+          "microphonePermission": "Zest listens while you dictate, so you can say what a photo missed."
         }
       ],
       [
@@ -121,7 +121,7 @@
         "expo-camera",
         {
           "cameraPermission": "Take a photo of your meal to log it with Zest.",
-          "microphonePermission": false,
+          "microphonePermission": "Zest listens while you dictate, so you can say what a photo missed.",
           "recordAudioAndroid": false
         }
       ],
@@ -177,7 +177,7 @@
       [
         "expo-speech-recognition",
         {
-          "microphonePermission": "Zest listens while you hold the conversation open, so you can say what a photo missed.",
+          "microphonePermission": "Zest listens while you dictate, so you can say what a photo missed.",
           "speechRecognitionPermission": "Zest turns what you say into text, so you can correct a meal by voice."
         }
       ]

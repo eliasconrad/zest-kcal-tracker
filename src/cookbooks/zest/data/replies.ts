@@ -113,10 +113,13 @@ export function isCorrection(raw: string) {
   return raw.trimStart().startsWith("~");
 }
 
-export function parseCorrection(raw: string): Estimate | null {
+export function parseCorrection(raw: string): (Estimate & { followups: string[] }) | null {
   if (!isCorrection(raw)) return null;
   const estimate = parseEstimate(raw.trimStart().replace(/^~\s*/, ""));
-  return estimate?.settled && !estimate.notFood && estimate.kcal > 0 ? estimate : null;
+  if (!estimate?.settled || estimate.notFood || estimate.kcal <= 0) return null;
+  // Models add follow-ups here as they do on any answer; they are not part of the note.
+  const { text, followups } = parseAnswer(`${estimate.note}\n`);
+  return { ...estimate, note: text.trim(), followups };
 }
 
 export function isDiaryQuestion(question: string) {

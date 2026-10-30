@@ -100,6 +100,9 @@ test("a correction reads like a meal line, anything else is not one", () => {
   assert.equal(fix.kcal, 420);
   assert.equal(fix.carbs, 58);
   assert.equal(fix.note, "Added about 40 g oats, now 420 kcal.");
+  const asked = parseCorrection("~ Bowl | 420 | 18 | 58 | 12\nAdded oats.\n\n>> More protein? | A soup?\n");
+  assert.equal(asked.note, "Added oats.");
+  assert.deepEqual(asked.followups, ["More protein?", "A soup?"]);
   assert.equal(parseCorrection("Try a soup.\n"), null);
   assert.equal(parseCorrection("~ Bowl | 42"), null);
 });
