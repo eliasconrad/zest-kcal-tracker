@@ -1,0 +1,23 @@
+appId: io.appllama.zestkcaltracker
+name: Hold the companion, slide along the glass bar, let go on another helper
+---
+- launchApp:
+    clearState: true
+- assertVisible: "What should I call you?"
+- openLink: "zest-kcal-tracker://?demo=1"
+- tapOn:
+    text: "Open|Öffnen"
+    optional: true
+- assertVisible: "(Good|Still up).*,.*"
+# The companion stands in the middle of the empty page. XCTest's swipe holds at
+# the start point before dragging; a 4 s travel keeps the first 380 ms inside the 60 pt slack, so the hold
+# completes, then the finger slides down to the second slot of the bar (Fig).
+- assertVisible: "Pebble, open calorie calendar"
+- swipe:
+    start: "50%, 31%"
+    end: "30%, 77%"
+    duration: 4000
+- extendedWaitUntil:
+    visible: "Fig, open calorie calendar"
+    timeout: 3000
+- takeScreenshot: helpers-swapped

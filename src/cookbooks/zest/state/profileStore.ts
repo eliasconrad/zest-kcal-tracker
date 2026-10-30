@@ -5,6 +5,7 @@ import {
   type StateStorage,
 } from "zustand/middleware";
 import type { MealType } from "../data/diary.ts";
+import { defaultHelper, type HelperId } from "../data/helpers.ts";
 import {
   plan,
   type Activity,
@@ -52,6 +53,8 @@ export type Profile = {
   weights: WeightEntry[];
   /** The last day the streak celebration was shown, so it plays once a day. */
   celebratedDay?: string;
+  /** Which of the six helpers sits on the composer; picked in setup, swapped by holding it. */
+  helper: HelperId;
 };
 
 export type ProfileState = Profile & {
@@ -82,6 +85,7 @@ export const defaultProfile: Profile = {
   pastObstacles: [],
   reminders: [],
   weights: [],
+  helper: defaultHelper,
 };
 
 /** The plan for a profile; the manual guide overrides only the calorie line. */

@@ -1,0 +1,36 @@
+appId: io.appllama.zestkcaltracker
+name: Helper reacts to a logged meal, glows while busy, and the frame gallery renders
+---
+- launchApp:
+    clearState: true
+- assertVisible: "What should I call you?"
+- openLink: "zest-kcal-tracker://?demo=1"
+- tapOn:
+    text: "Open|Öffnen"
+    optional: true
+- assertVisible: "(Good|Still up).*,.*"
+- tapOn: "Log a meal"
+- tapOn: "Try a sample meal"
+- extendedWaitUntil:
+    visible: "Take dinner photo"
+    timeout: 10000
+- tapOn: "Take dinner photo"
+- tapOn: "Use meal photo"
+# The sample estimate lands at once, so the glow is checked as the gallery's
+# "analysing" frame below rather than here.
+- extendedWaitUntil:
+    visible: "Edit Pasta & garlic bread, 1120 estimated kilocalories"
+    timeout: 10000
+# The default helper speaks in its own voice once the meal is in the diary.
+- extendedWaitUntil:
+    visible: "Pebble says: .*"
+    timeout: 4000
+- takeScreenshot: helpers-reaction
+# Every helper in every frame, for the docs.
+- openLink: "zest-kcal-tracker://?gallery=1"
+- tapOn:
+    text: "Open|Öffnen"
+    optional: true
+- assertVisible: "Six helpers, seven frames"
+- assertVisible: "Olive"
+- takeScreenshot: helpers-frames

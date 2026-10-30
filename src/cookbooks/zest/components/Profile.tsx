@@ -33,6 +33,7 @@ import {
   type Profile as ProfileData,
 } from "../state/profileStore";
 import type { OnboardingStep } from "./Onboarding";
+import { helperFor } from "../data/helpers";
 import { theme } from "../theme";
 import type { Scene } from "../hooks/useScene";
 
@@ -360,6 +361,11 @@ export function ProfileSheet({
                   label="Name"
                   value={profile.name.trim() || "Add"}
                   onPress={promptName}
+                />
+                <Row
+                  label="Helper"
+                  value={helperFor(profile.helper).name}
+                  onPress={() => onEdit("helper")}
                 />
                 <Row
                   label="E-mail"

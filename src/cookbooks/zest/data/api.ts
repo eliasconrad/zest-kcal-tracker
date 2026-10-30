@@ -12,6 +12,7 @@ import { getLocales } from "expo-localization";
 import { createEventParser, fitLongEdge, parseAnswer, parseEstimate, type Estimate } from "./replies.ts";
 import type { DiaryContext } from "./context.ts";
 import type { MealType } from "./diary.ts";
+import type { HelperId } from "./helpers.ts";
 
 const base = (process.env.EXPO_PUBLIC_ZEST_API_URL ?? "").replace(/\/$/, "");
 const token = process.env.EXPO_PUBLIC_ZEST_APP_TOKEN;
@@ -130,7 +131,7 @@ export async function photoDataUrl(uri: string, maxEdge = 1280) {
 
 /** Streams the estimate for one photo; `onEstimate` fires on every update until settled. */
 export async function estimateMeal(
-  input: { uri: string; type: MealType; hint?: string },
+  input: { uri: string; type: MealType; hint?: string; helper?: HelperId },
   onEstimate: (estimate: Estimate | null, raw: string) => void,
   signal: AbortSignal,
 ) {
@@ -138,7 +139,7 @@ export async function estimateMeal(
   if (signal.aborted) throw new ApiError("stopped", "aborted");
   const full = await stream(
     "/v1/meal",
-    { image, type: input.type, hint: input.hint, locale: locale() },
+    { image, type: input.type, hint: input.hint, helper: input.helper, locale: locale() },
     (text) => onEstimate(parseEstimate(text), text),
     signal,
     45_000,
@@ -154,10 +155,11 @@ export async function askZest(
   diary: DiaryContext,
   onAnswer: (answer: ReturnType<typeof parseAnswer>) => void,
   signal: AbortSignal,
+  helper?: HelperId,
 ) {
   const full = await stream(
     "/v1/ask",
-    { question, diary: { ...diary, locale: locale() } },
+    { question, helper, diary: { ...diary, locale: locale() } },
     (text) => onAnswer(parseAnswer(text)),
     signal,
     40_000,

@@ -61,6 +61,8 @@ import {
   type Units,
 } from "../data/nutrition";
 import { type Profile } from "../state/profileStore";
+import { helperFor, helperLine, helperList, type HelperId } from "../data/helpers";
+import { StaticHelper } from "./helpers/StaticHelper";
 import {
   mealTypes,
   reminderTime,
@@ -73,6 +75,7 @@ import type { Scene } from "../hooks/useScene";
 
 export type OnboardingStep =
   | "name"
+  | "helper"
   | "goal"
   | "body"
   | "target"
@@ -88,6 +91,7 @@ export type OnboardingStep =
 
 const order: OnboardingStep[] = [
   "name",
+  "helper",
   "goal",
   "body",
   "target",
@@ -131,6 +135,7 @@ export function Onboarding({
   onCancel,
   revealing = false,
   burst = false,
+  onHelper,
 }: {
   scene: Scene;
   profile: Profile;
@@ -144,9 +149,11 @@ export function Onboarding({
   revealing?: boolean;
   /** Food stickers scatter from the sheet edge as the lemon pops out. */
   burst?: boolean;
+  /** A helper was tapped on its card: the companion on the sheet edge swaps at once. */
+  onHelper?: (helper: HelperId) => void;
 }) {
   const insets = useSafeAreaInsets();
-  const { height } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const [draft, setDraft] = useState<Profile>(profile);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -259,14 +266,19 @@ export function Onboarding({
     go(1, { reminders });
   };
   const firstName = draft.name.trim().split(/\s+/)[0] || "";
-  const line = editing
+  const helper = helperFor(draft.helper);
+  const plain = editing
     ? "Let’s adjust that."
     : step === "name"
       ? "Hi! I’m Zest."
-      : step === "goal"
-        ? firstName
-          ? `Nice to meet you, ${firstName}!`
-          : "Nice to meet you!"
+      : step === "helper"
+        ? helper.hello(firstName)
+        : step === "goal"
+          ? interlude
+            ? firstName
+              ? `Nice to meet you, ${firstName}!`
+              : "Nice to meet you!"
+            : helperLine(helper, "goal", "This sets your daily guide.")
         : step === "body"
           ? "Just the basics. No judgement."
           : step === "target"
@@ -292,6 +304,12 @@ export function Onboarding({
                   : firstName
                     ? `Here’s your guide, ${firstName}.`
                     : "Here’s your guide.";
+  // The helper speaks in its own voice where it has a line; the interlude,
+  // the editing line and the plan-in-progress line stay as they are.
+  const line =
+    editing || preparing || step === "helper" || (step === "goal" && interlude)
+      ? plain
+      : helperLine(helper, step, plain);
 
   const ready = (() => {
     switch (step) {
@@ -357,6 +375,7 @@ export function Onboarding({
         <RevealBurst top={cardFloor(height) - 30} right={48} />
       )}
       <LemonBubble
+        speaker={helper.name}
         text={revealing ? "" : line}
         thinking={false}
         top={cardFloor(height) - FIGURE.hero * SCALE.card - 8}
@@ -492,6 +511,22 @@ export function Onboarding({
                         color: theme.ink,
                         borderBottomWidth: 0.5,
                         borderColor: theme.line,
+                      }}
+                    />
+                  </Question>
+                )}
+                {step === "helper" && (
+                  <Question
+                    title="Who’s coming with you?"
+                    detail="Six helpers, six voices. Hold yours on the composer any time to swap."
+                  >
+                    <HelperGrid
+                      // Sheet inset 16 and content padding 22 on both sides, two 10 pt gaps.
+                      cardWidth={Math.floor((width - 76 - 20) / 3)}
+                      selected={helperFor(draft.helper).id}
+                      onPick={(id) => {
+                        update({ helper: id });
+                        onHelper?.(id);
                       }}
                     />
                   </Question>
@@ -844,6 +879,75 @@ export function Onboarding({
           },
         }}
       />
+    </View>
+  );
+}
+
+/**
+ * Two rows of three: a still drawing, the name, the role. The chosen card
+ * turns heavy like every other choice on the sheet; the pitch line under the
+ * grid is the helper's own, so the voice is heard before it is picked.
+ */
+function HelperGrid({
+  cardWidth,
+  selected,
+  onPick,
+}: {
+  cardWidth: number;
+  selected: HelperId;
+  onPick: (id: HelperId) => void;
+}) {
+  const chosen = helperFor(selected);
+  return (
+    <View style={{ gap: 10 }}>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+        {helperList.map((helper) => {
+          const on = helper.id === selected;
+          return (
+            <Touch
+              key={helper.id}
+              label={`${helper.name} the ${helper.species}, ${helper.role}`}
+              onPress={() => onPick(helper.id)}
+              selected={on}
+              style={{ width: cardWidth }}
+            >
+              <View
+                style={{
+                  borderRadius: 20,
+                  borderCurve: "continuous",
+                  paddingTop: 10,
+                  paddingBottom: 12,
+                  alignItems: "center",
+                  backgroundColor: on ? theme.heavy : "#FFFFFF",
+                }}
+              >
+                <StaticHelper id={helper.id} size={72} frame={on ? "cheer" : "idle"} />
+                <Text
+                  style={{
+                    marginTop: 2,
+                    fontSize: 15,
+                    fontWeight: "600",
+                    letterSpacing: -0.2,
+                    color: on ? theme.onHeavy : theme.ink,
+                  }}
+                >
+                  {helper.name}
+                </Text>
+                <Text style={{ fontSize: 12, marginTop: 1, color: on ? "#D9DAD3" : theme.muted }}>
+                  {helper.role}
+                </Text>
+              </View>
+            </Touch>
+          );
+        })}
+      </View>
+      <Text
+        key={chosen.id}
+        accessibilityLiveRegion="polite"
+        style={{ fontSize: 15, lineHeight: 21, color: theme.muted, fontStyle: "italic" }}
+      >
+        “{chosen.pitch}”
+      </Text>
     </View>
   );
 }
@@ -1688,12 +1792,14 @@ function PlanStep({
 
 /** The lemon's speech bubble: pops in on every new line, points at the figure on the sheet. */
 function LemonBubble({
+  speaker = "Zest",
   text,
   thinking,
   top,
   right,
   reduced,
 }: {
+  speaker?: string;
   text: string;
   thinking: boolean;
   top: number;
@@ -1710,7 +1816,7 @@ function LemonBubble({
       accessibilityLiveRegion="polite"
       accessible
       accessibilityLabel={
-        thinking ? "Zest is working it out" : `Zest says: ${text}`
+        thinking ? `${speaker} is working it out` : `${speaker} says: ${text}`
       }
       style={{
         position: "absolute",

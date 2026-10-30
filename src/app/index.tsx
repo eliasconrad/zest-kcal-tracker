@@ -1,8 +1,11 @@
 import { useLocalSearchParams } from "expo-router";
 import { ZestScreen } from "../cookbooks/zest/screens/ZestScreen";
+import { HelperGallery } from "../cookbooks/zest/components/helpers/HelperGallery";
 
 /** The root is the product, with no collection route or back control. */
 export default function Index() {
-  const { demo } = useLocalSearchParams<{ demo?: string }>();
+  const { demo, gallery } = useLocalSearchParams<{ demo?: string; gallery?: string }>();
+  // `?gallery=1` shows every helper in every frame, for review only.
+  if (gallery === "1") return <HelperGallery />;
   return <ZestScreen key={demo ?? "diary"} demo={demo === "1"} />;
 }

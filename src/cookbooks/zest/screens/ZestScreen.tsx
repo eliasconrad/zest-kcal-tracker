@@ -27,7 +27,12 @@ import { ProgressiveBlur } from "../components/ui/ProgressiveBlur";
 import { Symbol, Touch } from "../components/ui/Touch";
 import { useScene } from "../hooks/useScene";
 import { ZestBackdrop } from "../components/Backdrop";
-import { Lemon } from "../components/Lemon";
+import { Companion } from "../components/Companion";
+import {
+  HelperSwap,
+  SWAP_SLOT,
+} from "../components/helpers/HelperSwap";
+import { helperFor, helperIds, helperReaction, type HelperId } from "../data/helpers";
 import { ZestComposer } from "../components/Composer";
 import { CalorieCalendar } from "../components/Calendar";
 import { MealEditor, type EditRequest } from "../components/MealEditor";
@@ -112,8 +117,58 @@ export function ZestScreen({
   const [calendar, setCalendar] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   /** First-launch setup, or one step re-opened from the profile. */
-  /** A two-word tag from the lemon right after setup, like the references' "You're awesome!" */
+  /** A two-word tag from the helper right after setup, like the references' "You're awesome!" */
   const [tag, setTag] = useState("");
+  /** Where the tag sits: by the hero companion, or by the one perched on the composer. */
+  const [tagPlace, setTagPlace] = useState<"hero" | "perch">("hero");
+  const helper = helperFor(profile.helper);
+  /** The swap bar while the companion is held; `hover` is the helper under the finger. */
+  const [swap, setSwap] = useState<{ hover: HelperId | null } | null>(null);
+  const swapLeft = useRef<number | null>(null);
+  const openSwap = () => {
+    Keyboard.dismiss();
+    setPhotoMenu(false);
+    swapLeft.current = null;
+    setSwap({ hover: null });
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  };
+  const moveSwap = (x: number) => {
+    const left = swapLeft.current;
+    if (left === null) return;
+    const index = Math.floor((x - left) / SWAP_SLOT);
+    const hover = index >= 0 && index < helperIds.length ? helperIds[index] : null;
+    setSwap((old) => {
+      if (!old || old.hover === hover) return old;
+      if (hover) void Haptics.selectionAsync();
+      return { hover };
+    });
+  };
+  const endSwap = (commit: boolean) => {
+    setSwap((old) => {
+      const pick = commit ? old?.hover : null;
+      if (pick && pick !== useProfile.getState().helper) {
+        useProfile.getState().save({ helper: pick });
+        scene.hop.set(
+          withSequence(
+            withTiming(0.3, { duration: 130 }),
+            withTiming(0, { duration: 210 }),
+          ),
+        );
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+      return null;
+    });
+  };
+  /** What the helper says once a meal is in the diary, placed beside it on the composer. */
+  const react = (meal: Meal) => {
+    const after = useDiary.getState().meals;
+    const mood = intakeMood(totalOn(after, meal.date), useDiary.getState().guide);
+    const seed = meal.id.split("").reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+    const line = helperReaction(helperFor(useProfile.getState().helper), mood, meal.type, seed);
+    setTagPlace("perch");
+    later(() => setTag(line), 450);
+    later(() => setTag(""), 450 + 2200);
+  };
   /** Streak celebration after the first logged meal of a day; plays once per day. */
   const [celebration, setCelebration] = useState<{
     from: number;
@@ -354,7 +409,8 @@ export function ZestScreen({
     if (!setup?.editing) {
       // Measured on the reference diary: the tag appears about a second after
       // the page settles and stays briefly.
-      later(() => setTag("Let’s eat."), 1000);
+      setTagPlace("hero");
+      later(() => setTag(helperFor(useProfile.getState().helper).tag), 1000);
       later(() => setTag(""), 2400);
     }
     if (!profileOpen)
@@ -555,6 +611,7 @@ export function ZestScreen({
         const before = useDiary.getState().meals;
         useDiary.getState().add(meal);
         celebrateIfNewDay(before);
+        react(meal);
         setTurns((old) =>
           old.map((item) =>
             item.id === replyId ? { ...item, state: "complete" } : item,
@@ -606,7 +663,7 @@ export function ZestScreen({
       void (async () => {
         try {
           const estimate = await estimateMeal(
-            { uri, type },
+            { uri, type, helper: useProfile.getState().helper },
             (partial) => {
               if (
                 controller.signal.aborted ||
@@ -628,6 +685,7 @@ export function ZestScreen({
                 const before = useDiary.getState().meals;
                 useDiary.getState().add(meal);
                 celebrateIfNewDay(before);
+                react(meal);
                 scene.hop.set(
                   withSequence(
                     withTiming(0.3, { duration: 130 }),
@@ -782,6 +840,7 @@ export function ZestScreen({
                 patch({ text: partial.text, followups: partial.followups });
             },
             controller.signal,
+            profile.helper,
           );
           if (controller.signal.aborted) return;
           patch({
@@ -930,6 +989,7 @@ export function ZestScreen({
                   onEdit={editMeal}
                   onCalendar={openCalendar}
                   onAsk={(question) => void send(question)}
+                  thinkingLine={helper.thinking}
                 />
               )}
             />
@@ -1174,6 +1234,7 @@ export function ZestScreen({
               onCancel={setup.editing ? cancelSetup : undefined}
               revealing={revealing}
               burst={burst}
+              onHelper={(id) => useProfile.getState().save({ helper: id })}
             />
           )}
           {celebration && (
@@ -1192,11 +1253,17 @@ export function ZestScreen({
               exiting={scene.reduced ? undefined : FadeOut.duration(220)}
               accessible
               accessibilityLiveRegion="polite"
-              accessibilityLabel={`Zest says: ${tag}`}
+              accessibilityLabel={`${helper.name} says: ${tag}`}
               style={{
                 position: "absolute",
-                top: scene.height * 0.495 - 300,
-                alignSelf: "center",
+                ...(tagPlace === "hero"
+                  ? { top: scene.height * 0.495 - 300, alignSelf: "center" as const }
+                  : {
+                      // Beside the perched companion, clear of the composer's edge.
+                      bottom: scene.bottom + inputHeight + 66,
+                      right: 20,
+                      maxWidth: scene.width - 120,
+                    }),
                 backgroundColor: "#FFFFFF",
                 borderRadius: 18,
                 borderCurve: "continuous",
@@ -1229,8 +1296,9 @@ export function ZestScreen({
               zIndex: 45,
             }}
           >
-            <Lemon
+            <Companion
               scene={scene}
+              helper={profile.helper}
               calendarOpen={anySheet}
               onPress={
                 calendar
@@ -1241,8 +1309,22 @@ export function ZestScreen({
                       ? () => {}
                       : openCalendar
               }
+              onHold={setup || anySheet ? undefined : openSwap}
+              onHoldMove={moveSwap}
+              onHoldEnd={endSwap}
             />
           </View>
+          {swap && (
+            <HelperSwap
+              selected={profile.helper}
+              hovered={swap.hover}
+              bottom={scene.bottom + inputHeight + 28}
+              reduced={scene.reduced}
+              onLayout={(left) => {
+                swapLeft.current = left;
+              }}
+            />
+          )}
           {photoMenu && (
             <View style={{ position: "absolute", inset: 0, zIndex: 50 }}>
               <Pressable
