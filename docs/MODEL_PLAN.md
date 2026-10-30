@@ -36,7 +36,7 @@ for m in qwen/qwen3-vl-30b-a3b-instruct meta-llama/llama-4-scout google/gemma-3-
 done
 ```
 
-Prices listed by OpenRouter on October 30, 2026, per million tokens in and out: qwen3-vl-30b $0.15 / $0.60, llama-4-scout $0.10 / $0.30, gemma-3-27b $0.08 / $0.35, mistral-small-3.2 $0.075 / $0.20. All four are cheaper than the current model's measured cost suggests and are worth comparing.
+Prices listed by OpenRouter on October 30, 2026, per million tokens in and out: qwen3-vl-30b $0.15 / $0.60, llama-4-scout $0.10 / $0.30, gemma-3-27b $0.08 / $0.35, mistral-small-3.2 $0.075 / $0.20. The current model lists at $0.80 / $1.00.
 
 ## Real fine-tuning, when it is worth it
 
