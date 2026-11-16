@@ -1,0 +1,1448 @@
+[
+ {
+  "id": "r1",
+  "name": "Banana peanut oats",
+  "type": "Breakfast",
+  "minutes": 8,
+  "tags": [
+   "vegetarian",
+   "vegan",
+   "pescatarian"
+  ],
+  "allergens": [
+   "Gluten",
+   "Peanuts"
+  ],
+  "grams": 165,
+  "kcal": 373,
+  "protein": 13,
+  "carbs": 59,
+  "fat": 11,
+  "fdc": [
+   [
+    169705,
+    50
+   ],
+   [
+    173944,
+    100
+   ],
+   [
+    172470,
+    15
+   ]
+  ]
+ },
+ {
+  "id": "r2",
+  "name": "Blueberry yogurt bowl",
+  "type": "Breakfast",
+  "minutes": 3,
+  "tags": [
+   "vegetarian",
+   "pescatarian"
+  ],
+  "allergens": [
+   "Lactose",
+   "Tree nuts"
+  ],
+  "grams": 305,
+  "kcal": 284,
+  "protein": 24,
+  "carbs": 30,
+  "fat": 9,
+  "fdc": [
+   [
+    170894,
+    200
+   ],
+   [
+    171711,
+    80
+   ],
+   [
+    169640,
+    10
+   ],
+   [
+    168596,
+    15
+   ]
+  ]
+ },
+ {
+  "id": "r3",
+  "name": "Spinach scramble on toast",
+  "type": "Breakfast",
+  "minutes": 10,
+  "tags": [
+   "vegetarian",
+   "pescatarian"
+  ],
+  "allergens": [
+   "Egg",
+   "Gluten"
+  ],
+  "grams": 225,
+  "kcal": 361,
+  "protein": 20,
+  "carbs": 25,
+  "fat": 20,
+  "fdc": [
+   [
+    172187,
+    120
+   ],
+   [
+    168462,
+    50
+   ],
+   [
+    172688,
+    50
+   ],
+   [
+    171413,
+    5
+   ]
+  ]
+ },
+ {
+  "id": "r4",
+  "name": "Avocado toast with egg",
+  "type": "Breakfast",
+  "minutes": 8,
+  "tags": [
+   "vegetarian",
+   "pescatarian"
+  ],
+  "allergens": [
+   "Gluten",
+   "Egg"
+  ],
+  "grams": 190,
+  "kcal": 353,
+  "protein": 15,
+  "carbs": 33,
+  "fat": 19,
+  "fdc": [
+   [
+    172688,
+    60
+   ],
+   [
+    171705,
+    70
+   ],
+   [
+    172187,
+    60
+   ]
+  ]
+ },
+ {
+  "id": "r5",
+  "name": "Apple cinnamon porridge",
+  "type": "Breakfast",
+  "minutes": 10,
+  "tags": [
+   "vegetarian",
+   "pescatarian"
+  ],
+  "allergens": [
+   "Gluten",
+   "Lactose"
+  ],
+  "grams": 358,
+  "kcal": 382,
+  "protein": 15,
+  "carbs": 65,
+  "fat": 8,
+  "fdc": [
+   [
+    169705,
+    50
+   ],
+   [
+    171267,
+    200
+   ],
+   [
+    167793,
+    100
+   ],
+   [
+    169640,
+    8
+   ]
+  ]
+ },
+ {
+  "id": "r6",
+  "name": "Cottage cheese with berries",
+  "type": "Breakfast",
+  "minutes": 2,
+  "tags": [
+   "vegetarian",
+   "pescatarian"
+  ],
+  "allergens": [
+   "Lactose",
+   "Tree nuts"
+  ],
+  "grams": 310,
+  "kcal": 279,
+  "protein": 24,
+  "carbs": 26,
+  "fat": 10,
+  "fdc": [
+   [
+    172182,
+    200
+   ],
+   [
+    171711,
+    100
+   ],
+   [
+    168596,
+    10
+   ]
+  ]
+ },
+ {
+  "id": "r7",
+  "name": "Tofu scramble wrap",
+  "type": "Breakfast",
+  "minutes": 12,
+  "tags": [
+   "vegetarian",
+   "vegan",
+   "pescatarian"
+  ],
+  "allergens": [
+   "Soy",
+   "Gluten"
+  ],
+  "grams": 260,
+  "kcal": 379,
+  "protein": 27,
+  "carbs": 29,
+  "fat": 20,
+  "fdc": [
+   [
+    172475,
+    120
+   ],
+   [
+    170108,
+    60
+   ],
+   [
+    168462,
+    30
+   ],
+   [
+    174081,
+    45
+   ],
+   [
+    171413,
+    5
+   ]
+  ]
+ },
+ {
+  "id": "r8",
+  "name": "Banana almond smoothie",
+  "type": "Breakfast",
+  "minutes": 4,
+  "tags": [
+   "vegetarian",
+   "pescatarian"
+  ],
+  "allergens": [
+   "Lactose",
+   "Tree nuts",
+   "Gluten"
+  ],
+  "grams": 405,
+  "kcal": 399,
+  "protein": 16,
+  "carbs": 56,
+  "fat": 15,
+  "fdc": [
+   [
+    173944,
+    120
+   ],
+   [
+    171267,
+    250
+   ],
+   [
+    168596,
+    15
+   ],
+   [
+    169705,
+    20
+   ]
+  ]
+ },
+ {
+  "id": "r9",
+  "name": "Egg and mushroom bowl",
+  "type": "Breakfast",
+  "minutes": 10,
+  "tags": [
+   "vegetarian",
+   "pescatarian"
+  ],
+  "allergens": [
+   "Egg"
+  ],
+  "grams": 305,
+  "kcal": 259,
+  "protein": 16,
+  "carbs": 8,
+  "fat": 19,
+  "fdc": [
+   [
+    172187,
+    120
+   ],
+   [
+    169251,
+    100
+   ],
+   [
+    170457,
+    80
+   ],
+   [
+    171413,
+    5
+   ]
+  ]
+ },
+ {
+  "id": "r10",
+  "name": "Peanut butter toast",
+  "type": "Breakfast",
+  "minutes": 3,
+  "tags": [
+   "vegetarian",
+   "vegan",
+   "pescatarian"
+  ],
+  "allergens": [
+   "Gluten",
+   "Peanuts"
+  ],
+  "grams": 140,
+  "kcal": 324,
+  "protein": 13,
+  "carbs": 44,
+  "fat": 13,
+  "fdc": [
+   [
+    172688,
+    60
+   ],
+   [
+    172470,
+    20
+   ],
+   [
+    173944,
+    60
+   ]
+  ]
+ },
+ {
+  "id": "r11",
+  "name": "Chicken rice bowl",
+  "type": "Lunch",
+  "minutes": 20,
+  "tags": [],
+  "allergens": [
+   "Gluten",
+   "Soy"
+  ],
+  "grams": 430,
+  "kcal": 516,
+  "protein": 49,
+  "carbs": 58,
+  "fat": 10,
+  "fdc": [
+   [
+    171534,
+    130
+   ],
+   [
+    168878,
+    180
+   ],
+   [
+    170379,
+    100
+   ],
+   [
+    174277,
+    15
+   ],
+   [
+    171413,
+    5
+   ]
+  ]
+ },
+ {
+  "id": "r12",
+  "name": "Lentil tomato soup",
+  "type": "Lunch",
+  "minutes": 25,
+  "tags": [
+   "vegetarian",
+   "vegan",
+   "pescatarian"
+  ],
+  "allergens": [],
+  "grams": 468,
+  "kcal": 374,
+  "protein": 20,
+  "carbs": 56,
+  "fat": 9,
+  "fdc": [
+   [
+    172421,
+    200
+   ],
+   [
+    170457,
+    150
+   ],
+   [
+    170000,
+    50
+   ],
+   [
+    170393,
+    60
+   ],
+   [
+    171413,
+    8
+   ]
+  ]
+ },
+ {
+  "id": "r13",
+  "name": "Greek chickpea salad",
+  "type": "Lunch",
+  "minutes": 10,
+  "tags": [
+   "vegetarian",
+   "pescatarian"
+  ],
+  "allergens": [
+   "Lactose"
+  ],
+  "grams": 398,
+  "kcal": 456,
+  "protein": 21,
+  "carbs": 50,
+  "fat": 21,
+  "fdc": [
+   [
+    173757,
+    150
+   ],
+   [
+    168409,
+    100
+   ],
+   [
+    170457,
+    100
+   ],
+   [
+    173420,
+    40
+   ],
+   [
+    171413,
+    8
+   ]
+  ]
+ },
+ {
+  "id": "r14",
+  "name": "Tuna black bean salad",
+  "type": "Lunch",
+  "minutes": 8,
+  "tags": [
+   "pescatarian"
+  ],
+  "allergens": [
+   "Fish"
+  ],
+  "grams": 378,
+  "kcal": 358,
+  "protein": 39,
+  "carbs": 29,
+  "fat": 10,
+  "fdc": [
+   [
+    171986,
+    110
+   ],
+   [
+    173735,
+    100
+   ],
+   [
+    169247,
+    80
+   ],
+   [
+    170457,
+    80
+   ],
+   [
+    171413,
+    8
+   ]
+  ]
+ },
+ {
+  "id": "r15",
+  "name": "Chicken caesar wrap",
+  "type": "Lunch",
+  "minutes": 12,
+  "tags": [],
+  "allergens": [
+   "Gluten",
+   "Lactose"
+  ],
+  "grams": 280,
+  "kcal": 428,
+  "protein": 47,
+  "carbs": 32,
+  "fat": 12,
+  "fdc": [
+   [
+    171534,
+    110
+   ],
+   [
+    174081,
+    60
+   ],
+   [
+    169247,
+    60
+   ],
+   [
+    171247,
+    10
+   ],
+   [
+    170894,
+    40
+   ]
+  ]
+ },
+ {
+  "id": "r16",
+  "name": "Quinoa veggie bowl",
+  "type": "Lunch",
+  "minutes": 20,
+  "tags": [
+   "vegetarian",
+   "vegan",
+   "pescatarian"
+  ],
+  "allergens": [],
+  "grams": 400,
+  "kcal": 394,
+  "protein": 12,
+  "carbs": 54,
+  "fat": 16,
+  "fdc": [
+   [
+    168917,
+    185
+   ],
+   [
+    170108,
+    80
+   ],
+   [
+    170379,
+    80
+   ],
+   [
+    171705,
+    50
+   ],
+   [
+    171413,
+    5
+   ]
+  ]
+ },
+ {
+  "id": "r17",
+  "name": "Black bean burrito bowl",
+  "type": "Lunch",
+  "minutes": 15,
+  "tags": [
+   "vegetarian",
+   "vegan",
+   "pescatarian"
+  ],
+  "allergens": [],
+  "grams": 460,
+  "kcal": 499,
+  "protein": 19,
+  "carbs": 88,
+  "fat": 9,
+  "fdc": [
+   [
+    173735,
+    150
+   ],
+   [
+    168878,
+    150
+   ],
+   [
+    170457,
+    80
+   ],
+   [
+    171705,
+    50
+   ],
+   [
+    170000,
+    30
+   ]
+  ]
+ },
+ {
+  "id": "r18",
+  "name": "Hummus veggie wrap",
+  "type": "Lunch",
+  "minutes": 6,
+  "tags": [
+   "vegetarian",
+   "vegan",
+   "pescatarian"
+  ],
+  "allergens": [
+   "Gluten",
+   "Sesame"
+  ],
+  "grams": 260,
+  "kcal": 365,
+  "protein": 12,
+  "carbs": 45,
+  "fat": 17,
+  "fdc": [
+   [
+    174081,
+    60
+   ],
+   [
+    174289,
+    60
+   ],
+   [
+    168409,
+    60
+   ],
+   [
+    170393,
+    50
+   ],
+   [
+    168462,
+    30
+   ]
+  ]
+ },
+ {
+  "id": "r19",
+  "name": "Salmon and avocado rice",
+  "type": "Lunch",
+  "minutes": 18,
+  "tags": [
+   "pescatarian"
+  ],
+  "allergens": [
+   "Fish",
+   "Gluten",
+   "Soy"
+  ],
+  "grams": 380,
+  "kcal": 516,
+  "protein": 31,
+  "carbs": 49,
+  "fat": 22,
+  "fdc": [
+   [
+    175168,
+    110
+   ],
+   [
+    168878,
+    150
+   ],
+   [
+    171705,
+    50
+   ],
+   [
+    168409,
+    60
+   ],
+   [
+    174277,
+    10
+   ]
+  ]
+ },
+ {
+  "id": "r20",
+  "name": "Tomato feta pasta",
+  "type": "Lunch",
+  "minutes": 18,
+  "tags": [
+   "vegetarian",
+   "pescatarian"
+  ],
+  "allergens": [
+   "Gluten",
+   "Lactose"
+  ],
+  "grams": 428,
+  "kcal": 527,
+  "protein": 19,
+  "carbs": 70,
+  "fat": 19,
+  "fdc": [
+   [
+    169737,
+    200
+   ],
+   [
+    170457,
+    150
+   ],
+   [
+    173420,
+    40
+   ],
+   [
+    171413,
+    8
+   ],
+   [
+    168462,
+    30
+   ]
+  ]
+ },
+ {
+  "id": "r21",
+  "name": "Tofu stir fry with rice",
+  "type": "Lunch",
+  "minutes": 18,
+  "tags": [
+   "vegetarian",
+   "vegan",
+   "pescatarian"
+  ],
+  "allergens": [
+   "Soy",
+   "Gluten"
+  ],
+  "grams": 513,
+  "kcal": 577,
+  "protein": 35,
+  "carbs": 66,
+  "fat": 22,
+  "fdc": [
+   [
+    172475,
+    150
+   ],
+   [
+    168878,
+    180
+   ],
+   [
+    170108,
+    80
+   ],
+   [
+    170379,
+    80
+   ],
+   [
+    174277,
+    15
+   ],
+   [
+    171413,
+    8
+   ]
+  ]
+ },
+ {
+  "id": "r22",
+  "name": "Roast salmon with sweet potato",
+  "type": "Dinner",
+  "minutes": 30,
+  "tags": [
+   "pescatarian"
+  ],
+  "allergens": [
+   "Fish"
+  ],
+  "grams": 465,
+  "kcal": 553,
+  "protein": 38,
+  "carbs": 49,
+  "fat": 23,
+  "fdc": [
+   [
+    175168,
+    140
+   ],
+   [
+    168483,
+    200
+   ],
+   [
+    170379,
+    120
+   ],
+   [
+    171413,
+    5
+   ]
+  ]
+ },
+ {
+  "id": "r23",
+  "name": "Chicken and vegetable pan",
+  "type": "Dinner",
+  "minutes": 25,
+  "tags": [],
+  "allergens": [],
+  "grams": 580,
+  "kcal": 515,
+  "protein": 52,
+  "carbs": 45,
+  "fat": 16,
+  "fdc": [
+   [
+    171534,
+    150
+   ],
+   [
+    169291,
+    120
+   ],
+   [
+    170108,
+    100
+   ],
+   [
+    170026,
+    200
+   ],
+   [
+    171413,
+    10
+   ]
+  ]
+ },
+ {
+  "id": "r24",
+  "name": "Beef and pepper rice",
+  "type": "Dinner",
+  "minutes": 20,
+  "tags": [],
+  "allergens": [
+   "Gluten",
+   "Soy"
+  ],
+  "grams": 440,
+  "kcal": 547,
+  "protein": 35,
+  "carbs": 59,
+  "fat": 18,
+  "fdc": [
+   [
+    174032,
+    110
+   ],
+   [
+    168878,
+    170
+   ],
+   [
+    170108,
+    100
+   ],
+   [
+    170000,
+    50
+   ],
+   [
+    174277,
+    10
+   ]
+  ]
+ },
+ {
+  "id": "r25",
+  "name": "Chickpea coconut curry",
+  "type": "Dinner",
+  "minutes": 25,
+  "tags": [
+   "vegetarian",
+   "vegan",
+   "pescatarian"
+  ],
+  "allergens": [],
+  "grams": 543,
+  "kcal": 650,
+  "protein": 24,
+  "carbs": 93,
+  "fat": 23,
+  "fdc": [
+   [
+    173757,
+    180
+   ],
+   [
+    170173,
+    80
+   ],
+   [
+    168462,
+    60
+   ],
+   [
+    170457,
+    100
+   ],
+   [
+    168878,
+    120
+   ],
+   [
+    170924,
+    3
+   ]
+  ]
+ },
+ {
+  "id": "r26",
+  "name": "Lentil bolognese",
+  "type": "Dinner",
+  "minutes": 30,
+  "tags": [
+   "vegetarian",
+   "vegan",
+   "pescatarian"
+  ],
+  "allergens": [
+   "Gluten"
+  ],
+  "grams": 598,
+  "kcal": 624,
+  "protein": 27,
+  "carbs": 106,
+  "fat": 11,
+  "fdc": [
+   [
+    172421,
+    150
+   ],
+   [
+    169737,
+    200
+   ],
+   [
+    170457,
+    150
+   ],
+   [
+    170393,
+    50
+   ],
+   [
+    170000,
+    40
+   ],
+   [
+    171413,
+    8
+   ]
+  ]
+ },
+ {
+  "id": "r27",
+  "name": "Mushroom spinach pasta",
+  "type": "Dinner",
+  "minutes": 20,
+  "tags": [
+   "vegetarian",
+   "pescatarian"
+  ],
+  "allergens": [
+   "Gluten",
+   "Lactose"
+  ],
+  "grams": 403,
+  "kcal": 490,
+  "protein": 21,
+  "carbs": 70,
+  "fat": 15,
+  "fdc": [
+   [
+    169737,
+    200
+   ],
+   [
+    169251,
+    120
+   ],
+   [
+    168462,
+    60
+   ],
+   [
+    171247,
+    15
+   ],
+   [
+    171413,
+    8
+   ]
+  ]
+ },
+ {
+  "id": "r28",
+  "name": "Beef burger bowl",
+  "type": "Dinner",
+  "minutes": 20,
+  "tags": [],
+  "allergens": [],
+  "grams": 465,
+  "kcal": 523,
+  "protein": 37,
+  "carbs": 40,
+  "fat": 24,
+  "fdc": [
+   [
+    174032,
+    120
+   ],
+   [
+    170026,
+    200
+   ],
+   [
+    169247,
+    60
+   ],
+   [
+    170457,
+    80
+   ],
+   [
+    171413,
+    5
+   ]
+  ]
+ },
+ {
+  "id": "r29",
+  "name": "Tuna pasta with tomato",
+  "type": "Dinner",
+  "minutes": 18,
+  "tags": [
+   "pescatarian"
+  ],
+  "allergens": [
+   "Gluten",
+   "Fish"
+  ],
+  "grams": 468,
+  "kcal": 541,
+  "protein": 41,
+  "carbs": 68,
+  "fat": 11,
+  "fdc": [
+   [
+    169737,
+    200
+   ],
+   [
+    171986,
+    110
+   ],
+   [
+    170457,
+    150
+   ],
+   [
+    171413,
+    8
+   ]
+  ]
+ },
+ {
+  "id": "r30",
+  "name": "Sweet potato black bean chili",
+  "type": "Dinner",
+  "minutes": 30,
+  "tags": [
+   "vegetarian",
+   "vegan",
+   "pescatarian"
+  ],
+  "allergens": [],
+  "grams": 535,
+  "kcal": 451,
+  "protein": 19,
+  "carbs": 83,
+  "fat": 6,
+  "fdc": [
+   [
+    168483,
+    180
+   ],
+   [
+    173735,
+    150
+   ],
+   [
+    170457,
+    150
+   ],
+   [
+    170000,
+    50
+   ],
+   [
+    171413,
+    5
+   ]
+  ]
+ },
+ {
+  "id": "r31",
+  "name": "Chicken curry with rice",
+  "type": "Dinner",
+  "minutes": 25,
+  "tags": [],
+  "allergens": [],
+  "grams": 403,
+  "kcal": 554,
+  "protein": 47,
+  "carbs": 53,
+  "fat": 18,
+  "fdc": [
+   [
+    171534,
+    130
+   ],
+   [
+    170173,
+    60
+   ],
+   [
+    168878,
+    170
+   ],
+   [
+    168462,
+    40
+   ],
+   [
+    170924,
+    3
+   ]
+  ]
+ },
+ {
+  "id": "r32",
+  "name": "Baked potato with cottage cheese",
+  "type": "Dinner",
+  "minutes": 35,
+  "tags": [
+   "vegetarian",
+   "pescatarian"
+  ],
+  "allergens": [
+   "Lactose"
+  ],
+  "grams": 550,
+  "kcal": 387,
+  "protein": 25,
+  "carbs": 66,
+  "fat": 4,
+  "fdc": [
+   [
+    170026,
+    300
+   ],
+   [
+    172182,
+    150
+   ],
+   [
+    170379,
+    100
+   ]
+  ]
+ },
+ {
+  "id": "r33",
+  "name": "Apple and peanut butter",
+  "type": "Snack",
+  "minutes": 2,
+  "tags": [
+   "vegetarian",
+   "vegan",
+   "pescatarian"
+  ],
+  "allergens": [
+   "Peanuts"
+  ],
+  "grams": 165,
+  "kcal": 184,
+  "protein": 4,
+  "carbs": 26,
+  "fat": 8,
+  "fdc": [
+   [
+    167793,
+    150
+   ],
+   [
+    172470,
+    15
+   ]
+  ]
+ },
+ {
+  "id": "r34",
+  "name": "Greek yogurt with honey",
+  "type": "Snack",
+  "minutes": 1,
+  "tags": [
+   "vegetarian",
+   "pescatarian"
+  ],
+  "allergens": [
+   "Lactose"
+  ],
+  "grams": 180,
+  "kcal": 131,
+  "protein": 17,
+  "carbs": 14,
+  "fat": 1,
+  "fdc": [
+   [
+    170894,
+    170
+   ],
+   [
+    169640,
+    10
+   ]
+  ]
+ },
+ {
+  "id": "r35",
+  "name": "Carrots with hummus",
+  "type": "Snack",
+  "minutes": 3,
+  "tags": [
+   "vegetarian",
+   "vegan",
+   "pescatarian"
+  ],
+  "allergens": [
+   "Sesame"
+  ],
+  "grams": 170,
+  "kcal": 168,
+  "protein": 5,
+  "carbs": 19,
+  "fat": 9,
+  "fdc": [
+   [
+    170393,
+    120
+   ],
+   [
+    174289,
+    50
+   ]
+  ]
+ },
+ {
+  "id": "r36",
+  "name": "Banana and almonds",
+  "type": "Snack",
+  "minutes": 1,
+  "tags": [
+   "vegetarian",
+   "vegan",
+   "pescatarian"
+  ],
+  "allergens": [
+   "Tree nuts"
+  ],
+  "grams": 135,
+  "kcal": 197,
+  "protein": 4,
+  "carbs": 31,
+  "fat": 8,
+  "fdc": [
+   [
+    173944,
+    120
+   ],
+   [
+    168596,
+    15
+   ]
+  ]
+ },
+ {
+  "id": "r37",
+  "name": "Cottage cheese with tomato",
+  "type": "Snack",
+  "minutes": 3,
+  "tags": [
+   "vegetarian",
+   "pescatarian"
+  ],
+  "allergens": [
+   "Lactose"
+  ],
+  "grams": 250,
+  "kcal": 140,
+  "protein": 16,
+  "carbs": 11,
+  "fat": 4,
+  "fdc": [
+   [
+    172182,
+    150
+   ],
+   [
+    170457,
+    100
+   ]
+  ]
+ },
+ {
+  "id": "r38",
+  "name": "Boiled egg and cucumber",
+  "type": "Snack",
+  "minutes": 10,
+  "tags": [
+   "vegetarian",
+   "pescatarian"
+  ],
+  "allergens": [
+   "Egg"
+  ],
+  "grams": 200,
+  "kcal": 170,
+  "protein": 13,
+  "carbs": 5,
+  "fat": 11,
+  "fdc": [
+   [
+    173424,
+    100
+   ],
+   [
+    168409,
+    100
+   ]
+  ]
+ },
+ {
+  "id": "r39",
+  "name": "Avocado on toast",
+  "type": "Snack",
+  "minutes": 4,
+  "tags": [
+   "vegetarian",
+   "vegan",
+   "pescatarian"
+  ],
+  "allergens": [
+   "Gluten"
+  ],
+  "grams": 85,
+  "kcal": 168,
+  "protein": 5,
+  "carbs": 19,
+  "fat": 9,
+  "fdc": [
+   [
+    172688,
+    35
+   ],
+   [
+    171705,
+    50
+   ]
+  ]
+ },
+ {
+  "id": "r40",
+  "name": "Blueberries and almonds",
+  "type": "Snack",
+  "minutes": 1,
+  "tags": [
+   "vegetarian",
+   "vegan",
+   "pescatarian"
+  ],
+  "allergens": [
+   "Tree nuts"
+  ],
+  "grams": 135,
+  "kcal": 158,
+  "protein": 4,
+  "carbs": 21,
+  "fat": 8,
+  "fdc": [
+   [
+    171711,
+    120
+   ],
+   [
+    168596,
+    15
+   ]
+  ]
+ }
+]

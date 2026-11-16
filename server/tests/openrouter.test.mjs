@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createDeltaParser } from "../src/openrouter.ts";
-import { askSystemPrompt, mealSystemPrompt } from "../src/prompts.ts";
+import { askSystemPrompt, mealSystemPrompt, recipeSystemPrompt } from "../src/prompts.ts";
 import { calibrateLine, createLineCalibrator } from "../src/calibrate.ts";
 
 test("delta parser survives chunks split mid-line and ignores keep-alives", () => {
@@ -105,4 +105,17 @@ test("the stream holds back line one, corrects it and lets the note flow", () =>
   const short = createLineCalibrator("Dinner");
   assert.equal(short.push("Stew | 40 | ? | ? | ?"), "");
   assert.equal(short.flush(), "Stew | 100 | ? | ? | ?");
+});
+
+test("the recipe prompt knows what is left, the diet and what to avoid", () => {
+  const prompt = recipeSystemPrompt({
+    ...diary,
+    today: { total: 1000, meals: [] },
+    todayMacros: { protein: 40, carbs: 100, fat: 30 },
+    person: { diet: "Vegan", avoid: ["Peanuts"] },
+  });
+  assert.match(prompt, /1420 kcal, 1000 eaten, 420 left/);
+  assert.match(prompt, /72 g protein, 50 g carbs, 14 g fat/);
+  assert.match(prompt, /They eat vegan/);
+  assert.match(prompt, /Never use: Peanuts/);
 });

@@ -152,3 +152,24 @@ export function askSystemPrompt(diary: DiaryContext, helper?: unknown) {
     .filter(Boolean)
     .join("\n");
 }
+
+/** Three dishes for what is left of today. The app parses each line in `parseRecipes`. */
+export function recipeSystemPrompt(diary: DiaryContext) {
+  const left = Math.max(0, diary.guide - diary.today.total);
+  const macros = diary.targets && diary.todayMacros
+    ? `Still open today: ${Math.max(0, diary.targets.protein - diary.todayMacros.protein)} g protein, ${Math.max(0, diary.targets.carbs - diary.todayMacros.carbs)} g carbs, ${Math.max(0, diary.targets.fat - diary.todayMacros.fat)} g fat.`
+    : "";
+  return [
+    "You are Zest. Suggest three simple dishes for the rest of today.",
+    "Reply with exactly three lines and nothing else, each in this shape:",
+    "`<dish name, 2-5 words> | <kilocalories per serving> | <protein g> | <carbs g> | <fat g> | <minutes to make>`",
+    "All numbers are integers. Protein times 4, carbs times 4 and fat times 9 must add up to the kilocalories.",
+    `Daily guide: ${diary.guide} kcal, ${diary.today.total} eaten, ${left} left. Stay within what is left.`,
+    macros,
+    diary.person?.diet ? `They eat ${diary.person.diet.toLowerCase()}; every dish must fit that.` : "",
+    diary.person?.avoid?.length ? `Never use: ${diary.person.avoid.join(", ")}.` : "",
+    diary.locale ? `Name the dishes in locale ${diary.locale}.` : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+}

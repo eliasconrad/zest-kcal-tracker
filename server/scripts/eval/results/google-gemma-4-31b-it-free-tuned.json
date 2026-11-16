@@ -1,0 +1,112 @@
+{
+  "summary": {
+    "model": "google/gemma-4-31b-it:free",
+    "prompt": "tuned",
+    "dishes": 15,
+    "parsed": 0,
+    "kcalMaeRaw": null,
+    "kcalMaeCalibrated": null,
+    "kcalBiasRaw": null,
+    "kcalMapePercent": null,
+    "proteinMae": null,
+    "carbsMae": null,
+    "fatMae": null,
+    "costPer1000Scans": 0,
+    "meanTokens": [
+      0,
+      0
+    ]
+  },
+  "rows": [
+    {
+      "id": "dish_1568044634",
+      "truth": 413.19339,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1558550218",
+      "truth": 230.001999,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1563565454",
+      "truth": 350.788818,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1565724620",
+      "truth": 473.953308,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1558380181",
+      "truth": 374.936005,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1565797723",
+      "truth": 202.928879,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1562963289",
+      "truth": 349.917969,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1562875273",
+      "truth": 495.910278,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1562690112",
+      "truth": 428.202332,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1562946006",
+      "truth": 535.984009,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1563220767",
+      "truth": 265.894379,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1560456853",
+      "truth": 405.703369,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1560526514",
+      "truth": 183.252747,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1562173247",
+      "truth": 290.550018,
+      "text": "",
+      "error": 429
+    },
+    {
+      "id": "dish_1563219035",
+      "truth": 410.209686,
+      "text": "",
+      "error": 429
+    }
+  ]
+}
