@@ -17,6 +17,7 @@ import {
   type MealType,
 } from "./prompts.ts";
 import { streamChat, type ChatMessage } from "./openrouter.ts";
+import { calibrateMeal } from "./calibrate.ts";
 
 export interface Env {
   OPENROUTER_API_KEY: string;
@@ -111,10 +112,15 @@ export default {
         },
       ];
       return sse(async (send, signal) => {
-        await streamChat(env, messages, (delta) => send({ type: "text", delta }), signal, {
-          maxTokens: 120,
+        let full = "";
+        await streamChat(env, messages, (delta) => {
+          full += delta;
+        }, signal, {
+          maxTokens: 180,
           temperature: 0.2,
         });
+        const calibrated = calibrateMeal(full, type);
+        if (calibrated.text) await send({ type: "text", delta: calibrated.text });
       });
     }
 

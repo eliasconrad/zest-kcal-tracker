@@ -27,6 +27,7 @@ import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GlassSurface } from "./ui/GlassSurface";
 import { Symbol, Touch } from "./ui/Touch";
+import { Mascot } from "./Mascot";
 import { FoodSticker, type StickerKind } from "./Stickers";
 import { Thinking } from "./Thinking";
 import { cardFloor, FIGURE, SCALE } from "../hooks/useScene";
@@ -34,9 +35,15 @@ import {
   activities,
   activityLabel,
   age,
+  allergenLabel,
+  allergens,
+  blockerLabel,
+  blockers,
   cmToFeetInches,
   feetInchesToCm,
   formatHeight,
+  dietLabel,
+  diets,
   formatWeight,
   goalLabel,
   goals,
@@ -50,6 +57,9 @@ import {
   sexes,
   targetDate,
   weeksToTarget,
+  type Allergen,
+  type Blocker,
+  type Diet,
   type Goal,
   type Pace,
   type Sex,
@@ -67,6 +77,11 @@ export type OnboardingStep =
   | "target"
   | "activity"
   | "pace"
+  | "diet"
+  | "allergies"
+  | "meals"
+  | "blockers"
+  | "reminders"
   | "account"
   | "plan";
 
@@ -77,12 +92,38 @@ const order: OnboardingStep[] = [
   "target",
   "activity",
   "pace",
+  "diet",
+  "allergies",
+  "meals",
+  "blockers",
+  "reminders",
   "account",
   "plan",
 ];
 
 /** Eight characters, as the references ask; the lemon says so plainly. */
 const PASSWORD_MIN = 8;
+
+function validBirthDate(value: string) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return false;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const bounds = limits.birthYear();
+  if (year < bounds.min || year > bounds.max) return false;
+  const date = new Date(year, month - 1, day);
+  return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
+}
+
+function withBirthPart(current: string, part: "year" | "month" | "day", raw: string) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(current);
+  const year = part === "year" ? raw.padStart(4, "0").slice(0, 4) : (match?.[1] ?? "2000");
+  const month = part === "month" ? raw.padStart(2, "0").slice(0, 2) : (match?.[2] ?? "01");
+  const day = part === "day" ? raw.padStart(2, "0").slice(0, 2) : (match?.[3] ?? "01");
+  const birthYear = Number(year) || 0;
+  return { birthYear, birthDate: `${year}-${month}-${day}` };
+}
 
 function stepsFor(goal: Goal): OnboardingStep[] {
   return goal === "lose" || goal === "gain"
@@ -134,6 +175,7 @@ export function Onboarding({
   const index = Math.max(0, steps.indexOf(step));
   const scroll =
     useRef<React.ComponentRef<typeof KeyboardAwareScrollView>>(null);
+  const passwordInput = useRef<TextInput>(null);
   useEffect(() => {
     scroll.current?.scrollTo({ y: 0, animated: false });
   }, [step]);
@@ -244,9 +286,19 @@ export function Onboarding({
             ? "Pick a number that feels kind."
             : step === "activity"
               ? "Honest answers make better guides."
-              : step === "pace"
+                : step === "pace"
                 ? "Steady wins. I’m patient."
-                : step === "account"
+                : step === "diet"
+                  ? "Tell me what you actually eat."
+                  : step === "allergies"
+                    ? "I’ll keep these off the plate."
+                    : step === "meals"
+                      ? "When do you usually eat?"
+                      : step === "blockers"
+                        ? "Only so I know what to say."
+                        : step === "reminders"
+                          ? "A nudge, only if you want one."
+                          : step === "account"
                   ? "Your diary, your key."
                   : preparing
                   ? "Working it out…"
@@ -271,8 +323,11 @@ export function Onboarding({
           draft.weightKg >= limits.weightKg.min &&
           draft.weightKg <= limits.weightKg.max &&
           draft.birthYear >= limits.birthYear().min &&
-          draft.birthYear <= limits.birthYear().max
+          draft.birthYear <= limits.birthYear().max &&
+          validBirthDate(draft.birthDate)
         );
+      case "meals":
+        return draft.mealsPerDay >= 2 && draft.mealsPerDay <= 6;
       case "target":
         return (
           draft.targetWeightKg >= limits.weightKg.min &&
@@ -291,12 +346,15 @@ export function Onboarding({
     {
       sex: draft.sex,
       birthYear: draft.birthYear,
+      birthDate: draft.birthDate,
       heightCm: draft.heightCm,
       weightKg: draft.weightKg,
     },
     draft.goal,
     draft.activity,
     draft.pace,
+    new Date(),
+    draft.diet,
   );
 
   return (
@@ -503,11 +561,34 @@ export function Onboarding({
                       onChange={(units) => update({ units })}
                     />
                     <NumberField
+                      label="Birth day"
+                      value={draft.birthDate.slice(8, 10).replace(/^0/, "")}
+                      unit="day"
+                      maxLength={2}
+                      onChange={(text) => set(withBirthPart(draft.birthDate, "day", text))}
+                    />
+                    <NumberField
+                      label="Birth month"
+                      value={draft.birthDate.slice(5, 7).replace(/^0/, "")}
+                      unit="month"
+                      maxLength={2}
+                      onChange={(text) => set(withBirthPart(draft.birthDate, "month", text))}
+                    />
+                    <NumberField
                       label="Birth year"
-                      value={String(draft.birthYear)}
-                      unit={`${age(draft.birthYear)} years`}
+                      value={draft.birthYear ? String(draft.birthYear) : ""}
+                      unit={`${age(draft.birthYear, new Date(), draft.birthDate)} years`}
                       maxLength={4}
-                      onChange={(text) => set({ birthYear: Number(text) || 0 })}
+                      onChange={(text) => {
+                        const digits = text.replace(/\D/g, "").slice(0, 4);
+                        const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(draft.birthDate);
+                        const month = match?.[2] ?? "01";
+                        const day = match?.[3] ?? "01";
+                        set({
+                          birthYear: Number(digits) || 0,
+                          birthDate: `${(digits || "0000").padStart(4, "0")}-${month}-${day}`,
+                        });
+                      }}
                     />
                     {draft.units === "metric" ? (
                       <NumberField
@@ -591,6 +672,127 @@ export function Onboarding({
                     onChange={(pace) => update({ pace })}
                   />
                 )}
+                {step === "diet" && (
+                  <Question
+                    title="How do you eat?"
+                    detail="This changes the protein and carb split. Nothing else."
+                  >
+                    {diets.map((diet) => (
+                      <Choice
+                        key={diet}
+                        label={dietLabel[diet]}
+                        selected={draft.diet === diet}
+                        onPress={() => update({ diet: diet as Diet })}
+                      />
+                    ))}
+                  </Question>
+                )}
+                {step === "allergies" && (
+                  <Question
+                    title="Anything to leave out?"
+                    detail="Skip this if nothing applies. The model will not suggest these."
+                  >
+                    <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                      {allergens.map((item) => (
+                        <Chip
+                          key={item}
+                          label={allergenLabel[item]}
+                          selected={draft.allergies.includes(item)}
+                          onPress={() =>
+                            update({
+                              allergies: draft.allergies.includes(item)
+                                ? draft.allergies.filter((value) => value !== item)
+                                : [...draft.allergies, item as Allergen],
+                            })
+                          }
+                        />
+                      ))}
+                    </View>
+                    <TextField
+                      label="Other"
+                      value={draft.allergyNote}
+                      onChange={(allergyNote) => set({ allergyNote })}
+                      placeholder="Anything else"
+                    />
+                  </Question>
+                )}
+                {step === "meals" && (
+                  <Question
+                    title="When do you usually eat?"
+                    detail="The camera uses these times to guess the meal."
+                  >
+                    <NumberField
+                      label="Meals a day"
+                      value={String(draft.mealsPerDay)}
+                      unit="meals"
+                      maxLength={1}
+                      onChange={(text) => set({ mealsPerDay: Number(text) || 0 })}
+                    />
+                    <TextField
+                      label="Breakfast time"
+                      value={draft.mealTimes.breakfast}
+                      onChange={(breakfast) =>
+                        set({ mealTimes: { ...draft.mealTimes, breakfast } })
+                      }
+                      placeholder="08:00"
+                    />
+                    <TextField
+                      label="Lunch time"
+                      value={draft.mealTimes.lunch}
+                      onChange={(lunch) => set({ mealTimes: { ...draft.mealTimes, lunch } })}
+                      placeholder="13:00"
+                    />
+                    <TextField
+                      label="Dinner time"
+                      value={draft.mealTimes.dinner}
+                      onChange={(dinner) =>
+                        set({ mealTimes: { ...draft.mealTimes, dinner } })
+                      }
+                      placeholder="19:30"
+                    />
+                  </Question>
+                )}
+                {step === "blockers" && (
+                  <Question
+                    title="What got in the way before?"
+                    detail="Pick any that fit. This only changes what the lemon says."
+                  >
+                    <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                      {blockers.map((item) => (
+                        <Chip
+                          key={item}
+                          label={blockerLabel[item]}
+                          selected={draft.blockers.includes(item)}
+                          onPress={() =>
+                            update({
+                              blockers: draft.blockers.includes(item)
+                                ? draft.blockers.filter((value) => value !== item)
+                                : [...draft.blockers, item as Blocker],
+                            })
+                          }
+                        />
+                      ))}
+                    </View>
+                  </Question>
+                )}
+                {step === "reminders" && (
+                  <Question
+                    title="A small reminder?"
+                    detail="A note around your usual meal times, so a day does not slip by. You can say no."
+                  >
+                    <Choice
+                      label="Remind me"
+                      detail="Saved for when meal reminders can ask the phone."
+                      selected={draft.reminders}
+                      onPress={() => update({ reminders: true })}
+                    />
+                    <Choice
+                      label="Not now"
+                      selected={!draft.reminders}
+                      onPress={() => update({ reminders: false })}
+                    />
+                  </Question>
+                )}
                 {step === "account" && (
                   <Question
                     title="Keep your diary yours"
@@ -604,8 +806,10 @@ export function Onboarding({
                       textContentType="emailAddress"
                       autoComplete="email"
                       autoFocus={!editing || !draft.email}
+                      onSubmit={() => passwordInput.current?.focus()}
                     />
                     <TextField
+                      inputRef={passwordInput}
                       label="Password"
                       value={password}
                       onChange={setPassword}
@@ -734,6 +938,8 @@ function TextField({
   textContentType,
   autoComplete,
   trailing,
+  inputRef,
+  onSubmit,
 }: {
   label: string;
   value: string;
@@ -745,8 +951,11 @@ function TextField({
   textContentType?: React.ComponentProps<typeof TextInput>["textContentType"];
   autoComplete?: React.ComponentProps<typeof TextInput>["autoComplete"];
   trailing?: { icon: "eye" | "eye.slash"; label: string; onPress: () => void };
+  inputRef?: React.RefObject<TextInput | null>;
+  onSubmit?: () => void;
 }) {
-  const input = useRef<TextInput>(null);
+  const local = useRef<TextInput>(null);
+  const input = inputRef ?? local;
   return (
     // The eye toggle is a sibling of the focusing row, not a child: a Touch
     // inside the row's Pressable never received its tap.
@@ -785,7 +994,9 @@ function TextField({
           keyboardType={keyboardType}
           textContentType={textContentType}
           autoComplete={autoComplete}
-          returnKeyType="next"
+          returnKeyType={onSubmit ? "next" : "done"}
+          blurOnSubmit={!onSubmit}
+          onSubmitEditing={onSubmit}
           style={{
             flex: 1,
             fontSize: 19,
@@ -820,19 +1031,33 @@ function Question({
 }: React.PropsWithChildren<{ title: React.ReactNode; detail?: string }>) {
   return (
     <View>
-      <Text
-        accessibilityRole="header"
-        maxFontSizeMultiplier={1.4}
-        style={{
-          fontSize: 28,
-          lineHeight: 33,
-          fontWeight: "600",
-          letterSpacing: -0.9,
-          color: theme.ink,
-        }}
-      >
-        {title}
-      </Text>
+      <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 8 }}>
+        <Mascot pose="rest" size={64} />
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "#FFFFFF",
+            borderRadius: 18,
+            borderBottomLeftRadius: 5,
+            paddingHorizontal: 14,
+            paddingVertical: 10,
+          }}
+        >
+          <Text
+            accessibilityRole="header"
+            maxFontSizeMultiplier={1.4}
+            style={{
+              fontSize: 22,
+              lineHeight: 27,
+              fontWeight: "600",
+              letterSpacing: -0.6,
+              color: theme.ink,
+            }}
+          >
+            {title}
+          </Text>
+        </View>
+      </View>
       {detail && (
         <Text
           style={{
@@ -870,7 +1095,7 @@ function Choice({
           borderCurve: "continuous",
           paddingHorizontal: 18,
           paddingVertical: 14,
-          backgroundColor: selected ? theme.heavy : "#FFFFFF",
+          backgroundColor: selected ? "#F6EFD6" : "#FFFFFF",
           flexDirection: "row",
           alignItems: "center",
           gap: 12,
@@ -881,7 +1106,7 @@ function Choice({
             style={{
               fontSize: 17,
               fontWeight: "500",
-              color: selected ? theme.onHeavy : theme.ink,
+              color: theme.ink,
             }}
           >
             {label}
@@ -891,7 +1116,7 @@ function Choice({
               style={{
                 fontSize: 13,
                 marginTop: 2,
-                color: selected ? "#D9DAD3" : theme.muted,
+                color: theme.muted,
               }}
             >
               {detail}
@@ -899,7 +1124,7 @@ function Choice({
           )}
         </View>
         {selected && (
-          <Symbol name="checkmark" size={14} color={theme.onHeavy} />
+          <Symbol name="checkmark" size={14} color={theme.accent} />
         )}
       </View>
     </Touch>
@@ -928,7 +1153,7 @@ function Chip({
           borderRadius: 22,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: selected ? theme.heavy : "#FFFFFF",
+          backgroundColor: selected ? "#F6EFD6" : "#FFFFFF",
         }}
       >
         <Text
@@ -936,7 +1161,7 @@ function Chip({
           style={{
             fontSize: 13,
             fontWeight: "500",
-            color: selected ? theme.onHeavy : theme.ink,
+            color: theme.ink,
           }}
         >
           {label}
@@ -1136,12 +1361,15 @@ function PaceStep({
     {
       sex: draft.sex,
       birthYear: draft.birthYear,
+      birthDate: draft.birthDate,
       heightCm: draft.heightCm,
       weightKg: draft.weightKg,
     },
     draft.goal,
     draft.activity,
     draft.pace,
+    new Date(),
+    draft.diet,
   );
   return (
     <Question

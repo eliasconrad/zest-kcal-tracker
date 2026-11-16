@@ -1,5 +1,60 @@
 [
   {
+    "path": "assets/cookbooks/zest/mascot/chest.svg",
+    "bytes": 572,
+    "sha256": "649300d0d3b6b0098e6416893d230dc61998a856fb9d263bd6364a3025a4c75d"
+  },
+  {
+    "path": "assets/cookbooks/zest/mascot/curious.svg",
+    "bytes": 1289,
+    "sha256": "a187df5941ad0c3e5dd5595164296297de2b8a3556d99f69860fae70d3b53275"
+  },
+  {
+    "path": "assets/cookbooks/zest/mascot/face.svg",
+    "bytes": 812,
+    "sha256": "2c57fae5c1464c2e67db9c05a6d062749c7576bd9aa850c64d14b050565d06aa"
+  },
+  {
+    "path": "assets/cookbooks/zest/mascot/flame.svg",
+    "bytes": 496,
+    "sha256": "b5fe3a93ef2de4978fc63185cfc33af7861b3c89d7d2f1227a37266bbef8c417"
+  },
+  {
+    "path": "assets/cookbooks/zest/mascot/grin.svg",
+    "bytes": 1277,
+    "sha256": "82af284c0817d652f4a775216648948fe32ea7898541636ed1c637d1db6338b8"
+  },
+  {
+    "path": "assets/cookbooks/zest/mascot/jump.svg",
+    "bytes": 1456,
+    "sha256": "8726677be56f10a6ec71858298da7aa30e3bd87e2929a19e11e52657555d8fd3"
+  },
+  {
+    "path": "assets/cookbooks/zest/mascot/leap.svg",
+    "bytes": 1343,
+    "sha256": "3d91c1003c3d1325d5646debf521b76c3f7e9618847de1d2d7a82ac64a199ae8"
+  },
+  {
+    "path": "assets/cookbooks/zest/mascot/peek.svg",
+    "bytes": 798,
+    "sha256": "464edeea9bb0710d164a100ebd51268865f2caa894a4c287e82731b758861779"
+  },
+  {
+    "path": "assets/cookbooks/zest/mascot/rest.svg",
+    "bytes": 1169,
+    "sha256": "3fbdf3de05051987cd748e2a8af5f044652afcad790313fe355c116bc8f46f86"
+  },
+  {
+    "path": "assets/cookbooks/zest/mascot/sleep.svg",
+    "bytes": 1003,
+    "sha256": "e97a446ab22b94f1c664ec8d29edc38837b4396b13cf1c8d80030f7c4183b442"
+  },
+  {
+    "path": "assets/cookbooks/zest/mascot/wink.svg",
+    "bytes": 1003,
+    "sha256": "d914d968407360fd495d691f2bd152319b004560ab34f39c102f04128735608f"
+  },
+  {
     "path": "assets/cookbooks/zest/photos/breakfast.png",
     "bytes": 2741726,
     "sha256": "6a9f3b8c9103fd09dde385ae80e61c973d944864dd4a56ccf4d2f6ed9ec0f25b"

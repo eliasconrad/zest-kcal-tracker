@@ -40,12 +40,14 @@ import { defaultMealType, mealTypes, type MealPhoto, type MealType } from "../da
  * and for simulators without a camera.
  */
 export function MealCamera({
+  mealTimes,
   source,
   onClose,
   onUse,
   onLibrary,
 }: {
   source: "live" | "sample";
+  mealTimes?: { breakfast: string; lunch: string; dinner: string };
   onClose: () => void;
   onUse: (photo: MealPhoto, type: MealType) => void;
   onLibrary: () => void;
@@ -55,7 +57,7 @@ export function MealCamera({
   const camera = useRef<CameraView>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const [type, setType] = useState<MealType>(() =>
-    source === "sample" ? "Dinner" : defaultMealType(),
+    source === "sample" ? "Dinner" : defaultMealType(new Date(), mealTimes),
   );
   const [ready, setReady] = useState(false);
   const [unavailable, setUnavailable] = useState(false);

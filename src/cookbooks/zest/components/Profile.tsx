@@ -17,6 +17,8 @@ import {
 import {
   activityLabel,
   age,
+  allergenLabel,
+  dietLabel,
   formatHeight,
   formatWeight,
   goalLabel,
@@ -245,7 +247,7 @@ export function ProfileSheet({
                   <Text
                     style={{ fontSize: 13, color: theme.muted, marginTop: 1 }}
                   >
-                    {age(profile.birthYear)} years · {goalLabel[profile.goal]}
+                    {age(profile.birthYear, new Date(), profile.birthDate)} years · {goalLabel[profile.goal]}
                     {days > 1 ? ` · ${days}-day streak` : ""}
                   </Text>
                 </View>
@@ -381,7 +383,7 @@ export function ProfileSheet({
                 />
                 <Row
                   label="Body"
-                  value={`${formatHeight(profile.heightCm, profile.units)} · ${formatWeight(profile.weightKg, profile.units)} · ${age(profile.birthYear)} y`}
+                  value={`${formatHeight(profile.heightCm, profile.units)} · ${formatWeight(profile.weightKg, profile.units)} · ${age(profile.birthYear, new Date(), profile.birthDate)} y`}
                   onPress={() => onEdit("body")}
                 />
                 {tracking && (
@@ -403,6 +405,30 @@ export function ProfileSheet({
                     onPress={() => onEdit("pace")}
                   />
                 )}
+                <Row
+                  label="Diet"
+                  value={dietLabel[profile.diet] ?? "Omnivore"}
+                  onPress={() => onEdit("diet")}
+                />
+                <Row
+                  label="Allergies"
+                  value={
+                    profile.allergies.length
+                      ? profile.allergies.map((item) => allergenLabel[item]).join(", ")
+                      : profile.allergyNote.trim() || "None"
+                  }
+                  onPress={() => onEdit("allergies")}
+                />
+                <Row
+                  label="Meals"
+                  value={`${profile.mealsPerDay} a day`}
+                  onPress={() => onEdit("meals")}
+                />
+                <Row
+                  label="Reminders"
+                  value={profile.reminders ? "On" : "Off"}
+                  onPress={() => onEdit("reminders")}
+                />
                 <Row
                   label="Daily guide"
                   value={`${plan.guide.toLocaleString()} kcal${profile.manualGuide ? " (manual)" : ""}`}

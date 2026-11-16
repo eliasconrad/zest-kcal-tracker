@@ -2,8 +2,36 @@ export const mealTypes = ["Breakfast", "Lunch", "Dinner", "Snack"] as const;
 export type MealType = (typeof mealTypes)[number];
 
 /** The meal the camera pre-selects from the clock: breakfast until 11, lunch until 15, a snack until 17:30, then dinner. */
-export function defaultMealType(now = new Date()): MealType {
+function clockMinutes(value: string) {
+  const match = /^(\d{1,2}):(\d{2})$/.exec(value);
+  if (!match) return null;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (hours > 23 || minutes > 59) return null;
+  return hours * 60 + minutes;
+}
+
+/**
+ * Clock windows by default. When the person set usual meal times, the chip
+ * closest to now wins: breakfast until the midpoint toward lunch, lunch until
+ * the midpoint toward dinner, dinner after that, and a snack in the gap
+ * before dinner if dinner is still more than 90 minutes away.
+ */
+export function defaultMealType(
+  now = new Date(),
+  times?: { breakfast: string; lunch: string; dinner: string },
+): MealType {
   const minutes = now.getHours() * 60 + now.getMinutes();
+  const breakfast = times ? clockMinutes(times.breakfast) : null;
+  const lunch = times ? clockMinutes(times.lunch) : null;
+  const dinner = times ? clockMinutes(times.dinner) : null;
+  if (breakfast != null && lunch != null && dinner != null) {
+    const toLunch = Math.round((breakfast + lunch) / 2);
+    const toDinner = Math.round((lunch + dinner) / 2);
+    if (minutes < toLunch) return "Breakfast";
+    if (minutes < toDinner) return minutes + 90 < dinner ? "Snack" : "Lunch";
+    return "Dinner";
+  }
   if (minutes < 11 * 60) return "Breakfast";
   if (minutes < 15 * 60) return "Lunch";
   if (minutes < 17 * 60 + 30) return "Snack";

@@ -22,3 +22,9 @@ The template retains the verified Expo SDK 57 / React Native 0.86 / Reanimated 4
 These are reached through the Expo/Metro development and native-build tooling graph, not imported by Zest's feature code. The audit is **not clean**. The registry's force-fix suggestions downgrade Expo/React Native to older incompatible major releases; those were not applied. Recheck with `npm audit` before publishing or upgrading and adopt patched compatible releases once available. CI currently checks functional compatibility, not a clean security audit.
 
 Dependencies retain their own license terms. The project-owned MIT license is not a replacement for those notices.
+
+## Model evaluation photos
+
+`server/scripts/eval/labels.json` uses the three bundled plates under `assets/cookbooks/zest/photos/`. Their labels are the sample-meal fixtures in `src/cookbooks/zest/data/diary.ts`, not weighed ground truth.
+
+Nutrition5k (CC-BY, Google) was not fetched. A later set of about thirty photos Elias weighs himself can replace these labels; record the license next to the files when that happens.

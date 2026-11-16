@@ -1,0 +1,98 @@
+Zest Instagram profile
+Paste this in. The pictures are in this folder.
+
+PROFILE PHOTO
+instagram/profile.png
+The app’s lemon, sitting smaller inside the circle.
+
+NAME
+Zest
+
+USERNAME
+Take the first one Instagram still has open:
+  zest.app
+  zest.diary
+  getzest
+  usezest
+  zestkcal
+
+CATEGORY
+Professional account → Business → Health & wellness
+
+BIO
+Welcome to a healthier diary 🍋
+Snap a meal. Calories, a name, a few words.
+Join in 👇👇
+
+ALT BIO
+Snap a meal.
+It comes back as calories and a few words.
+One lemon keeps the diary.
+
+LINK
+Leave this blank until there is a public page or an App Store listing.
+When you have one, set the link title to: Get the app
+
+HIGHLIGHTS
+Left to right. Post the story, save it to the highlight, then set the cover.
+
+  Log      cover highlights/01-log.png      story stories/01-log.png
+  Meals    cover highlights/02-meals.png    story stories/02-meals.png
+  Diary    cover highlights/03-diary.png    story stories/03-diary.png
+  Guide    cover highlights/04-guide.png    story stories/04-guide.png
+  Streak   cover highlights/05-streak.png   story stories/05-streak.png
+  Lemon    cover highlights/06-lemon.png    story stories/06-lemon.png
+
+On the highlight, tap Edit cover and upload the cover file. Instagram will circle-crop it.
+
+FIRST GRID
+These are 4:5 posts. Publish them in one sitting, from 09 to 01, and don’t add anything else until all nine are up. The newest post lands at the top left, so 01 should be last.
+
+01  posts/01-snap-the-plate.png
+Snap the plate.
+
+Zest is a food diary kept by one lemon. You take a photo. It comes back as a number, and a few words.
+
+02  posts/02-good-evening.png
+Good evening.
+
+Open Zest and the lemon is already there. Log the meal in front of you.
+
+03  posts/03-a-photo.png
+A photo.
+A number.
+A few words.
+
+That is the whole receipt.
+
+04  posts/04-the-receipt.png
+Pasta and garlic bread.
+
+The plate comes back as a receipt: a name, an estimate, and one line. This one said, “A plot twist. You’re fine.”
+
+05  posts/05-stickers.png
+A diary made of stickers.
+
+Breakfast, lunch, and dinner stay on the day, easy to see.
+
+06  posts/06-the-month.png
+The month, in stickers.
+
+Every meal sits on its date. The lemon keeps an eye on the calendar.
+
+07  posts/07-your-guide.png
+Your guide.
+
+An estimate to lean on, not a grade. Protein, carbs, and fat. Change it any time.
+
+08  posts/08-come-back.png
+Come back tomorrow.
+
+Log a meal today and the streak holds.
+
+09  posts/09-log-a-meal.png
+Log a meal.
+
+One photo starts the diary.
+
+Publish 09 first and 01 last.

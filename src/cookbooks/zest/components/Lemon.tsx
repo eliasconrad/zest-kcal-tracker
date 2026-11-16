@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { View } from "react-native";
 import {
   Canvas,
   Circle,
@@ -19,6 +20,7 @@ import Animated, {
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { scheduleOnRN } from "react-native-worklets";
 import { FIGURE, feetIn, type Scene } from "../hooks/useScene";
+import { Mascot, type MascotPose } from "./Mascot";
 
 const [footX, footY] = feetIn(FIGURE.hero);
 
@@ -27,10 +29,13 @@ export function Lemon({
   scene,
   onPress,
   calendarOpen,
+  pose,
 }: {
   scene: Scene;
   onPress: () => void;
   calendarOpen: boolean;
+  /** A still frame stands in for the live drawing. Empty days use sleep. */
+  pose?: MascotPose;
 }) {
   const {
     gazeX,
@@ -121,7 +126,7 @@ export function Lemon({
       >
         <Canvas
           pointerEvents="none"
-          style={{ width: FIGURE.hero, height: FIGURE.hero }}
+          style={{ width: FIGURE.hero, height: FIGURE.hero, opacity: pose ? 0 : 1 }}
         >
           <Group transform={[{ scale: FIGURE.hero / 140 }]}>
             <Oval x={43} y={127} width={56} height={4} color="#272A2010" />
@@ -238,6 +243,22 @@ export function Lemon({
             </Group>
           </Group>
         </Canvas>
+        {pose && (
+          <View
+            pointerEvents="none"
+            style={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              width: FIGURE.hero,
+              height: FIGURE.hero,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Mascot pose={pose} size={FIGURE.hero * 0.86} reduced={scene.reduced} />
+          </View>
+        )}
       </Animated.View>
     </GestureDetector>
   );

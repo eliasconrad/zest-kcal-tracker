@@ -16,6 +16,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 import * as Haptics from "expo-haptics";
+import { Mascot } from "./Mascot";
 import { Touch } from "./ui/Touch";
 import { theme } from "../theme";
 
@@ -305,6 +306,11 @@ export function StreakCelebration({
       <View style={{ alignItems: "center", justifyContent: "center" }}>
         <StreakFlame size={176} lit={lit} progress={shape} />
         <Sparks fire={fire} size={176} />
+        {headline && (
+          <View style={{ position: "absolute", right: -28, bottom: 8 }}>
+            <Mascot pose="chest" size={64} reduced={reduced} />
+          </View>
+        )}
       </View>
       <Counter from={from} to={to} flip={flip} color={color} />
       <Text
@@ -368,6 +374,8 @@ export function StreakCelebration({
             >
               {loggedWeek[i] ? (
                 <StreakFlame size={20} lit={i === todayIndex ? lit : 1} />
+              ) : i === todayIndex ? (
+                <Mascot pose="rest" size={22} reduced={reduced} />
               ) : null}
             </View>
           </View>
@@ -496,7 +504,11 @@ export function StreakBand({
                 backgroundColor: loggedWeek[i] ? "#F6EFD6" : "#25272009",
               }}
             >
-              {loggedWeek[i] ? <StreakFlame size={18} lit={1} /> : null}
+              {loggedWeek[i] ? (
+                <StreakFlame size={18} lit={1} />
+              ) : i === todayIndex ? (
+                <Mascot pose="rest" size={20} />
+              ) : null}
             </View>
           </View>
         ))}

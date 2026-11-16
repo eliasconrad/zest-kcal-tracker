@@ -1,0 +1,24 @@
+appId: io.appllama.zestkcaltracker
+name: Edit the account e-mail from the profile
+---
+- launchApp:
+    clearState: true
+- openLink: "zest-kcal-tracker://?demo=1"
+- tapOn:
+    text: "Open|Öffnen"
+    optional: true
+- tapOn: "Your profile"
+- scrollUntilVisible:
+    element: "E-mail: Add. Edit"
+    direction: DOWN
+- tapOn: "E-mail: Add. Edit"
+- assertVisible: "Keep your diary yours"
+- tapOn: "E-mail"
+- eraseText
+- inputText: "mia@example.com"
+- tapOn: "Done"
+- extendedWaitUntil:
+    notVisible: "Previous"
+    timeout: 5000
+- tapOn: "Save"
+- assertVisible: "E-mail: mia@example.com. Edit"

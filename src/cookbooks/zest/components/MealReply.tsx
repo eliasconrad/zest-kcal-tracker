@@ -16,6 +16,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { GlassSurface } from "./ui/GlassSurface";
 import { Symbol, Touch } from "./ui/Touch";
+import { Mascot } from "./Mascot";
 import { FoodSticker, MealSticker } from "./Stickers";
 import { mealTypes, type Meal, type MealType } from "../data/diary";
 import { theme } from "../theme";
@@ -194,6 +195,8 @@ function MealReplyBody({
   guide,
   thinking,
   note,
+  failure,
+  onRetry,
   onChoose,
   onEdit,
   onCalendar,
@@ -207,6 +210,9 @@ function MealReplyBody({
   thinking: React.ReactNode;
   /** A streamed model note replaces the fixed caption when present. */
   note?: string;
+  /** Honest copy when the Worker could not be reached or rejected the photo. */
+  failure?: string;
+  onRetry?: () => void;
   onChoose: (type: MealType) => void;
   onEdit: () => void;
   onCalendar: () => void;
@@ -264,7 +270,14 @@ function MealReplyBody({
             }}
           >
             <Reveal active>
-              <MealSticker meal={meal} size={142} angle={-7} />
+              <View>
+                <MealSticker meal={meal} size={142} angle={-7} />
+                {complete && !failure && (
+                  <View style={{ position: "absolute", left: -4, bottom: 4 }}>
+                    <Mascot pose="grin" size={52} />
+                  </View>
+                )}
+              </View>
             </Reveal>
             <View
               style={{
@@ -274,16 +287,46 @@ function MealReplyBody({
                 justifyContent: "center",
               }}
             >
-              {!complete && (
-                <View style={{ position: "absolute", left: 12 }}>
+              {!complete && !failure && (
+                <View
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 6,
+                  }}
+                >
+                  <Mascot pose="curious" size={44} />
                   <Reveal active delay={120}>
                     {thinking}
                   </Reveal>
                 </View>
               )}
+              {failure && (
+                <View style={{ paddingRight: 8, gap: 10 }}>
+                  <Text
+                    accessibilityLabel={failure}
+                    style={{ fontSize: 16, lineHeight: 22, color: theme.ink }}
+                  >
+                    {failure}
+                  </Text>
+                  {onRetry && (
+                    <Touch label="Try again" onPress={onRetry}>
+                      <Text style={{ fontSize: 16, fontWeight: "600", color: theme.accent }}>
+                        Try again
+                      </Text>
+                    </Touch>
+                  )}
+                </View>
+              )}
               <Touch
-                label={`Edit ${meal.name}, ${meal.kcal} estimated kilocalories`}
-                disabled={!complete}
+                label={
+                  failure
+                    ? failure
+                    : `Edit ${meal.name}, ${meal.kcal} estimated kilocalories`
+                }
+                disabled={!complete || !!failure}
                 onPress={onEdit}
               >
                 <ReplyCopy
@@ -356,6 +399,33 @@ function MealReplyBody({
               />
             )}
           </View>
+          {complete && !failure && (
+            <View
+              style={{
+                marginTop: 14,
+                marginHorizontal: -4,
+                borderRadius: 18,
+                backgroundColor: "#F4E7BF",
+                paddingHorizontal: 14,
+                paddingVertical: 10,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 8,
+              }}
+            >
+              <Mascot pose="jump" size={48} />
+              <Text
+                style={{
+                  fontSize: 22,
+                  fontWeight: "700",
+                  letterSpacing: -0.4,
+                  color: theme.accent,
+                }}
+              >
+                Nice.
+              </Text>
+            </View>
+          )}
           <View
             accessibilityElementsHidden={!calendar.visible}
             style={{ alignSelf: "flex-start", marginTop: 16 }}

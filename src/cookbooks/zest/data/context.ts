@@ -5,7 +5,21 @@ export type DiaryContext = {
   guide: number;
   targets?: { protein: number; carbs: number; fat: number };
   todayMacros?: { protein: number; carbs: number; fat: number };
-  person?: { name?: string; goal?: string; streak?: number };
+  person?: {
+    name?: string;
+    goal?: string;
+    streak?: number;
+    sex?: string;
+    age?: number;
+    heightCm?: number;
+    weightKg?: number;
+    targetKg?: number;
+    activity?: string;
+    pace?: string;
+    diet?: string;
+    allergies?: string;
+    mealsPerDay?: number;
+  };
   today: {
     total: number;
     meals: { name: string; kcal: number; type: string; time: string }[];

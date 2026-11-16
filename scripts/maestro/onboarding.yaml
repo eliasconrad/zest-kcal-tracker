@@ -54,11 +54,39 @@ name: First launch onboarding, computed guide and profile sheet
 - tapOn: "Steady, 0.5 kilograms a week"
 - assertVisible: "About 12 weeks.*"
 - tapOn: "Continue"
+- assertVisible: "How do you eat?"
+- tapOn: "Omnivore"
+- scrollUntilVisible:
+    element: "Continue"
+    direction: DOWN
+- tapOn: "Continue"
+- assertVisible: "Anything to leave out?"
+- scrollUntilVisible:
+    element: "Continue"
+    direction: DOWN
+- tapOn: "Continue"
+- assertVisible: "When do you usually eat?"
+- scrollUntilVisible:
+    element: "Continue"
+    direction: DOWN
+- tapOn: "Continue"
+- assertVisible: "What got in the way before?"
+- scrollUntilVisible:
+    element: "Continue"
+    direction: DOWN
+- tapOn: "Continue"
+- assertVisible: "A small reminder?"
+- tapOn: "Not now"
+- tapOn: "Continue"
 # The account step: e-mail into the profile, the password into the keychain.
 - assertVisible: "Keep your diary yours"
 - tapOn: "E-mail"
 - inputText: "mia@example.com"
-- tapOn: "Next"
+- hideKeyboard
+- scrollUntilVisible:
+    element: "Password"
+    direction: DOWN
+- tapOn: "Password"
 - inputText: "lemonade8"
 - tapOn: "Show password"
 - assertVisible: "lemonade8"

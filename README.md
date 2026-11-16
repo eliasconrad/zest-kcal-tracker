@@ -20,7 +20,7 @@ Zest opens directly into the tracker. There is no gallery, character picker, or 
 - Native camera/library entry, plus an explicit sample-camera experience that needs no account or network.
 - Four illustrated meal choices, a progressive receipt, large visual diary answers, and a sticker calendar.
 - An editable local diary: meal names, calories, macros, deletion, and a daily guide survive app termination.
-- A short onboarding (name, goal, body, activity, pace) that computes a daily guide and macro targets, and a profile sheet with today’s ring, weight progress, streak and every setting that feeds the plan.
+- Onboarding that collects the plan and the model context (name, goal, body with a date of birth, activity, pace, diet, allergies, meal times, reminders, account) and computes a daily guide and macro targets, plus a profile sheet with today’s ring, weight progress, streak and every setting that feeds the plan.
 - An independent feature folder, original local artwork, asset checksums, a locked dependency tree, and reproducible checks.
 
 Out of the box this is a UI template with deterministic local answers that does not analyze food photographs or contact any service. With the optional Worker in [`server/`](server/) configured, photos are estimated by a vision model and open questions stream from it; see [Run it with a model](#run-it-with-a-model). Imported photos ask for a meal name and calorie amount; bundled sample meals use fixture estimates. Protein is available for sample meals only. Conversations reset on relaunch; diary entries persist. [Behavior and integration boundaries](docs/INTEGRATION.md).
@@ -54,7 +54,7 @@ Native glass APIs require iOS 26+ and an SDK that provides them. The published p
 
 ### Try the sample diary
 
-An ordinary first launch opens the onboarding sheet (eight short steps, the seventh an account with e-mail and a password kept in the keychain) and then an empty diary. “Log a meal” → “Take a photo” opens Zest’s own camera (plate ring, meal chips under the finder); “Try a sample meal” opens the same camera on the bundled dinner plate without requesting camera access. To reproduce the populated showcase:
+An ordinary first launch opens the onboarding sheet (name through plan, with an account step whose e-mail stays in the profile and whose password stays in the keychain) and then an empty diary. “Log a meal” → “Take a photo” opens Zest’s own camera (plate ring, meal chips under the finder); “Try a sample meal” opens the same camera on the bundled dinner plate without requesting camera access. A failed estimate stays on the receipt with “Try again”. To reproduce the populated showcase:
 
 ```bash
 xcrun simctl openurl <simulator-udid> 'zest-kcal-tracker://?demo=1'
@@ -77,7 +77,16 @@ cp .env.example .env                  # EXPO_PUBLIC_ZEST_API_URL=http://127.0.0.
 npm run ios:release                   # Metro inlines the URL at bundle time
 ```
 
-Pick any OpenRouter model with image input in `server/wrangler.jsonc` (`OPENROUTER_MODEL`); the default is an open-weights Qwen vision model. The Worker holds the prompts and the wire format, so a model swap or a fine-tuned endpoint needs no app update. For production: `cd server && npx wrangler secret put OPENROUTER_API_KEY && npm run deploy`, then set the Worker URL in `.env`.
+Pick any OpenRouter model with image input in `server/wrangler.jsonc` (`OPENROUTER_MODEL`); the default is an open-weights Qwen vision model. The Worker holds the prompts, the calibration step and the wire format, so a model swap or a fine-tuned endpoint needs no app update. For production, with `CLOUDFLARE_API_TOKEN` set:
+
+```bash
+cd server
+npx wrangler secret put OPENROUTER_API_KEY
+npx wrangler secret put ZEST_APP_TOKEN
+npm run deploy
+```
+
+Then set `EXPO_PUBLIC_ZEST_API_URL` to the printed `*.workers.dev` host. This checkout was not deployed. Accuracy notes and the eval harness are in `docs/VERIFICATION.md` and `docs/MODEL_PLAN.md`.
 
 What changes once a URL is configured:
 

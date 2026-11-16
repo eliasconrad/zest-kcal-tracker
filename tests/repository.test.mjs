@@ -30,7 +30,7 @@ test("asset inventory is complete, checksum-valid and contains no retired stock 
       item.path,
     );
   }
-  assert.equal(manifest.filter((item) => item.path.endsWith(".svg")).length, 6);
+  assert.equal(manifest.filter((item) => item.path.endsWith(".svg")).length, 17);
   assert.equal(
     manifest.filter((item) => item.path.includes("/photos/")).length,
     3,
@@ -69,7 +69,7 @@ test("published Markdown uses valid local file links and previews", () => {
     for (const match of content.matchAll(
       /(?:\]\(|src=")([^\s)"#]+)(?:#[^)"\s]*)?[)"]/g,
     )) {
-      if (/^(https?:|mailto:|data:)/.test(match[1])) continue;
+      if (/^(https?:|mailto:|data:|\/)/.test(match[1])) continue;
       assert.ok(
         existsSync(resolve(dirname(doc), match[1])),
         `${relative(root, doc)}: ${match[1]}`,

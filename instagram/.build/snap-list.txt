@@ -1,0 +1,5 @@
+file '/Users/cxnrade/zest-kcal-tracker-1/instagram/.build/snap-0.mp4'
+file '/Users/cxnrade/zest-kcal-tracker-1/instagram/.build/snap-1.mp4'
+file '/Users/cxnrade/zest-kcal-tracker-1/instagram/.build/snap-2.mp4'
+file '/Users/cxnrade/zest-kcal-tracker-1/instagram/.build/snap-3.mp4'
+file '/Users/cxnrade/zest-kcal-tracker-1/instagram/.build/snap-4.mp4'

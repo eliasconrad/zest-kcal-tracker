@@ -8,6 +8,7 @@
     "deploy": "wrangler deploy",
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
+    "eval": "node scripts/eval/run.mjs",
     "mock": "node scripts/mock-openrouter.mjs"
   },
   "devDependencies": {

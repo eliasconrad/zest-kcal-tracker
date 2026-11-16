@@ -57,6 +57,14 @@ SIMULATOR_UDID=<device-id> .qa/venv/bin/python scripts/verify-native.py
 
 Maestro is the default; IDB is optional. Both native scripts were verified on iPhone 17 Pro. The Maestro close action also uses a documented top-right percentage target because the hosted SwiftUI accessibility frame can remain offscreen after its entry animation. Both use real native input. Neither is a substitute for visual review of glass or motion.
 
+## Model accuracy
+
+Date: 30 October 2026. Model id configured in `server/wrangler.jsonc`: `qwen/qwen2.5-vl-72b-instruct`.
+
+No OpenRouter key and no `CLOUDFLARE_API_TOKEN` were present, so the Worker was not deployed and the harness did not call a model. Mean absolute error and the first-try parse rate were not computed. The harness (`cd server && node scripts/eval/run.mjs`) confirmed the three bundled sample photos exist and exited without a score. A before/after prompt comparison was not run; the few-shot prompt in `server/src/prompts.ts` is the one that ships, because there was no measurement to prefer the previous prompt.
+
+Cloud checks that did run: `npm run verify` and `cd server && npm test` (see the commit that records them). Device checks that did not run are listed under Reproduce.
+
 ## Limits
 
 This is a UI template with local fixture answers. Android/web, a nutrition model or backend, hardware camera/sensors/haptics, and physical-device frame-rate measurement are not verified. CI performs install, TypeScript, lint, regression checks, and iOS JavaScript export; native builds and motion review run separately on macOS. Live workflow results are available in the repository's [Actions tab](https://github.com/Appllama/zest-kcal-tracker/actions).

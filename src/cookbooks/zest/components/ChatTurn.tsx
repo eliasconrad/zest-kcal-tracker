@@ -19,6 +19,7 @@ export function ChatTurn({
   onEdit,
   onCalendar,
   onAsk,
+  onRetry,
 }: {
   turn: Turn;
   meals: Meal[];
@@ -27,6 +28,7 @@ export function ChatTurn({
   onChoose: (turn: Turn, type: MealType) => void;
   onEdit: (meal: Meal) => void;
   onCalendar: () => void;
+  onRetry?: (turn: Turn) => void;
   /** Sends a tapped follow-up question as if typed. */
   onAsk?: (question: string) => void;
 }) {
@@ -137,6 +139,8 @@ export function ChatTurn({
                 </View>
               }
               note={turn.note}
+              failure={turn.state === "failed" ? turn.text : undefined}
+              onRetry={onRetry ? () => onRetry(turn) : undefined}
               onChoose={(type) => onChoose(turn, type)}
               onEdit={() => {
                 if (saved) onEdit(saved);

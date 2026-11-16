@@ -7,7 +7,11 @@ import {
 import {
   plan,
   type Activity,
+  type Allergen,
+  type Blocker,
+  type Diet,
   type Goal,
+  type MealClock,
   type Pace,
   type Plan,
   type Sex,
@@ -23,6 +27,8 @@ export type Profile = {
   email: string;
   sex: Sex;
   birthYear: number;
+  /** ISO `YYYY-MM-DD`. Age uses this when it is set; birthYear stays for older saves. */
+  birthDate: string;
   heightCm: number;
   weightKg: number;
   /** Only meaningful for lose/gain; equals weightKg otherwise. */
@@ -31,6 +37,15 @@ export type Profile = {
   activity: Activity;
   pace: Pace;
   units: Units;
+  diet: Diet;
+  allergies: Allergen[];
+  /** Free text when "other" is chosen; empty otherwise. */
+  allergyNote: string;
+  mealsPerDay: number;
+  mealTimes: MealClock;
+  blockers: Blocker[];
+  /** True after the person asks for a reminder. Skipping leaves this false. */
+  reminders: boolean;
   /** When set, replaces the computed daily guide. */
   manualGuide?: number;
   weights: WeightEntry[];
@@ -51,6 +66,7 @@ export const defaultProfile: Profile = {
   email: "",
   sex: "unspecified",
   birthYear: new Date().getFullYear() - 30,
+  birthDate: `${new Date().getFullYear() - 30}-01-01`,
   heightCm: 170,
   weightKg: 70,
   targetWeightKg: 70,
@@ -58,6 +74,13 @@ export const defaultProfile: Profile = {
   activity: "light",
   pace: "steady",
   units: "metric",
+  diet: "omnivore",
+  allergies: [],
+  allergyNote: "",
+  mealsPerDay: 3,
+  mealTimes: { breakfast: "08:00", lunch: "13:00", dinner: "19:30" },
+  blockers: [],
+  reminders: false,
   weights: [],
 };
 
@@ -67,6 +90,7 @@ export function profilePlan(profile: Profile, now = new Date()): Plan {
     {
       sex: profile.sex,
       birthYear: profile.birthYear,
+      birthDate: profile.birthDate,
       heightCm: profile.heightCm,
       weightKg: profile.weightKg,
     },
@@ -74,6 +98,7 @@ export function profilePlan(profile: Profile, now = new Date()): Plan {
     profile.activity,
     profile.pace,
     now,
+    profile.diet ?? "omnivore",
   );
   if (!profile.manualGuide) return computed;
   const guide = profile.manualGuide;

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  ageFromDate,
   cmToFeetInches,
   feetInchesToCm,
   loggedThisWeek,
@@ -30,6 +31,21 @@ test("plan applies the pace deficit, rounds to tens and keeps macros consistent"
   assert.ok(p.protein >= 100 && p.protein <= 144, `protein ${p.protein}`);
   const kcalFromMacros = p.protein * 4 + p.carbs * 4 + p.fat * 9;
   assert.ok(Math.abs(kcalFromMacros - p.guide) <= 12, `macros sum ${kcalFromMacros} vs ${p.guide}`);
+});
+
+test("a birthday later in the year is one year younger than the birth year alone", () => {
+  assert.equal(ageFromDate("1996-11-01", now), 29);
+  assert.equal(ageFromDate("1996-01-01", now), 30);
+});
+
+test("vegan and vegetarian plans use the lower protein target", () => {
+  const usual = plan(body, "lose", "light", "steady", now, "omnivore");
+  const vegan = plan(body, "lose", "light", "steady", now, "vegan");
+  const vegetarian = plan(body, "lose", "light", "steady", now, "vegetarian");
+  assert.ok(vegan.protein < usual.protein);
+  assert.equal(vegetarian.protein, vegan.protein);
+  assert.ok(vegan.carbs > usual.carbs);
+  assert.equal(vegan.guide, usual.guide);
 });
 
 test("plan never goes below the safety floor and reports it", () => {
@@ -68,13 +84,29 @@ test("profile persists, logs weight in order and a manual guide overrides only c
   const storage = memoryStorage();
   const store = createProfileStore(storage);
   assert.equal(store.getState().onboarded, false);
-  store.getState().save({ name: "Mia", sex: "female", birthYear: 1994, heightCm: 168, weightKg: 70, targetWeightKg: 64, goal: "lose" });
+  store.getState().save({
+    name: "Mia",
+    sex: "female",
+    birthYear: 1994,
+    birthDate: "1994-01-01",
+    heightCm: 168,
+    weightKg: 70,
+    targetWeightKg: 64,
+    goal: "lose",
+    diet: "vegetarian",
+    allergies: ["nuts"],
+    mealsPerDay: 3,
+    reminders: false,
+  });
   store.getState().logWeight({ date: "2026-10-28", kg: 69.5 });
   store.getState().logWeight({ date: "2026-10-20", kg: 70 });
   store.getState().logWeight({ date: "2026-10-28", kg: 69.2 });
   store.getState().finishOnboarding();
   const reopened = createProfileStore(storage).getState();
   assert.equal(reopened.name, "Mia");
+  assert.equal(reopened.diet, "vegetarian");
+  assert.deepEqual(reopened.allergies, ["nuts"]);
+  assert.equal(reopened.birthDate, "1994-01-01");
   assert.equal(reopened.onboarded, true);
   assert.equal(reopened.weightKg, 69.2);
   assert.deepEqual(reopened.weights, [

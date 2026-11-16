@@ -14,6 +14,65 @@ export const paces = ["slow", "steady", "fast"] as const;
 export type Pace = (typeof paces)[number];
 export type Units = "metric" | "imperial";
 
+/** Patterns the diary and the model actually use. "none" means the person skipped the question. */
+export const diets = [
+  "omnivore",
+  "vegetarian",
+  "vegan",
+  "pescatarian",
+  "halal",
+  "kosher",
+  "none",
+] as const;
+export type Diet = (typeof diets)[number];
+export const dietLabel: Record<Diet, string> = {
+  omnivore: "Omnivore",
+  vegetarian: "Vegetarian",
+  vegan: "Vegan",
+  pescatarian: "Pescatarian",
+  halal: "Halal",
+  kosher: "Kosher",
+  none: "None of these",
+};
+
+export const allergens = [
+  "nuts",
+  "peanuts",
+  "gluten",
+  "lactose",
+  "egg",
+  "soy",
+  "fish",
+  "shellfish",
+  "sesame",
+] as const;
+export type Allergen = (typeof allergens)[number];
+export const allergenLabel: Record<Allergen, string> = {
+  nuts: "Nuts",
+  peanuts: "Peanuts",
+  gluten: "Gluten",
+  lactose: "Lactose",
+  egg: "Egg",
+  soy: "Soy",
+  fish: "Fish",
+  shellfish: "Shellfish",
+  sesame: "Sesame",
+};
+
+/** Used only for the lemon's lines, never for the calorie math. */
+export const blockers = ["time", "boredom", "weekends", "hunger", "travel", "forgot"] as const;
+export type Blocker = (typeof blockers)[number];
+export const blockerLabel: Record<Blocker, string> = {
+  time: "Not enough time",
+  boredom: "The food got dull",
+  weekends: "Weekends undid the week",
+  hunger: "I got too hungry",
+  travel: "Travel and eating out",
+  forgot: "I forgot to log",
+};
+
+export type MealClock = { breakfast: string; lunch: string; dinner: string };
+
 export const goalLabel: Record<Goal, string> = {
   lose: "Lose weight",
   maintain: "Maintain",
@@ -46,15 +105,36 @@ export type Body = {
   birthYear: number;
   heightCm: number;
   weightKg: number;
+  /** ISO date `YYYY-MM-DD`. When set, age uses the birthday, not the year alone. */
+  birthDate?: string;
 };
 
-export function age(birthYear: number, now = new Date()) {
+/** Whole years from an ISO date. Invalid dates return 0. */
+export function ageFromDate(birthDate: string, now = new Date()) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(birthDate);
+  if (!match) return 0;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (month < 1 || month > 12 || day < 1 || day > 31) return 0;
+  let years = now.getFullYear() - year;
+  const today = (now.getMonth() + 1) * 100 + now.getDate();
+  if (today < month * 100 + day) years -= 1;
+  return Math.max(0, years);
+}
+
+export function age(birthYear: number, now = new Date(), birthDate?: string) {
+  if (birthDate) return ageFromDate(birthDate, now);
   return Math.max(0, now.getFullYear() - birthYear);
+}
+
+function yearsOld(body: Body, now: Date) {
+  return body.birthDate ? ageFromDate(body.birthDate, now) : age(body.birthYear, now);
 }
 
 /** Mifflin-St Jeor. The unspecified sex uses the midpoint of the two constants. */
 export function restingEnergy(body: Body, now = new Date()) {
-  const base = 10 * body.weightKg + 6.25 * body.heightCm - 5 * age(body.birthYear, now);
+  const base = 10 * body.weightKg + 6.25 * body.heightCm - 5 * yearsOld(body, now);
   const offset = body.sex === "male" ? 5 : body.sex === "female" ? -161 : -78;
   return Math.round(base + offset);
 }
@@ -90,6 +170,7 @@ export function plan(
   activity: Activity,
   pace: Pace,
   now = new Date(),
+  diet: Diet = "omnivore",
 ): Plan {
   const resting = restingEnergy(body, now);
   const maintenance = maintenanceEnergy(body, activity, now);
@@ -97,7 +178,12 @@ export function plan(
   const raw = maintenance + dailyAdjustment(goal, pace);
   const guide = Math.max(floor, Math.round(raw / 10) * 10);
   // Protein per kilogram leads; fat takes a fixed share; carbs fill the rest.
-  const proteinPerKg = goal === "muscle" ? 2.0 : goal === "lose" ? 1.8 : 1.5;
+  // Vegan and vegetarian plans use 1.2 g/kg, the lower end of the usual
+  // 1.2–2.0 g/kg planning range. The calories protein no longer takes move
+  // to carbs. Fat stays at 28% of the guide. Other patterns keep the
+  // goal-based target (1.8 lose, 2.0 muscle, 1.5 otherwise).
+  const plant = diet === "vegan" || diet === "vegetarian";
+  const proteinPerKg = plant ? 1.2 : goal === "muscle" ? 2.0 : goal === "lose" ? 1.8 : 1.5;
   const protein = Math.round(Math.min(body.weightKg * proteinPerKg, (guide * 0.4) / 4));
   const fat = Math.round((guide * 0.28) / 9);
   const carbs = Math.max(0, Math.round((guide - protein * 4 - fat * 9) / 4));

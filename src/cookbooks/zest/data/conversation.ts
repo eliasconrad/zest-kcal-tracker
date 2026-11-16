@@ -15,5 +15,5 @@ export type Turn = {
   followups?: string[];
   /** True while a model is still streaming into `text` or `note`. */
   live?: boolean;
-  state?: "thinking" | "choosing" | "confirming" | "complete" | "stopped";
+  state?: "thinking" | "choosing" | "confirming" | "complete" | "stopped" | "failed";
 };

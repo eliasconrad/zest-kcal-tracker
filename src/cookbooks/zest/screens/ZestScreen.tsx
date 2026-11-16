@@ -28,6 +28,7 @@ import { Symbol, Touch } from "../components/ui/Touch";
 import { useScene } from "../hooks/useScene";
 import { ZestBackdrop } from "../components/Backdrop";
 import { Lemon } from "../components/Lemon";
+import { Mascot, type MascotPose } from "../components/Mascot";
 import { ZestComposer } from "../components/Composer";
 import { CalorieCalendar } from "../components/Calendar";
 import { MealEditor, type EditRequest } from "../components/MealEditor";
@@ -58,9 +59,40 @@ import { useProfile } from "../state/useProfile";
 import { profilePlan, type Profile } from "../state/profileStore";
 import { Onboarding, type OnboardingStep } from "../components/Onboarding";
 import { ProfileSheet } from "../components/Profile";
-import { goalLabel, loggedThisWeek, streak } from "../data/nutrition";
+import {
+  activityLabel,
+  age,
+  allergenLabel,
+  dietLabel,
+  goalLabel,
+  loggedThisWeek,
+  paceLabel,
+  streak,
+} from "../data/nutrition";
 import { StreakCelebration } from "../components/Streak";
 import { loggedDays, relativeDay } from "../data/diary";
+
+function personFacts(profile: Profile, meals: Meal[]) {
+  const allergies = [
+    ...profile.allergies.map((item) => allergenLabel[item]),
+    profile.allergyNote.trim(),
+  ].filter(Boolean);
+  return {
+    name: profile.name || undefined,
+    goal: goalLabel[profile.goal],
+    streak: streak(loggedDays(meals), dayKey(), relativeDay(-1)),
+    sex: profile.sex,
+    age: age(profile.birthYear, new Date(), profile.birthDate),
+    heightCm: profile.heightCm,
+    weightKg: profile.weightKg,
+    targetKg: profile.targetWeightKg,
+    activity: activityLabel[profile.activity].title,
+    pace: paceLabel[profile.pace],
+    diet: dietLabel[profile.diet],
+    allergies: allergies.join(", ") || "none",
+    mealsPerDay: profile.mealsPerDay,
+  };
+}
 
 /** Short, honest copy for the two ways a model call can fail. */
 function failureText(error: unknown) {
@@ -187,6 +219,9 @@ export function ZestScreen({
   const [revealing, setRevealing] = useState(
     () => !profile.onboarded && !demo && !scene.reduced,
   );
+  const [revealPose, setRevealPose] = useState<MascotPose | undefined>(() =>
+    !profile.onboarded && !demo && !scene.reduced ? "face" : undefined,
+  );
   const [burst, setBurst] = useState(false);
   // A cold start can sit on a blank frame for seconds before the first draw;
   // the reveal waits until frames are actually being produced.
@@ -207,6 +242,7 @@ export function ZestScreen({
     if (!setup) return;
     if (setup.editing || scene.reduced || !revealing) {
       scene.reveal.set(1);
+      setRevealPose(undefined);
       pick.set(withSpring(1, { damping: 26, stiffness: 180, mass: 0.9 }));
       return;
     }
@@ -214,6 +250,7 @@ export function ZestScreen({
     pick.set(withSpring(1, { damping: 26, stiffness: 180, mass: 0.9 }));
     if (!live) return;
     const peek = setTimeout(() => {
+      setRevealPose("peek");
       // The leaf shows above the edge (lid lifts), then sinks back (wobble).
       scene.reveal.set(
         withSequence(
@@ -225,6 +262,7 @@ export function ZestScreen({
       );
     }, 600);
     const pop = setTimeout(() => {
+      setRevealPose("leap");
       scene.reveal.set(
         withSpring(1, { damping: 14, stiffness: 420, mass: 0.7 }),
       );
@@ -237,7 +275,10 @@ export function ZestScreen({
       setBurst(true);
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }, 1600);
-    const settle = setTimeout(() => setRevealing(false), 2200);
+    const settle = setTimeout(() => {
+      setRevealPose(undefined);
+      setRevealing(false);
+    }, 2200);
     const clear = setTimeout(() => setBurst(false), 2600);
     return () => {
       clearTimeout(peek);
@@ -667,14 +708,12 @@ export function ZestScreen({
             return;
           }
           patch({
-            kind: "question",
-            state: "choosing",
+            kind: "meal",
+            state: "failed",
             live: false,
-            pendingMeal: undefined,
-            mealId: undefined,
-            text: `${failureText(error)} Or type it in.`,
+            pendingMeal: draft,
+            text: failureText(error),
           });
-          setEditor({ name: "", onSave: complete });
         } finally {
           endRequest(controller);
           if (!controller.signal.aborted) activity(false);
@@ -729,15 +768,7 @@ export function ZestScreen({
                 carbs: plan.carbs,
                 fat: plan.fat,
               },
-              person: {
-                name: profile.name || undefined,
-                goal: goalLabel[profile.goal],
-                streak: streak(
-                  loggedDays(diary.meals),
-                  dayKey(),
-                  relativeDay(-1),
-                ),
-              },
+              person: personFacts(profile, diary.meals),
             }),
             (partial) => {
               if (!controller.signal.aborted)
@@ -885,6 +916,12 @@ export function ZestScreen({
                   onEdit={editMeal}
                   onCalendar={openCalendar}
                   onAsk={(question) => void send(question)}
+                  onRetry={(failed) =>
+                    chooseType(
+                      { ...failed, state: "choosing", kind: "question" },
+                      failed.pendingMeal?.type ?? "Snack",
+                    )
+                  }
                 />
               )}
             />
@@ -993,6 +1030,21 @@ export function ZestScreen({
             >
               {lemonLine}
             </Text>
+            {todayTotal === 0 && !hasTurns && (
+              <View
+                style={{
+                  marginTop: 16,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <Mascot pose="chest" size={44} reduced={scene.reduced} />
+                <Text style={{ fontSize: 15, color: theme.muted }}>
+                  A chest for today’s first plate.
+                </Text>
+              </View>
+            )}
 
             <Touch
               label="Log a meal"
@@ -1186,6 +1238,14 @@ export function ZestScreen({
             <Lemon
               scene={scene}
               calendarOpen={anySheet}
+              pose={
+                revealPose ??
+                (hasTurns
+                  ? undefined
+                  : setup || todayTotal > 0
+                    ? "rest"
+                    : "sleep")
+              }
               onPress={
                 calendar
                   ? closeCalendar
@@ -1266,6 +1326,7 @@ export function ZestScreen({
           {camera && (
             <MealCamera
               source={camera}
+              mealTimes={profile.mealTimes}
               onClose={() => setCamera(null)}
               onUse={(photo, type) => {
                 setCamera(null);

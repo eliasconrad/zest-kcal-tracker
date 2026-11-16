@@ -5,6 +5,7 @@
  * Configure with EXPO_PUBLIC_ZEST_API_URL (and EXPO_PUBLIC_ZEST_APP_TOKEN when the
  * Worker has ZEST_APP_TOKEN set). Without a URL the template's local behaviour stays.
  */
+import { Image } from "react-native";
 import { fetch } from "expo/fetch";
 import { File } from "expo-file-system";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
@@ -95,20 +96,55 @@ async function stream(
   }
 }
 
-/** Downscales a local photo and returns a JPEG data URL small enough for a vision model. */
-export async function photoDataUrl(uri: string, maxEdge = 1024) {
-  const context = ImageManipulator.manipulate(uri).resize({ width: maxEdge });
-  const image = await context.renderAsync();
-  const saved = await image.saveAsync({ format: SaveFormat.JPEG, compress: 0.8, base64: true });
+/** Matches the Worker's default `ZEST_MAX_IMAGE_BYTES`. The diary keeps the original file. */
+export const UPLOAD_MAX_BYTES = 6_000_000;
+const UPLOAD_LONG_EDGE = 1280;
+
+function imageSize(uri: string) {
+  return new Promise<{ width: number; height: number }>((resolve, reject) => {
+    Image.getSize(uri, (width, height) => resolve({ width, height }), reject);
+  });
+}
+
+/**
+ * Downscales a local photo so the long edge is 1280 px, JPEG quality 0.8,
+ * and returns a data URL under `UPLOAD_MAX_BYTES`. Re-encoding strips EXIF.
+ * The file in the diary is left untouched.
+ */
+export async function photoDataUrl(uri: string) {
+  const { width, height } = await imageSize(uri);
+  const long = Math.max(width, height);
+  const chain = ImageManipulator.manipulate(uri);
+  if (long > UPLOAD_LONG_EDGE) {
+    chain.resize(width >= height ? { width: UPLOAD_LONG_EDGE } : { height: UPLOAD_LONG_EDGE });
+  }
+  const image = await chain.renderAsync();
+  let quality = 0.8;
+  let saved = await image.saveAsync({ format: SaveFormat.JPEG, compress: quality, base64: true });
+  let base64 = saved.base64 ?? (await new File(saved.uri).base64());
+  while (Math.ceil((base64.length * 3) / 4) > UPLOAD_MAX_BYTES && quality > 0.4) {
+    quality = Math.round((quality - 0.1) * 10) / 10;
+    if (saved.uri !== uri) {
+      try {
+        new File(saved.uri).delete();
+      } catch {
+        // temp file
+      }
+    }
+    saved = await image.saveAsync({ format: SaveFormat.JPEG, compress: quality, base64: true });
+    base64 = saved.base64 ?? (await new File(saved.uri).base64());
+  }
   image.release();
-  context.release();
-  const base64 = saved.base64 ?? (await new File(saved.uri).base64());
+  chain.release();
   if (saved.uri !== uri) {
     try {
       new File(saved.uri).delete();
     } catch {
       // temp file; the OS clears it anyway
     }
+  }
+  if (Math.ceil((base64.length * 3) / 4) > UPLOAD_MAX_BYTES) {
+    throw new ApiError("image too large", "server");
   }
   return `data:image/jpeg;base64,${base64}`;
 }

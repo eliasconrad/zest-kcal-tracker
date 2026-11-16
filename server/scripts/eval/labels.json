@@ -1,0 +1,32 @@
+{
+  "note": "Ground truth is the bundled sample-meal fixture in src/cookbooks/zest/data/diary.ts, not a weighed lab set. A licensed photo set (Nutrition5k is CC-BY) was not fetched; photos Elias weighs later can be added here. See docs/DEPENDENCIES.md.",
+  "items": [
+    {
+      "id": "breakfast",
+      "file": "assets/cookbooks/zest/photos/breakfast.png",
+      "type": "Breakfast",
+      "kcal": 480,
+      "protein": 20,
+      "carbs": 42,
+      "fat": 26
+    },
+    {
+      "id": "lunch",
+      "file": "assets/cookbooks/zest/photos/lunch.png",
+      "type": "Lunch",
+      "kcal": 640,
+      "protein": 18,
+      "carbs": 88,
+      "fat": 22
+    },
+    {
+      "id": "dinner",
+      "file": "assets/cookbooks/zest/photos/dinner.png",
+      "type": "Dinner",
+      "kcal": 1120,
+      "protein": 32,
+      "carbs": 150,
+      "fat": 40
+    }
+  ]
+}
