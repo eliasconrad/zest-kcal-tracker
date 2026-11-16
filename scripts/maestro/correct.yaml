@@ -1,0 +1,19 @@
+appId: eu.eliasconrad.zest
+name: After a scan, a sentence corrects the meal on its receipt
+---
+- runFlow: onboarding.yaml
+- extendedWaitUntil:
+    visible: "Missed something"
+    timeout: 8000
+- takeScreenshot: "before"
+- tapOn: "Missed something"
+- extendedWaitUntil:
+    visible: ".*What did I miss.*"
+    timeout: 5000
+- inputText: "There was also a fried egg on it"
+- tapOn: "Send message"
+- extendedWaitUntil:
+    notVisible: "Edit Pasta & garlic bread, 1120 estimated kilocalories"
+    timeout: 25000
+- assertVisible: "Edit .*, [0-9]+ estimated kilocalories"
+- takeScreenshot: "after"

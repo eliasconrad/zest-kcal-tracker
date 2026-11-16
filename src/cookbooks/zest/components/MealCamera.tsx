@@ -26,6 +26,7 @@ import { File, Paths } from "expo-file-system";
 import { GlassSurface } from "./ui/GlassSurface";
 import { GlassButton } from "./ui/GlassButton";
 import { Touch, Symbol } from "./ui/Touch";
+import { Selectable, SelectableText } from "./ui/Selectable";
 import { stickerSource } from "./Stickers";
 import { MealImage } from "../data/photos";
 import { theme } from "../theme";
@@ -41,11 +42,13 @@ import { defaultMealType, mealTypes, type MealPhoto, type MealType } from "../da
  */
 export function MealCamera({
   source,
+  usualMeals,
   onClose,
   onUse,
   onLibrary,
 }: {
   source: "live" | "sample";
+  usualMeals?: MealType[];
   onClose: () => void;
   onUse: (photo: MealPhoto, type: MealType) => void;
   onLibrary: () => void;
@@ -55,7 +58,7 @@ export function MealCamera({
   const camera = useRef<CameraView>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const [type, setType] = useState<MealType>(() =>
-    source === "sample" ? "Dinner" : defaultMealType(),
+    source === "sample" ? "Dinner" : defaultMealType(new Date(), usualMeals),
   );
   const [ready, setReady] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
@@ -375,7 +378,8 @@ export function MealCamera({
                 expand
                 style={{ flex: 1 }}
               >
-                <View
+                <Selectable
+                  selected={selected}
                   style={{
                     height: 46,
                     borderRadius: 23,
@@ -383,7 +387,6 @@ export function MealCamera({
                     alignItems: "center",
                     justifyContent: "center",
                     gap: 6,
-                    backgroundColor: selected ? theme.heavy : "#FFFFFF",
                   }}
                 >
                   {/* A plain image: a wrapper marked hidden for assistive tech
@@ -395,17 +398,13 @@ export function MealCamera({
                     transition={0}
                     style={{ width: 20, height: 20 }}
                   />
-                  <Text
+                  <SelectableText
                     numberOfLines={1}
-                    style={{
-                      fontSize: 13,
-                      fontWeight: "500",
-                      color: selected ? theme.onHeavy : theme.ink,
-                    }}
+                    style={{ fontSize: 13, fontWeight: "500" }}
                   >
                     {option}
-                  </Text>
-                </View>
+                  </SelectableText>
+                </Selectable>
               </Touch>
             );
           })}

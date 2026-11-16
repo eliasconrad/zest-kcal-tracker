@@ -1,0 +1,172 @@
+{
+  "summary": {
+    "model": "meta-llama/llama-4-scout",
+    "prompt": "tuned",
+    "dishes": 30,
+    "parsed": 30,
+    "kcalMaeRaw": 112,
+    "kcalMaeCalibrated": 114,
+    "kcalBiasRaw": 76,
+    "kcalMapePercent": 47,
+    "proteinMae": 10,
+    "carbsMae": 14,
+    "fatMae": 6,
+    "costPer1000Scans": 0.213,
+    "meanTokens": [
+      1306,
+      37
+    ]
+  },
+  "rows": [
+    {
+      "id": "dish_1568044634",
+      "truth": 413.19339,
+      "text": "Cottage cheese and vegetables | 375 | 31 | 11 | 13\nAbout 150 g cottage cheese, 100 g sweet potatoes and 100 g watermelon."
+    },
+    {
+      "id": "dish_1558550218",
+      "truth": 230.001999,
+      "text": "Apple, almonds, and cherries | 247 | 4 | 44 | 9\nAbout 1 apple, 20-25 almonds, and 10-12 cherries. A healthy and light choice."
+    },
+    {
+      "id": "dish_1563565454",
+      "truth": 350.788818,
+      "text": "Mixed greens salad with chicken and corn | 420 | 35 | 20 | 20\nAbout 100 g mixed greens, 80 g chicken, and 100 g corn. A healthy lunch portion."
+    },
+    {
+      "id": "dish_1565724620",
+      "truth": 473.953308,
+      "text": "Chicken with vegetables | 435 | 37 | 22 | 16\nAbout 90 g chicken, 200 g broccoli, 120 g potatoes and 100 g courgette."
+    },
+    {
+      "id": "dish_1558380181",
+      "truth": 374.936005,
+      "text": "Fruit and nuts | 350 | 4 | 44 | 16\nAbout 100 g grapes, 1 apple, and 30 g almonds. A healthy snack."
+    },
+    {
+      "id": "dish_1565797723",
+      "truth": 202.928879,
+      "text": "Fruit, salad and scrambled eggs | 270 | 18 | 20 | 14\nAbout 100 g scrambled eggs, 100 g salad and 150 g fruit. A light lunch."
+    },
+    {
+      "id": "dish_1562963289",
+      "truth": 349.917969,
+      "text": "Lunch plate | 540 | 26 | 44 | 24\nAbout 120 g salad and 2 pieces of flatbread. A light lunch."
+    },
+    {
+      "id": "dish_1562875273",
+      "truth": 495.910278,
+      "text": "Chicken, greens, beans and pizza | 540 | 37 | 31 | 29\nAbout 120 g chicken, 100 g beans, 80 g salad and 90 g pizza. A balanced meal."
+    },
+    {
+      "id": "dish_1562690112",
+      "truth": 428.202332,
+      "text": "Sausage, bacon and salad | 540 | 37 | 8 | 38\nAbout 150 g sausage, 4 slices of bacon, and a small salad."
+    },
+    {
+      "id": "dish_1562946006",
+      "truth": 535.984009,
+      "text": "Scrambled eggs and sausages | 378 | 23 | 4 | 26\nAbout 2 eggs and 4 small sausages. A modest serving."
+    },
+    {
+      "id": "dish_1563220767",
+      "truth": 265.894379,
+      "text": "Chicken pieces | 320 | 35 | 0 | 16\nAbout 150 g cooked chicken, small portion."
+    },
+    {
+      "id": "dish_1560526514",
+      "truth": 183.252747,
+      "text": "Mixed salad with potatoes and pineapple | 320 | 11 | 37 | 13\nAbout 100 g salad, 100 g potatoes, 50 g pineapple. A fresh and healthy mix."
+    },
+    {
+      "id": "dish_1560456853",
+      "truth": 405.703369,
+      "text": "Mixed lunch plate | 540 | 37 | 44 | 24\nAbout 100 g quinoa, 100 g broccoli, salad and a bit of fish."
+    },
+    {
+      "id": "dish_1563219035",
+      "truth": 410.209686,
+      "text": "Pizza slice with rice, meat, and fruit | 540 | 37 | 44 | 24\nAbout 100 g pizza, 150 g rice and meat mix, and 100 g fruit. A varied lunch."
+    },
+    {
+      "id": "dish_1562173247",
+      "truth": 290.550018,
+      "text": "Scrambled eggs | 240 | 19 | 0 | 16\nAbout 200 g scrambled eggs, a decent portion."
+    },
+    {
+      "id": "dish_1565811390",
+      "truth": 205.092285,
+      "text": "Lentils, chicken and greens | 470 | 37 | 49 | 15\nAbout 100 g chicken, 150 g lentils, 200 g greens. A balanced meal."
+    },
+    {
+      "id": "dish_1562777099",
+      "truth": 303.718628,
+      "text": "Scrambled eggs with potatoes and fruit | 420 | 22 | 34 | 24\nAbout 200 g scrambled eggs, 150 g potatoes and some fruit. A satisfying lunch."
+    },
+    {
+      "id": "dish_1566933226",
+      "truth": 245.449509,
+      "text": "Chicken and rice | 400 | 30 | 60 | 10\nAbout 100 g chicken and 150 g cooked rice. A simple meal."
+    },
+    {
+      "id": "dish_1562603598",
+      "truth": 175.259506,
+      "text": "Bacon and fruit | 320 | 14 | 34 | 14\nAbout 60 g bacon, 200 g fruit, and a bit of toast. A light lunch."
+    },
+    {
+      "id": "dish_1558725403",
+      "truth": 289.050018,
+      "text": "Almonds | 161 | 6 | 6 | 14\nAbout 30 almonds, a small serving."
+    },
+    {
+      "id": "dish_1561148042",
+      "truth": 370.755463,
+      "text": "Meat, rice, vegetables and cheese | 615 | 37 | 54 | 24\nAbout 120 g meat, 100 g rice, 100 g vegetables, and 50 g cheese. A hearty mix."
+    },
+    {
+      "id": "dish_1561576737",
+      "truth": 357.472565,
+      "text": "Veggie mix | 320 | 14 | 20 | 20\nAbout 200 g mixed vegetables with some sauce. A healthy lunch."
+    },
+    {
+      "id": "dish_1566847043",
+      "truth": 434.877106,
+      "text": "Pork with courgettes | 540 | 37 | 7 | 36\nAbout 120 g pork and 200 g courgettes, cooked nicely."
+    },
+    {
+      "id": "dish_1558725786",
+      "truth": 113.527,
+      "text": "Grilled corn | 140 | 3 | 31 | 1\nAbout 140 g of corn on the cob, grilled."
+    },
+    {
+      "id": "dish_1562183151",
+      "truth": 108.392403,
+      "text": "Veggie mix | 175 | 7 | 20 | 3\nAbout 200 g mixed vegetables, mostly green."
+    },
+    {
+      "id": "dish_1565210009",
+      "truth": 263.816223,
+      "text": "Chicken and vegetables | 420 | 37 | 10 | 22\nAbout 120 g chicken and 100 g mixed vegetables. A healthy lunch."
+    },
+    {
+      "id": "dish_1563897087",
+      "truth": 102.440002,
+      "text": "Broccoli and rice | 200 | 7 | 35 | 2\nAbout 150 g broccoli and 100 g cooked rice. A small serving."
+    },
+    {
+      "id": "dish_1562777566",
+      "truth": 263.003998,
+      "text": "Toast with jam | 200 | 2 | 30 | 6\nAbout 80 g toast and 20 g jam. A small snack."
+    },
+    {
+      "id": "dish_1560973958",
+      "truth": 145.313232,
+      "text": "Lentil and arugula salad | 420 | 22 | 40 | 16\nAbout 100 g cooked lentils and 50 g arugula. A healthy and balanced meal."
+    },
+    {
+      "id": "dish_1561580406",
+      "truth": 203.281494,
+      "text": "Pasta with greens and sauce | 420 | 22 | 55 | 14\nAbout 200 g pasta, 50 g greens and 50 g sauce. A satisfying lunch."
+    }
+  ]
+}

@@ -13,6 +13,45 @@ export type Activity = (typeof activities)[number];
 export const paces = ["slow", "steady", "fast"] as const;
 export type Pace = (typeof paces)[number];
 export type Units = "metric" | "imperial";
+export const diets = ["none", "vegetarian", "vegan", "pescatarian", "halal", "kosher"] as const;
+export type Diet = (typeof diets)[number];
+export const dietLabel: Record<Diet, string> = {
+  none: "No particular pattern",
+  vegetarian: "Vegetarian",
+  vegan: "Vegan",
+  pescatarian: "Pescatarian",
+  halal: "Halal",
+  kosher: "Kosher",
+};
+export const allergens = [
+  "Tree nuts",
+  "Peanuts",
+  "Gluten",
+  "Lactose",
+  "Egg",
+  "Soy",
+  "Fish",
+  "Shellfish",
+  "Sesame",
+] as const;
+export const obstacles = [
+  "Not enough time",
+  "Eating out a lot",
+  "Cravings",
+  "Losing motivation",
+  "Not knowing what to eat",
+  "Counting felt like work",
+] as const;
+export type Obstacle = (typeof obstacles)[number];
+/** The lemon's answer to what got in the way before. Used for its lines only, never for the plan. */
+export const obstacleLine: Record<Obstacle, string> = {
+  "Not enough time": "Two taps a plate. That’s all.",
+  "Eating out a lot": "Restaurant plates count too. Show me.",
+  Cravings: "Cravings get logged, not judged.",
+  "Losing motivation": "One plate today. That’s the whole job.",
+  "Not knowing what to eat": "Ask me what fits the rest of today.",
+  "Counting felt like work": "Photo in, number out. I do the sums.",
+};
 
 export const goalLabel: Record<Goal, string> = {
   lose: "Lose weight",
@@ -44,6 +83,8 @@ const activityFactor: Record<Activity, number> = {
 export type Body = {
   sex: Sex;
   birthYear: number;
+  /** ISO date; when present it gives the exact age, otherwise the year does. */
+  birthDate?: string;
   heightCm: number;
   weightKg: number;
 };
@@ -52,9 +93,48 @@ export function age(birthYear: number, now = new Date()) {
   return Math.max(0, now.getFullYear() - birthYear);
 }
 
+/** Whole years on `now`; the birthday has to have passed. Falls back to the year alone. */
+export function ageOf(body: Pick<Body, "birthYear" | "birthDate">, now = new Date()) {
+  if (!body.birthDate) return age(body.birthYear, now);
+  const [y, m, d] = body.birthDate.split("-").map(Number);
+  const before = now.getMonth() + 1 < m || (now.getMonth() + 1 === m && now.getDate() < d);
+  return Math.max(0, now.getFullYear() - y - (before ? 1 : 0));
+}
+
+/**
+ * Zest is for people aged 16 and over: a calorie deficit is not meant for a body
+ * that is still growing, and the plan's formula is made for adults. The privacy
+ * page says the same.
+ */
+export const MIN_AGE = 16;
+
+/** Why a finished date cannot be used, for a line under the field; null when it can. */
+export function birthDateProblem(day: number, month: number, year: number, now = new Date()) {
+  const date = new Date(year, month - 1, day, 12);
+  if (
+    !Number.isInteger(day) ||
+    !Number.isInteger(month) ||
+    !Number.isInteger(year) ||
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day ||
+    date > now ||
+    year < limits.birthYear(now).min
+  )
+    return "invalid" as const;
+  const iso = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  return ageOf({ birthYear: year, birthDate: iso }, now) < MIN_AGE ? ("young" as const) : null;
+}
+
+/** A real calendar date of someone old enough, as an ISO string; null otherwise. */
+export function parseBirthDate(day: number, month: number, year: number, now = new Date()) {
+  if (birthDateProblem(day, month, year, now)) return null;
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
 /** Mifflin-St Jeor. The unspecified sex uses the midpoint of the two constants. */
 export function restingEnergy(body: Body, now = new Date()) {
-  const base = 10 * body.weightKg + 6.25 * body.heightCm - 5 * age(body.birthYear, now);
+  const base = 10 * body.weightKg + 6.25 * body.heightCm - 5 * ageOf(body, now);
   const offset = body.sex === "male" ? 5 : body.sex === "female" ? -161 : -78;
   return Math.round(base + offset);
 }
@@ -90,6 +170,7 @@ export function plan(
   activity: Activity,
   pace: Pace,
   now = new Date(),
+  diet: Diet = "none",
 ): Plan {
   const resting = restingEnergy(body, now);
   const maintenance = maintenanceEnergy(body, activity, now);
@@ -97,7 +178,12 @@ export function plan(
   const raw = maintenance + dailyAdjustment(goal, pace);
   const guide = Math.max(floor, Math.round(raw / 10) * 10);
   // Protein per kilogram leads; fat takes a fixed share; carbs fill the rest.
-  const proteinPerKg = goal === "muscle" ? 2.0 : goal === "lose" ? 1.8 : 1.5;
+  // Vegetarian and vegan plans use the lower bound of each range, a target that
+  // is easier to reach on plant protein; the carbs take up the difference.
+  const plantBased = diet === "vegetarian" || diet === "vegan";
+  const proteinPerKg = plantBased
+    ? goal === "muscle" ? 1.6 : goal === "lose" ? 1.4 : 1.2
+    : goal === "muscle" ? 2.0 : goal === "lose" ? 1.8 : 1.5;
   const protein = Math.round(Math.min(body.weightKg * proteinPerKg, (guide * 0.4) / 4));
   const fat = Math.round((guide * 0.28) / 9);
   const carbs = Math.max(0, Math.round((guide - protein * 4 - fat * 9) / 4));
@@ -159,7 +245,7 @@ export function formatHeight(cm: number, units: Units) {
 export const limits = {
   heightCm: { min: 100, max: 250 },
   weightKg: { min: 30, max: 300 },
-  birthYear: (now = new Date()) => ({ min: now.getFullYear() - 100, max: now.getFullYear() - 13 }),
+  birthYear: (now = new Date()) => ({ min: now.getFullYear() - 100, max: now.getFullYear() - 16 }),
 };
 
 /** Monday-first booleans for the current week: which days have a logged meal. */

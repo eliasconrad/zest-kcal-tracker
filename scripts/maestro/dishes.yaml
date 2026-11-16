@@ -1,0 +1,18 @@
+appId: eu.eliasconrad.zest
+name: An answer about dinner arrives word by word and carries a recipe card
+---
+- runFlow: onboarding.yaml
+- tapOn: "Message Zest.*"
+- inputText: "What can I eat for dinner today?"
+- tapOn: "Send message"
+- extendedWaitUntil:
+    visible: "Log .*"
+    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: "answer"
+- tapOn: "Log .*"
+- extendedWaitUntil:
+    visible: ".* logged"
+    timeout: 5000
+- takeScreenshot: "logged"

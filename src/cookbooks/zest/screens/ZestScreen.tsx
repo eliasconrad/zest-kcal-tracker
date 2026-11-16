@@ -11,6 +11,7 @@ import { File, Paths } from "expo-file-system";
 import { FlashList, type FlashListRef } from "@shopify/flash-list";
 import Animated, {
   FadeIn,
+  FadeInDown,
   FadeOut,
   useAnimatedReaction,
   useAnimatedStyle,
@@ -27,7 +28,9 @@ import { ProgressiveBlur } from "../components/ui/ProgressiveBlur";
 import { Symbol, Touch } from "../components/ui/Touch";
 import { useScene } from "../hooks/useScene";
 import { ZestBackdrop } from "../components/Backdrop";
-import { Lemon } from "../components/Lemon";
+import { Companion } from "../components/Companion";
+import { HelperSwap } from "../components/helpers/HelperSwap";
+import { helperFor, helperReaction, type HelperId } from "../data/helpers";
 import { ZestComposer } from "../components/Composer";
 import { CalorieCalendar } from "../components/Calendar";
 import { MealEditor, type EditRequest } from "../components/MealEditor";
@@ -45,20 +48,43 @@ import {
 import { theme } from "../theme";
 import { MealPhotosProvider } from "../data/photos";
 import { MealCamera } from "../components/MealCamera";
-import { clearPassword, hasPassword, savePassword } from "../state/secrets";
+import {
+  clearPassword,
+  hasPassword,
+  readPassword,
+  savePassword,
+} from "../state/secrets";
 import { ZestChatScroll } from "../components/ChatScroll";
 import { CHOICE_RETIRE_MS } from "../components/MealReply";
 
 import { ChatTurn } from "../components/ChatTurn";
 import type { Turn } from "../data/conversation";
 import { ApiError, apiConfigured, askZest, estimateMeal } from "../data/api";
+import { recipes, resolveDishes, visibleRecipes } from "../data/recipes";
 import { diaryContext } from "../data/context";
-import { isDiaryQuestion } from "../data/replies";
 import { useProfile } from "../state/useProfile";
 import { profilePlan, type Profile } from "../state/profileStore";
 import { Onboarding, type OnboardingStep } from "../components/Onboarding";
 import { ProfileSheet } from "../components/Profile";
-import { goalLabel, loggedThisWeek, streak } from "../data/nutrition";
+import {
+  activityLabel,
+  ageOf,
+  dietLabel,
+  goalLabel,
+  loggedThisWeek,
+  obstacleLine,
+  paceLabel,
+  streak,
+} from "../data/nutrition";
+import { syncAppIcon } from "../data/appIcon";
+import { syncReminders } from "../data/reminders";
+import { AccountSheet, type AccountMode } from "../components/AccountSheet";
+import { FriendsSheet } from "../components/FriendsSheet";
+import { Paywall } from "../components/Paywall";
+import { RecipesSheet } from "../components/RecipesSheet";
+import { AccountError } from "../data/session";
+import { pushProfile, reportDay, syncDiary } from "../data/sync";
+import { session, useSessionUser } from "../state/useSession";
 import { StreakCelebration } from "../components/Streak";
 import { loggedDays, relativeDay } from "../data/diary";
 
@@ -89,9 +115,12 @@ function eventId(prefix: string) {
 export function ZestScreen({
   demo = false,
   displayName = "Jaimin",
+  inviteCode,
 }: {
   demo?: boolean;
   displayName?: string;
+  /** From an invite link. */
+  inviteCode?: string;
 }) {
   const scene = useScene();
   const meals = useDiary((s) => s.meals);
@@ -102,8 +131,59 @@ export function ZestScreen({
   const [calendar, setCalendar] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   /** First-launch setup, or one step re-opened from the profile. */
-  /** A two-word tag from the lemon right after setup, like the references' "You're awesome!" */
+  /** A two-word tag from the helper right after setup, like the references' "You're awesome!" */
   const [tag, setTag] = useState("");
+  /** Where the tag sits: by the hero companion, or by the one perched on the composer. */
+  const [tagPlace, setTagPlace] = useState<"hero" | "perch">("hero");
+  const helper = helperFor(profile.helper);
+  /** The swap mode, opened by holding the companion. */
+  const [swap, setSwap] = useState(false);
+  /** The setup sheet rose over the mascot while the keyboard is up. */
+  const [setupLifted, setSetupLifted] = useState(false);
+  /** Set by "Missed something?" on a receipt: the field asks for the correction. */
+  const [correctHint, setCorrectHint] = useState<string | undefined>();
+  const [correctFocus, setCorrectFocus] = useState(0);
+  const openSwap = () => {
+    Keyboard.dismiss();
+    setPhotoMenu(false);
+    setSwap(true);
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  };
+  // The new helper drops onto the composer while the overlay dissolves above it.
+  const chooseHelper = (pick: HelperId) => {
+    setSwap(false);
+    if (pick === useProfile.getState().helper) return;
+    useProfile.getState().save({ helper: pick });
+    if (!scene.reduced) {
+      scene.hop.set(3);
+      scene.hop.set(withSpring(0, { duration: 420, dampingRatio: 0.62 }));
+    }
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  };
+  /** A recipe into today's diary, from the recipe sheet or a card in an answer. */
+  const logRecipe = (fields: Pick<Meal, "name" | "kcal" | "protein" | "carbs" | "fat" | "type">) => {
+    const before = useDiary.getState().meals;
+    useDiary.getState().add({
+      ...fields,
+      id: eventId("recipe"),
+      date: dayKey(),
+      time: new Date().toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+      }),
+    });
+    celebrateIfNewDay(before);
+  };
+  /** What the helper says once a meal is in the diary, placed beside it on the composer. */
+  const react = (meal: Meal) => {
+    const after = useDiary.getState().meals;
+    const mood = intakeMood(totalOn(after, meal.date), useDiary.getState().guide);
+    const seed = meal.id.split("").reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+    const line = helperReaction(helperFor(useProfile.getState().helper), mood, meal.type, seed);
+    setTagPlace("perch");
+    later(() => setTag(line), 450);
+    later(() => setTag(""), 450 + 2200);
+  };
   /** Streak celebration after the first logged meal of a day; plays once per day. */
   const [celebration, setCelebration] = useState<{
     from: number;
@@ -127,10 +207,19 @@ export function ZestScreen({
   const [photoMenu, setPhotoMenu] = useState(false);
   /** The branded camera: live feed, or the bundled plate for the demo and simulators. */
   const [camera, setCamera] = useState<"live" | "sample" | null>(null);
-  const [passwordSet, setPasswordSet] = useState(false);
-  useEffect(() => {
-    void hasPassword().then(setPasswordSet);
-  }, []);
+  const [localPassword, setLocalPassword] = useState(false);
+  const user = useSessionUser();
+  const account = user?.email || user?.apple ? user : null;
+  const passwordSet = localPassword || !!user?.hasPassword;
+  /** Secondary sheets over the diary or the profile. */
+  const [sheet, setSheet] = useState<
+    | { kind: "account"; mode: AccountMode }
+    | { kind: "paywall"; reason: "soft" | "limit" }
+    | { kind: "friends" }
+    | { kind: "recipes"; recipeId?: string }
+    | null
+  >(null);
+  const [pendingInvite, setPendingInvite] = useState(inviteCode);
   const [editor, setEditor] = useState<EditRequest | null>(null);
   const [focused, setFocused] = useState(false);
   const [inputHeight, setInputHeight] = useState(108);
@@ -155,6 +244,69 @@ export function ZestScreen({
     release,
     expression,
   } = scene;
+  const choosingMascot = !!setup;
+  useEffect(() => {
+    if (demo || choosingMascot) return;
+    // iOS confirms an icon change with its own alert; the landing plays first.
+    const id = setTimeout(() => void syncAppIcon(profile.helper), 900);
+    return () => clearTimeout(id);
+  }, [profile.helper, choosingMascot, demo]);
+  const liftForSheet = () => {
+    Keyboard.dismiss();
+    setPhotoMenu(false);
+    pick.set(withSpring(1, { damping: 26, stiffness: 180, mass: 0.9 }));
+  };
+  const closeSheet = () => {
+    setSheet(null);
+    setPendingInvite(undefined);
+    if (!profileOpen && !setup)
+      pick.set(withSpring(0, { damping: 27, stiffness: 230, mass: 0.85 }));
+  };
+  const openSheet = (next: NonNullable<typeof sheet>) => {
+    liftForSheet();
+    setSheet(next);
+  };
+  /**
+   * An account begun on an earlier launch (or offline during onboarding) is
+   * finished quietly the next time there is a connection.
+   */
+  const finishAccount = async (password?: string) => {
+    const { email, name } = useProfile.getState();
+    const stored = password ?? (await readPassword());
+    if (!email || !stored || session.hasAccount()) return;
+    try {
+      await session.signup({ email, password: stored, name });
+      await clearPassword();
+      setLocalPassword(false);
+      await pushProfile().catch(() => {});
+      await syncDiary().catch(() => {});
+    } catch (error) {
+      if (error instanceof AccountError && error.code === "taken") {
+        await clearPassword();
+        setLocalPassword(false);
+        openSheet({ kind: "account", mode: "login" });
+      }
+      // Offline: the password waits in the keychain for the next launch.
+    }
+  };
+  useEffect(() => {
+    if (demo || !apiConfigured) return;
+    void hasPassword().then(setLocalPassword);
+    void session.refresh().then(() => {
+      void finishAccount().catch(() => {});
+      void syncDiary().catch(() => {});
+    });
+    // Once per launch.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [demo]);
+  useEffect(() => {
+    if (demo || !apiConfigured) return;
+    const timer = setTimeout(() => {
+      void syncDiary().catch(() => {});
+      void reportDay().catch(() => {});
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [meals, demo]);
   const clearTimers = useCallback(() => {
     pending.current.forEach(clearTimeout);
     pending.current = [];
@@ -332,9 +484,13 @@ export function ZestScreen({
     const store = useProfile.getState();
     store.save(fields);
     if (secrets?.password) {
-      setPasswordSet(true);
-      void savePassword(secrets.password);
+      setLocalPassword(true);
+      void savePassword(secrets.password).then(() =>
+        apiConfigured ? finishAccount(secrets.password) : undefined,
+      );
     }
+    void syncReminders(useProfile.getState().reminders).catch(() => {});
+    if (apiConfigured) void pushProfile().catch(() => {});
     if (!setup?.editing) store.finishOnboarding();
     // The diary's guide follows the plan unless a manual guide is set.
     const next = profilePlan(useProfile.getState());
@@ -343,8 +499,12 @@ export function ZestScreen({
     if (!setup?.editing) {
       // Measured on the reference diary: the tag appears about a second after
       // the page settles and stays briefly.
-      later(() => setTag("Let’s eat."), 1000);
+      setTagPlace("hero");
+      later(() => setTag(helperFor(useProfile.getState().helper).tag), 1000);
       later(() => setTag(""), 2400);
+      // Cal AI, Calo and YAZIO ask right after the plan. Here it can be closed.
+      if (!demo)
+        later(() => openSheet({ kind: "paywall", reason: "soft" }), 2600);
     }
     if (!profileOpen)
       pick.set(withSpring(0, { damping: 27, stiffness: 230, mass: 0.85 }));
@@ -363,14 +523,16 @@ export function ZestScreen({
     if (!profileOpen)
       pick.set(withSpring(0, { damping: 27, stiffness: 230, mass: 0.85 }));
   };
-  const anySheet = calendar || profileOpen || !!setup;
+  const anySheet = calendar || profileOpen || !!setup || !!sheet;
   // What the lemon would say about today: the diary's numbers, never a verdict.
   const todayTotal = totalOn(meals, dayKey());
   const days = streak(loggedDays(meals), dayKey(), relativeDay(-1));
   const lemonLine = !todayTotal
     ? days > 1
       ? `${days} days in a row. Nothing yet today.`
-      : "Nothing logged yet. Show me a plate."
+      : profile.pastObstacles[0]
+        ? obstacleLine[profile.pastObstacles[0]]
+        : "Nothing logged yet. Show me a plate."
     : `${todayTotal.toLocaleString()} of ${guide.toLocaleString()} kcal${days > 1 ? ` · ${days} days in a row` : ""}`;
   const dock = useAnimatedStyle(() => ({
     transform: [
@@ -481,8 +643,13 @@ export function ZestScreen({
       onSave: (name, kcal) => useDiary.getState().edit(meal.id, { name, kcal }),
       onDelete: () => useDiary.getState().remove(meal.id),
     });
-  const chooseType = (turn: Turn, type: MealType) => {
-    if (active.current || turn.state !== "choosing") return;
+  const chooseType = (
+    turn: Turn,
+    type: MealType,
+    how: "estimate" | "manual" = "estimate",
+  ) => {
+    if (active.current) return;
+    if (turn.state !== "choosing" && turn.state !== "failed") return;
     const complete = (name: string, kcal: number) => {
       activity(true);
       const meal: Meal = {
@@ -537,6 +704,7 @@ export function ZestScreen({
         const before = useDiary.getState().meals;
         useDiary.getState().add(meal);
         celebrateIfNewDay(before);
+        react(meal);
         setTurns((old) =>
           old.map((item) =>
             item.id === replyId ? { ...item, state: "complete" } : item,
@@ -588,7 +756,7 @@ export function ZestScreen({
       void (async () => {
         try {
           const estimate = await estimateMeal(
-            { uri, type },
+            { uri, type, helper: useProfile.getState().helper },
             (partial) => {
               if (
                 controller.signal.aborted ||
@@ -610,6 +778,7 @@ export function ZestScreen({
                 const before = useDiary.getState().meals;
                 useDiary.getState().add(meal);
                 celebrateIfNewDay(before);
+                react(meal);
                 scene.hop.set(
                   withSequence(
                     withTiming(0.3, { duration: 130 }),
@@ -666,22 +835,27 @@ export function ZestScreen({
             patch({ live: false });
             return;
           }
+          const limited = error instanceof ApiError && error.kind === "limit";
           patch({
             kind: "question",
-            state: "choosing",
+            state: "failed",
             live: false,
             pendingMeal: undefined,
             mealId: undefined,
-            text: `${failureText(error)} Or type it in.`,
+            failedType: type,
+            text: limited
+              ? "That’s today’s free scans. You can still type it in."
+              : failureText(error),
           });
-          setEditor({ name: "", onSave: complete });
+          if (limited) openSheet({ kind: "paywall", reason: "limit" });
         } finally {
           endRequest(controller);
           if (!controller.signal.aborted) activity(false);
         }
       })();
     };
-    if (turn.photo?.sample) {
+    if (how === "manual") setEditor({ name: "", onSave: complete });
+    else if (turn.photo?.sample) {
       const estimate = sampleEstimates[turn.photo.asset ?? "breakfast"];
       complete(estimate.name, estimate.kcal);
     } else if (apiConfigured && turn.photo?.uri)
@@ -700,9 +874,17 @@ export function ZestScreen({
     activity(true);
     const id = eventId("answer");
     const diary = useDiary.getState();
-    if (apiConfigured && !isDiaryQuestion(question)) {
-      // Open questions stream from the model; diary numbers come along as context only.
+    setCorrectHint(undefined);
+    if (apiConfigured && !demo) {
+      // Everything goes to the model, in the person's language; diary numbers come along as context.
       const controller = beginRequest();
+      // What was said so far, so a follow-up question makes sense to the model.
+      const history = turns
+        .filter((turn) => turn.kind === "text" && turn.text && !turn.live)
+        .map((turn) => ({ role: turn.role, text: turn.text ?? "" }));
+      // The meal the photo read last; a message can correct it.
+      const scanned = [...turns].reverse().find((turn) => turn.kind === "meal" && turn.mealId);
+      const lastMeal = diary.meals.find((meal) => meal.id === scanned?.mealId);
       setTurns((old) => [
         ...old,
         { id: `${id}-prompt`, role: "user", kind: "text", text: question },
@@ -732,6 +914,25 @@ export function ZestScreen({
               person: {
                 name: profile.name || undefined,
                 goal: goalLabel[profile.goal],
+                sex: profile.sex === "unspecified" ? undefined : profile.sex,
+                age: ageOf(profile),
+                heightCm: profile.heightCm,
+                weightKg: profile.weightKg,
+                targetWeightKg:
+                  profile.goal === "lose" || profile.goal === "gain"
+                    ? profile.targetWeightKg
+                    : undefined,
+                activity: activityLabel[profile.activity].title,
+                pace:
+                  profile.goal === "lose" || profile.goal === "gain"
+                    ? paceLabel[profile.pace]
+                    : undefined,
+                diet:
+                  profile.diet === "none" ? undefined : dietLabel[profile.diet],
+                avoid: [...profile.allergies, profile.allergyNote.trim()].filter(
+                  Boolean,
+                ),
+                usualMeals: profile.usualMeals,
                 streak: streak(
                   loggedDays(diary.meals),
                   dayKey(),
@@ -739,18 +940,61 @@ export function ZestScreen({
                 ),
               },
             }),
-            (partial) => {
-              if (!controller.signal.aborted)
+            (partial, correcting) => {
+              // A correction arrives as a meal line; the dots stay until it is read.
+              if (!controller.signal.aborted && !correcting)
                 patch({ text: partial.text, followups: partial.followups });
             },
             controller.signal,
+            profile.helper,
+            history,
+            lastMeal && {
+              name: lastMeal.name,
+              kcal: lastMeal.kcal,
+              protein: lastMeal.protein,
+              carbs: lastMeal.carbs,
+              fat: lastMeal.fat,
+              type: lastMeal.type,
+            },
+            visibleRecipes(recipes, {
+              query: "",
+              diet: profile.diet,
+              allergies: profile.allergies,
+              favourites: [],
+            }).map(({ id, name, type, kcal, protein, minutes }) => ({
+              id,
+              name,
+              type,
+              kcal,
+              protein,
+              minutes,
+            })),
           );
           if (controller.signal.aborted) return;
+          if (answer.correction && lastMeal) {
+            const { name, kcal, protein, carbs, fat, note, followups } = answer.correction;
+            useDiary.getState().edit(lastMeal.id, { name, kcal, protein, carbs, fat });
+            patch({
+              state: "complete",
+              live: false,
+              text: note || `Now ${kcal} kcal.`,
+              followups,
+            });
+            scene.hop.set(
+              withSequence(
+                withTiming(0.3, { duration: 130 }),
+                withTiming(0, { duration: 210 }),
+              ),
+            );
+            void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            return;
+          }
           patch({
             state: "complete",
             live: false,
             text: answer.text || "I don’t have a good answer for that one.",
             followups: answer.followups,
+            dishes: resolveDishes(answer.dishes, recipes),
           });
         } catch (error) {
           if (controller.signal.aborted) return;
@@ -882,9 +1126,29 @@ export function ZestScreen({
                   guide={guide}
                   reduced={scene.reduced}
                   onChoose={chooseType}
+                  onRetry={(item) =>
+                    item.failedType && chooseType(item, item.failedType)
+                  }
+                  onManual={(item) =>
+                    item.failedType &&
+                    chooseType(item, item.failedType, "manual")
+                  }
                   onEdit={editMeal}
+                  onOpenRecipe={(recipeId) => openSheet({ kind: "recipes", recipeId })}
+                  onLogDish={({ name, kcal, protein, carbs, fat, type }) =>
+                    logRecipe({ name, kcal, protein, carbs, fat, type })
+                  }
+                  onCorrect={
+                    apiConfigured && !demo
+                      ? () => {
+                          setCorrectHint("What did I miss?");
+                          setCorrectFocus((n) => n + 1);
+                        }
+                      : undefined
+                  }
                   onCalendar={openCalendar}
                   onAsk={(question) => void send(question)}
+                  thinkingLine={helper.thinking}
                 />
               )}
             />
@@ -1019,6 +1283,22 @@ export function ZestScreen({
                 </Text>
               </GlassSurface>
             </Touch>
+            <View style={{ flexDirection: "row", gap: 22, marginTop: 14 }}>
+              <Touch
+                label="Recipes"
+                onPress={() => openSheet({ kind: "recipes" })}
+                style={{ minHeight: 44, justifyContent: "center" }}
+              >
+                <Text style={{ fontSize: 15, color: theme.muted }}>Recipes</Text>
+              </Touch>
+              <Touch
+                label="Friends"
+                onPress={() => openSheet({ kind: "friends" })}
+                style={{ minHeight: 44, justifyContent: "center" }}
+              >
+                <Text style={{ fontSize: 15, color: theme.muted }}>Friends</Text>
+              </Touch>
+            </View>
           </Animated.View>
           <Animated.View
             pointerEvents={anySheet ? "none" : "box-none"}
@@ -1052,6 +1332,9 @@ export function ZestScreen({
             <ZestComposer
               key={conversation}
               scene={scene}
+              helperName={helper.name}
+              hint={correctHint}
+              focusKey={correctFocus}
               busy={busy}
               onSend={send}
               onStop={stop}
@@ -1096,6 +1379,23 @@ export function ZestScreen({
             apiConfigured={apiConfigured}
             onClose={closeProfile}
             passwordSet={passwordSet}
+            covered={!!setup || !!sheet}
+            account={
+              account ? { email: account.email, pro: account.pro } : null
+            }
+            onAccount={() =>
+              openSheet({
+                kind: "account",
+                mode: account ? "manage" : "login",
+              })
+            }
+            onFriends={() => openSheet({ kind: "friends" })}
+            onRecipes={() => openSheet({ kind: "recipes" })}
+            onPro={() =>
+              account?.pro
+                ? openSheet({ kind: "account", mode: "manage" })
+                : openSheet({ kind: "paywall", reason: "soft" })
+            }
             onEdit={(step) => setSetup({ step, editing: true })}
             onName={(name) => useProfile.getState().save({ name })}
             onGuide={(manualGuide) => {
@@ -1110,8 +1410,10 @@ export function ZestScreen({
             onReset={() => {
               useDiary.getState().reset();
               useProfile.getState().reset();
-              setPasswordSet(false);
+              setLocalPassword(false);
               void clearPassword();
+              void session.logout();
+              void syncReminders([]).catch(() => {});
               setProfileOpen(false);
               fresh();
               setSetup({ editing: false });
@@ -1121,13 +1423,95 @@ export function ZestScreen({
             <Onboarding
               key={setup.step ?? "all"}
               scene={scene}
+              onLift={setSetupLifted}
               profile={profile}
               startAt={setup.step}
               editing={setup.editing}
               onDone={finishSetup}
               onCancel={setup.editing ? cancelSetup : undefined}
+              onLogin={() => openSheet({ kind: "account", mode: "login" })}
               revealing={revealing}
               burst={burst}
+              onHelper={(id) => useProfile.getState().save({ helper: id })}
+            />
+          )}
+          {sheet?.kind === "account" && (
+            <AccountSheet
+              scene={scene}
+              initial={sheet.mode}
+              onClose={closeSheet}
+              onLoggedIn={() => {
+                closeSheet();
+                // A login on a new phone brings its onboarding with it.
+                if (setup && useProfile.getState().onboarded) {
+                  setSetup(null);
+                  useDiary
+                    .getState()
+                    .setGuide(profilePlan(useProfile.getState()).guide);
+                  pick.set(withSpring(0, { damping: 27, stiffness: 230, mass: 0.85 }));
+                }
+              }}
+              onDeleted={() => {
+                closeSheet();
+                useDiary.getState().reset();
+                useProfile.getState().reset();
+                setLocalPassword(false);
+                void clearPassword();
+                void syncReminders([]).catch(() => {});
+                setProfileOpen(false);
+                fresh();
+                setSetup({ editing: false });
+              }}
+            />
+          )}
+          {sheet?.kind === "paywall" && (
+            <Paywall
+              scene={scene}
+              reason={sheet.reason}
+              goal={profile.goal}
+              targetKg={profile.targetWeightKg}
+              units={profile.units}
+              onClose={closeSheet}
+              onPro={closeSheet}
+            />
+          )}
+          {(sheet?.kind === "friends" || (pendingInvite && !setup && !sheet)) && (
+            <FriendsSheet
+              scene={scene}
+              pendingCode={pendingInvite}
+              onClose={closeSheet}
+              onCreateAccount={() =>
+                setSheet({ kind: "account", mode: "create" })
+              }
+            />
+          )}
+          {sheet?.kind === "recipes" && (
+            <RecipesSheet
+              scene={scene}
+              initial={sheet.recipeId}
+              context={() => {
+                const diary = useDiary.getState();
+                return diaryContext(diary.meals, diary.guide, undefined, new Date(), {
+                  targets: {
+                    protein: plan.protein,
+                    carbs: plan.carbs,
+                    fat: plan.fat,
+                  },
+                  person: {
+                    diet:
+                      profile.diet === "none"
+                        ? undefined
+                        : dietLabel[profile.diet],
+                    avoid: [
+                      ...profile.allergies,
+                      profile.allergyNote.trim(),
+                    ].filter(Boolean),
+                  },
+                });
+              }}
+              onClose={closeSheet}
+              onLimit={() => setSheet({ kind: "paywall", reason: "limit" })}
+              onLog={logRecipe}
             />
           )}
           {celebration && (
@@ -1146,11 +1530,17 @@ export function ZestScreen({
               exiting={scene.reduced ? undefined : FadeOut.duration(220)}
               accessible
               accessibilityLiveRegion="polite"
-              accessibilityLabel={`Zest says: ${tag}`}
+              accessibilityLabel={`${helper.name} says: ${tag}`}
               style={{
                 position: "absolute",
-                top: scene.height * 0.495 - 300,
-                alignSelf: "center",
+                ...(tagPlace === "hero"
+                  ? { top: scene.height * 0.495 - 300, alignSelf: "center" as const }
+                  : {
+                      // Beside the perched companion, clear of the composer's edge.
+                      bottom: scene.bottom + inputHeight + 66,
+                      right: 20,
+                      maxWidth: scene.width - 120,
+                    }),
                 backgroundColor: "#FFFFFF",
                 borderRadius: 18,
                 borderCurve: "continuous",
@@ -1183,9 +1573,11 @@ export function ZestScreen({
               zIndex: 45,
             }}
           >
-            <Lemon
+            <Companion
               scene={scene}
+              helper={profile.helper}
               calendarOpen={anySheet}
+              hidden={swap || setupLifted}
               onPress={
                 calendar
                   ? closeCalendar
@@ -1195,8 +1587,17 @@ export function ZestScreen({
                       ? () => {}
                       : openCalendar
               }
+              onHold={setup || anySheet ? undefined : openSwap}
             />
           </View>
+          {swap && (
+            <HelperSwap
+              scene={scene}
+              selected={profile.helper}
+              onChoose={chooseHelper}
+              onClose={() => setSwap(false)}
+            />
+          )}
           {photoMenu && (
             <View style={{ position: "absolute", inset: 0, zIndex: 50 }}>
               <Pressable
@@ -1205,13 +1606,25 @@ export function ZestScreen({
                 onPress={() => setPhotoMenu(false)}
                 style={{ position: "absolute", inset: 0 }}
               />
-              <GlassSurface
-                interactive
+              <Animated.View
+                entering={
+                  scene.reduced
+                    ? undefined
+                    : FadeInDown.duration(160).withInitialValues({
+                        opacity: 0,
+                        transform: [{ translateY: 8 }],
+                      })
+                }
                 style={{
                   position: "absolute",
                   left: 24,
                   bottom: scene.bottom + 72,
                   width: 232,
+                }}
+              >
+              <GlassSurface
+                interactive
+                style={{
                   borderRadius: 28,
                   paddingVertical: 8,
                 }}
@@ -1261,11 +1674,13 @@ export function ZestScreen({
                   </Touch>
                 ))}
               </GlassSurface>
+              </Animated.View>
             </View>
           )}
           {camera && (
             <MealCamera
               source={camera}
+              usualMeals={profile.usualMeals}
               onClose={() => setCamera(null)}
               onUse={(photo, type) => {
                 setCamera(null);

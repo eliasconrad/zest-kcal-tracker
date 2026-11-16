@@ -6,8 +6,10 @@ This repository contains only the artwork used by Zest and its documentation. Th
 | --- | --- | --- |
 | `assets/cookbooks/zest/photos/` | Breakfast, lunch, dinner snapshots | Original generated images created October 4, 2026 with the built-in image generation tool. Exact retained prompts: [meal-photography.md](../prompts/meal-photography.md). Each is 1086 × 1448. |
 | `assets/cookbooks/zest/stickers/` | Toast, bowl, pasta, orange, eggs | Original code-authored SVG illustrations for Zest. |
-| `src/cookbooks/zest/components/Lemon.tsx` | Live lemon | Original Skia vector drawing. Its eyes, head, shoes and expression are articulated in code. No raster mascot or reference-app art. |
+| `src/cookbooks/zest/components/helpers/Figures.tsx` (`Lemon`) | Live lemon | Original Skia vector drawing. Its eyes, head, shoes and expression are articulated in code. No raster mascot or reference-app art. |
 | `assets/images/icon.svg` and `icon.png` | Resting lemon mark | Original vector adaptation of the live lemon, exported at 1024 × 1024 through macOS Quick Look. The SVG is the editable source. |
+| `assets/images/icons/` | Six mascot app icons | Original Skia drawings from `components/helpers/Figures.tsx`, rendered at 1024 × 1024 on the iOS simulator by `scripts/render-icons.sh`. |
+| `assets/onboarding/how-it-works.mp4` | Demo on the first onboarding screen | One take of Zest itself on the iOS simulator. Only still stretches are shortened, there are no cuts between scenes. The iPhone around it is drawn in code, no Apple artwork. Its plate photo is the template's own sample. |
 | `docs/images/` | Welcome, reply, calendar, keyboard previews and walkthrough | Direct captures of the standalone Release app on iPhone 17 Pro / iOS 27. The walkthrough uses real native input, normal playback speed, and the original 1206 × 2622 aspect ratio, encoded at 60 fps. |
 
 The meal images depict fictional meals, not an actual user's photographs. Calorie and protein estimates are local sample fixtures, not measured nutrition or image-analysis results. The same generated image follows the sample viewfinder, capture review, chat photo, receipt, and diary miniature.

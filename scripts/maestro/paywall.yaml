@@ -1,0 +1,29 @@
+appId: eu.eliasconrad.zest
+name: Paywall shows its legal parts and closes
+---
+- launchApp:
+    clearState: true
+- openLink: "zest://?demo=1"
+- tapOn:
+    text: "Open|Öffnen"
+    optional: true
+- extendedWaitUntil:
+    visible: "Log a meal"
+    timeout: 10000
+- tapOn: "Your profile"
+- scrollUntilVisible:
+    element: "Zest Pro: See plans. Edit"
+    direction: DOWN
+- tapOn: "Zest Pro: See plans. Edit"
+- extendedWaitUntil:
+    visible: "Close paywall"
+    timeout: 5000
+- assertVisible: "Keep every plate easy."
+- assertVisible: ".*renews automatically.*"
+- assertVisible: "Restore"
+- assertVisible: "Terms"
+- assertVisible: "Privacy"
+- tapOn: "Close paywall"
+- extendedWaitUntil:
+    notVisible: "Keep every plate easy."
+    timeout: 5000

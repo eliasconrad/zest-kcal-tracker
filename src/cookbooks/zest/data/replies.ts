@@ -80,24 +80,43 @@ export function parseEstimate(raw: string): Estimate | null {
   };
 }
 
-export type Answer = { text: string; followups: string[]; pendingMarker: boolean };
+export type Answer = {
+  text: string;
+  followups: string[];
+  pendingMarker: boolean;
+  /** What follows `#` on the dish lines: a recipe id, or a whole dish line. */
+  dishes: string[];
+};
+
+/** Takes the `# dish` lines out of the prose; one still arriving is hidden until it ends. */
+function splitDishes(text: string) {
+  const dishes: string[] = [];
+  const prose = text.replace(/(^|\n)[ \t]*#[ \t]*([^\n]*)(?=\n|$)/g, (_, start: string, line: string) => {
+    if (line.trim()) dishes.push(line.trim());
+    return start;
+  });
+  return { prose: prose.replace(/\n{3,}/g, "\n\n").trimEnd(), dishes };
+}
 
 /** Splits streamed prose from the trailing `>> a | b | c` follow-up line, even mid-stream. */
 export function parseAnswer(text: string): Answer {
-  const marker = text.lastIndexOf("\n>>");
-  const startsWithMarker = text.startsWith(">>");
-  const at = startsWithMarker ? 0 : marker;
+  // Models usually start the marker on its own line, some keep it on the last one.
+  const at = [...text.matchAll(/(?:^|\s)>>/g)].pop()?.index ?? -1;
   if (at < 0) {
-    // A partial marker may be arriving ("\n>" or "\n>>"); hide it until it resolves.
-    const tail = text.match(/\n>?$/);
+    // A partial marker may be arriving ("\n>" or " >"); hide it until it resolves.
+    const tail = text.match(/(?:\n>?| >)$/);
+    const body = splitDishes(tail ? text.slice(0, tail.index) : text);
     return {
-      text: tail ? text.slice(0, tail.index).trimEnd() : text,
+      // A trailing space keeps a streaming word's end visible; only the marker is cut.
+      text: /\s$/.test(text) && !tail ? `${body.prose} ` : body.prose,
       followups: [],
       pendingMarker: !!tail,
+      dishes: body.dishes,
     };
   }
-  const prose = text.slice(0, at).trimEnd();
-  const line = text.slice(at).replace(/^\n?>>\s*/, "");
+  const body = splitDishes(text.slice(0, at));
+  const prose = body.prose;
+  const line = text.slice(at).replace(/^\s*>>\s*/, "");
   const complete = line.includes("\n");
   const followups = line
     .split("\n")[0]
@@ -105,13 +124,56 @@ export function parseAnswer(text: string): Answer {
     .map((item) => item.trim().replace(/[.?!]+$/, (m) => (m === "?" ? "?" : m)))
     .filter(Boolean)
     .slice(0, 3);
-  return { text: prose, followups, pendingMarker: !complete };
+  return { text: prose, followups, pendingMarker: !complete, dishes: body.dishes };
 }
 
 /** Diary questions the local engine answers exactly; everything else goes to the model. */
+/** An answer that corrects the last scanned meal starts with `~` and has the meal line's shape. */
+export function isCorrection(raw: string) {
+  return raw.trimStart().startsWith("~");
+}
+
+export function parseCorrection(raw: string): (Estimate & { followups: string[] }) | null {
+  if (!isCorrection(raw)) return null;
+  const estimate = parseEstimate(raw.trimStart().replace(/^~\s*/, ""));
+  if (!estimate?.settled || estimate.notFood || estimate.kcal <= 0) return null;
+  // Models add follow-ups here as they do on any answer; they are not part of the note.
+  const { text, followups } = parseAnswer(`${estimate.note}\n`);
+  return { ...estimate, note: text.trim(), followups };
+}
+
 export function isDiaryQuestion(question: string) {
   const q = question.toLowerCase();
   return /\b(week|yesterday|today|protein|left|remaining|guide|goal|over|too much|breakfast|lunch|dinner|snack|total|so far|how much|how many|calories|kcal|streak)\b/.test(
     q,
   );
+}
+
+export type RecipeIdea = {
+  name: string;
+  kcal: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  minutes: number;
+};
+
+/** Each finished line of a /v1/recipe reply; anything else is skipped. */
+export function parseRecipes(text: string): RecipeIdea[] {
+  return text.split("\n").flatMap((line) => {
+    const parts = line.replace(/^[\s\-*\d.`]+/, "").replace(/`\s*$/, "").split("|").map((part) => part.trim());
+    if (parts.length !== 6) return [];
+    const [name, ...rest] = parts;
+    const [kcal, protein, carbs, fat, minutes] = rest.map(Number);
+    if (!name || ![kcal, protein, carbs, fat, minutes].every((n) => Number.isFinite(n) && n >= 0) || kcal <= 0) return [];
+    return [{ name, kcal: Math.round(kcal), protein, carbs, fat, minutes }];
+  });
+}
+
+/** The size that brings the long edge down to `max`, or null when it already fits. */
+export function fitLongEdge(width: number, height: number, max: number) {
+  const long = Math.max(width, height);
+  if (long <= max) return null;
+  const scale = max / long;
+  return { width: Math.round(width * scale), height: Math.round(height * scale) };
 }

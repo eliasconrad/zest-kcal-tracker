@@ -10,7 +10,7 @@ UDID = os.environ.get("SIMULATOR_UDID", "")
 if not UDID:
     raise RuntimeError("Set SIMULATOR_UDID to the dedicated booted device")
 PORT = int(os.environ.get("IDB_PORT", "11021"))
-APP = "io.appllama.zestkcaltracker"
+APP = "eu.eliasconrad.zest"
 ROOT = Path(__file__).resolve().parents[1]
 QA = ROOT / ".qa/native"
 QA.mkdir(parents=True, exist_ok=True)

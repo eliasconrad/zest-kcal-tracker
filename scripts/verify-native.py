@@ -26,7 +26,7 @@ async def main(d):
     await d.c.send_events([_key_up_event(k) for k in range(224, 232)])
     sim("terminate", UDID, APP, check=False)
     sim("launch", UDID, APP)
-    await d.open("zest-kcal-tracker://?demo=1")
+    await d.open("zest://?demo=1")
     await d.tap("Log a meal")
     await d.tap("Take a photo", wait=1)
     await d.find("Take dinner photo")
@@ -139,7 +139,7 @@ async def main(d):
     before = diary()
     sim("terminate", UDID, APP)
     sim("launch", UDID, APP)
-    await d.open("zest-kcal-tracker://")
+    await d.open("zest://")
     await d.find("Log a meal")
     assert diary() == before
     report["localPersistenceAcrossRelaunch"] = True

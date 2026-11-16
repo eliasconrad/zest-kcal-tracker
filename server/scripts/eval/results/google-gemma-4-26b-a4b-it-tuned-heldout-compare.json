@@ -1,0 +1,172 @@
+{
+  "summary": {
+    "model": "google/gemma-4-26b-a4b-it",
+    "prompt": "tuned",
+    "dishes": 30,
+    "parsed": 30,
+    "kcalMaeRaw": 106,
+    "kcalMaeCalibrated": 106,
+    "kcalBiasRaw": -14,
+    "kcalMapePercent": 34,
+    "proteinMae": 10,
+    "carbsMae": 12,
+    "fatMae": 7,
+    "costPer1000Scans": 0.065,
+    "meanTokens": [
+      927,
+      43
+    ]
+  },
+  "rows": [
+    {
+      "id": "dish_1560961385",
+      "truth": 249.519989,
+      "text": "Scrambled eggs, potatoes and broccoli | 368 | 14 | 36 | 20\nAbout 100 g eggs, 120 g potatoes, 80 g broccoli and some strawberries."
+    },
+    {
+      "id": "dish_1568401233",
+      "truth": 490.393372,
+      "text": "Tuna salad with squash and carrots | 345 | 28 | 28 | 15\nAbout 120 g tuna salad, 80 g squash, and 70 g carrots."
+    },
+    {
+      "id": "dish_1566850142",
+      "truth": 464.951172,
+      "text": "Meat with salad and broccoli | 345 | 26 | 14 | 21\nAbout 100 g meat, 100 g salad, and 50 g broccoli."
+    },
+    {
+      "id": "dish_1567789230",
+      "truth": 689.428406,
+      "text": "Scrambled eggs, sausage and salad | 415 | 19 | 8 | 33\nAbout 100 g eggs, 80 g sausage, and 50 g mixed greens."
+    },
+    {
+      "id": "dish_1561654756",
+      "truth": 256.980011,
+      "text": "Scrambled eggs and vegetables | 315 | 16 | 18 | 20\nAbout 120 g of eggs and 80 g of brussels sprouts and potatoes."
+    },
+    {
+      "id": "dish_1563909580",
+      "truth": 544.311523,
+      "text": "Rice, green beans and pizza | 515 | 16 | 68 | 23\nAbout 150 g rice, 100 g beans, spinach and one slice of pizza."
+    },
+    {
+      "id": "dish_1562012048",
+      "truth": 278.973877,
+      "text": "Chicken pieces | 185 | 32 | 1 | 7\nAbout 80 g of cooked chicken pieces with some seasoning."
+    },
+    {
+      "id": "dish_1559678457",
+      "truth": 624.236084,
+      "text": "Steak with grains and greens | 482 | 32 | 38 | 23\nAbout 100 g steak, 120 g grains, and 80 g leafy greens."
+    },
+    {
+      "id": "dish_1558629444",
+      "truth": 225.459,
+      "text": "Almonds | 170 | 6 | 6 | 15\nAbout 30 grams of whole almonds on a small plate."
+    },
+    {
+      "id": "dish_1560961012",
+      "truth": 191.699997,
+      "text": "Bagel with cream cheese | 320 | 8 | 38 | 15\nOne bagel, about 80 g, with a thick layer of cream cheese."
+    },
+    {
+      "id": "dish_1567526814",
+      "truth": 408.25,
+      "text": "Egg whites with fruit and sweet potato | 215 | 24 | 24 | 3\nAbout 150 g egg whites, 50 g watermelon, and 50 g sweet potato."
+    },
+    {
+      "id": "dish_1562691409",
+      "truth": 225.98999,
+      "text": "Scrambled eggs and sweet potato | 315 | 14 | 32 | 16\nAbout 120 g of eggs and 100 g of roasted sweet potato."
+    },
+    {
+      "id": "dish_1565640576",
+      "truth": 307.28656,
+      "text": "Pork with rice and salad | 412 | 24 | 32 | 22\nAbout 100 g pork, 80 g rice, and 150 g mixed salad."
+    },
+    {
+      "id": "dish_1566328724",
+      "truth": 275.549988,
+      "text": "Diced chicken breast | 185 | 37 | 0 | 4\nAbout 100 g of plain, diced chicken breast."
+    },
+    {
+      "id": "dish_1558722780",
+      "truth": 142.838989,
+      "text": "Mixed vegetable plate | 168 | 4 | 36 | 2\nAbout 150 g of assorted vegetables including corn, tomatoes, and carrots."
+    },
+    {
+      "id": "dish_1561577177",
+      "truth": 234.606445,
+      "text": "Tofu, pizza and potatoes | 438 | 18 | 52 | 22\nAbout 100 g tofu, one small pizza slice, and 120 g potatoes."
+    },
+    {
+      "id": "dish_1561739623",
+      "truth": 156.240005,
+      "text": "Roasted broccoli and sweet potato | 185 | 4 | 26 | 8\nAbout 150 g of vegetables with a light coating of oil."
+    },
+    {
+      "id": "dish_1559849412",
+      "truth": 352.641022,
+      "text": "Almonds | 175 | 6 | 6 | 15\nAbout 30 grams of whole almonds in a small bowl."
+    },
+    {
+      "id": "dish_1562603626",
+      "truth": 201.759506,
+      "text": "Bacon and fruit plate | 265 | 8 | 26 | 16\nAbout 50 g bacon, 80 g pineapple, and 60 g mixed berries."
+    },
+    {
+      "id": "dish_1566587714",
+      "truth": 347.536987,
+      "text": "Salmon with leafy greens | 345 | 32 | 8 | 21\nAbout 120 g salmon and 150 g of mixed leafy greens."
+    },
+    {
+      "id": "dish_1558633221",
+      "truth": 176.878998,
+      "text": "Mixed vegetable plate with apple | 234 | 4 | 51 | 3\nAbout 100 g cauliflower, 80 g carrots, 60 g tomatoes, and one apple."
+    },
+    {
+      "id": "dish_1567537212",
+      "truth": 432.506653,
+      "text": "Steak and broccoli | 345 | 32 | 6 | 21\nAbout 120 g steak and 100 g broccoli with a little oil."
+    },
+    {
+      "id": "dish_1558376984",
+      "truth": 671.67804,
+      "text": "Fruit and nut plate | 542 | 12 | 53 | 33\nOne apple, 40 g grapes, 40 g sausage, and 40 g almonds."
+    },
+    {
+      "id": "dish_1562009182",
+      "truth": 306.229919,
+      "text": "Mixed vegetable salad | 345 | 12 | 42 | 17\nAbout 250 g of greens, sprouts, and roasted vegetables with some seeds."
+    },
+    {
+      "id": "dish_1563302420",
+      "truth": 435.626282,
+      "text": "Chicken, potatoes, carrots and mushrooms | 345 | 22 | 32 | 16\nAbout 100 g chicken, 100 g potatoes, 80 g carrots and 60 g mushrooms."
+    },
+    {
+      "id": "dish_1563550614",
+      "truth": 132.824387,
+      "text": "Egg and fried potatoes | 248 | 13 | 18 | 14\nAbout 100 g of egg and 60 g of fried potato pieces."
+    },
+    {
+      "id": "dish_1563395510",
+      "truth": 415.627411,
+      "text": "Mixed lunch plate | 545 | 26 | 48 | 30\nAbout 100 g chicken, 80 g salad, 60 g vegetables, and one small pizza slice."
+    },
+    {
+      "id": "dish_1565021104",
+      "truth": 291.309021,
+      "text": "Waffles with cauliflower and cream | 412 | 8 | 54 | 20\nTwo waffles, about 100 g, with 60 g cauliflower and some cream."
+    },
+    {
+      "id": "dish_1558122740",
+      "truth": 260.149994,
+      "text": "Bacon, salad, grapes and apple | 365 | 6 | 52 | 17\nAbout 2 strips of bacon, 50 g spinach, 50 g grapes and one apple."
+    },
+    {
+      "id": "dish_1566331914",
+      "truth": 589.501648,
+      "text": "Mixed vegetable plate | 425 | 12 | 52 | 19\nAbout 350 g of vegetables, rice, and a small protein portion."
+    }
+  ]
+}

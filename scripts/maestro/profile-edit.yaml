@@ -1,0 +1,26 @@
+appId: eu.eliasconrad.zest
+name: Editing from the profile hides the profile underneath
+---
+- launchApp:
+    clearState: true
+- openLink: "zest://?demo=1"
+- tapOn:
+    text: "Open|Öffnen"
+    optional: true
+- extendedWaitUntil:
+    visible: "Log a meal"
+    timeout: 10000
+- tapOn: "Your profile"
+- scrollUntilVisible:
+    element: "Password: Set. Edit"
+    direction: DOWN
+- assertVisible: "ACCOUNT"
+- tapOn: "Password: Set. Edit"
+- extendedWaitUntil:
+    visible: "Keep your diary yours"
+    timeout: 5000
+- assertNotVisible: "ACCOUNT"
+- tapOn: "Cancel"
+- extendedWaitUntil:
+    visible: "ACCOUNT"
+    timeout: 5000

@@ -1,0 +1,27 @@
+appId: eu.eliasconrad.zest
+name: E-mail edited from the profile
+---
+- launchApp:
+    clearState: true
+- openLink: "zest://?demo=1"
+- tapOn:
+    text: "Open|Öffnen"
+    optional: true
+- extendedWaitUntil:
+    visible: "Log a meal"
+    timeout: 10000
+- tapOn: "Your profile"
+- scrollUntilVisible:
+    element: "E-mail: Add. Edit"
+    direction: DOWN
+- tapOn: "E-mail: Add. Edit"
+- tapOn: "E-mail"
+- inputText: "mia@example.com"
+- tapOn: "Done"
+- extendedWaitUntil:
+    notVisible: "Previous"
+    timeout: 5000
+- tapOn: "Save"
+- extendedWaitUntil:
+    visible: "E-mail: mia@example.com. Edit"
+    timeout: 5000

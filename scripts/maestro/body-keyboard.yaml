@@ -1,0 +1,43 @@
+appId: eu.eliasconrad.zest
+name: On the body step the focused field stays above the keyboard
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Snap it. Zest does the sums."
+    timeout: 10000
+- tapOn: "Get started"
+- extendedWaitUntil:
+    visible: "Zest says: Hi! I’m Zest."
+    timeout: 15000
+- tapOn: "Your name"
+- inputText: "Mia"
+- pressKey: Enter
+- extendedWaitUntil:
+    visible: "What are you here for?"
+    timeout: 5000
+- tapOn: "Lose weight"
+- tapOn: "Continue"
+- assertVisible: "A little about you"
+- tapOn: "Birth day"
+- inputText: "12"
+- takeScreenshot: "day"
+- tapOn: "Next"
+- inputText: "5"
+- tapOn: "Next"
+- inputText: "1994"
+- tapOn: "Next"
+- eraseText: 3
+- inputText: "168"
+- takeScreenshot: "height"
+- tapOn: "Next"
+- eraseText: 5
+- inputText: "70"
+- takeScreenshot: "weight"
+- tapOn: "Done"
+- extendedWaitUntil:
+    notVisible: "Previous"
+    timeout: 5000
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: "closed"

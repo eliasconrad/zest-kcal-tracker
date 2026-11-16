@@ -9,19 +9,33 @@ import { fetch } from "expo/fetch";
 import { File } from "expo-file-system";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 import { getLocales } from "expo-localization";
-import { createEventParser, parseAnswer, parseEstimate, type Estimate } from "./replies.ts";
+import {
+  createEventParser,
+  fitLongEdge,
+  isCorrection,
+  parseAnswer,
+  parseCorrection,
+  parseEstimate,
+  parseRecipes,
+  type Estimate,
+  type RecipeIdea,
+} from "./replies.ts";
 import type { DiaryContext } from "./context.ts";
-import type { MealType } from "./diary.ts";
+import type { Meal, MealType } from "./diary.ts";
+import { session } from "../state/useSession";
+import type { HelperId } from "./helpers.ts";
 
 const base = (process.env.EXPO_PUBLIC_ZEST_API_URL ?? "").replace(/\/$/, "");
 const token = process.env.EXPO_PUBLIC_ZEST_APP_TOKEN;
 
 export const apiConfigured = base.length > 0;
+/** Mirrors the Worker's ZEST_MAX_IMAGE_BYTES. */
+const MAX_IMAGE_CHARS = 6_000_000;
 
 export class ApiError extends Error {
   constructor(
     message: string,
-    readonly kind: "offline" | "server" | "aborted" | "format",
+    readonly kind: "offline" | "server" | "aborted" | "format" | "limit",
   ) {
     super(message);
   }
@@ -38,7 +52,8 @@ async function stream(
   onText: (full: string) => void,
   signal: AbortSignal,
   timeoutMs: number,
-) {
+  retried = false,
+): Promise<string> {
   if (!apiConfigured) throw new ApiError("Zest API is not configured", "server");
   const timeout = setTimeout(() => {
     if (!signal.aborted) controller.abort();
@@ -48,6 +63,12 @@ async function stream(
   signal.addEventListener("abort", forward, { once: true });
   try {
     let response: Awaited<ReturnType<typeof fetch>>;
+    let bearer: string;
+    try {
+      bearer = await session.ensure();
+    } catch (error) {
+      throw new ApiError(error instanceof Error ? error.message : "offline", "offline");
+    }
     try {
       response = await fetch(`${base}${path}`, {
         method: "POST",
@@ -55,6 +76,7 @@ async function stream(
         headers: {
           "content-type": "application/json",
           ...(token ? { "x-zest-token": token } : {}),
+          authorization: `Bearer ${bearer}`,
         },
         body: JSON.stringify(body),
       });
@@ -62,6 +84,12 @@ async function stream(
       if (signal.aborted) throw new ApiError("stopped", "aborted");
       throw new ApiError(error instanceof Error ? error.message : "offline", "offline");
     }
+    if (response.status === 401 && !retried) {
+      // The session ended on the server; start a new one once.
+      await session.invalidate();
+      return await stream(path, body, onText, signal, timeoutMs, true);
+    }
+    if (response.status === 429) throw new ApiError("limit", "limit");
     if (!response.ok) {
       const detail = await response.text().catch(() => "");
       throw new ApiError(`${response.status} ${detail.slice(0, 200)}`, "server");
@@ -95,27 +123,40 @@ async function stream(
   }
 }
 
-/** Downscales a local photo and returns a JPEG data URL small enough for a vision model. */
-export async function photoDataUrl(uri: string, maxEdge = 1024) {
-  const context = ImageManipulator.manipulate(uri).resize({ width: maxEdge });
+/**
+ * A JPEG data URL for the model: long edge at most 1280 px, re-encoded so no
+ * EXIF (location, device) leaves the phone, and small enough for the Worker's
+ * limit. The diary keeps its own full-size copy.
+ */
+export async function photoDataUrl(uri: string, maxEdge = 1280) {
+  const probe = await ImageManipulator.manipulate(uri).renderAsync();
+  const size = fitLongEdge(probe.width, probe.height, maxEdge);
+  probe.release();
+  const context = ImageManipulator.manipulate(uri);
+  if (size) context.resize(size);
   const image = await context.renderAsync();
-  const saved = await image.saveAsync({ format: SaveFormat.JPEG, compress: 0.8, base64: true });
-  image.release();
-  context.release();
-  const base64 = saved.base64 ?? (await new File(saved.uri).base64());
-  if (saved.uri !== uri) {
-    try {
-      new File(saved.uri).delete();
-    } catch {
-      // temp file; the OS clears it anyway
+  try {
+    for (const compress of [0.8, 0.6, 0.4]) {
+      const saved = await image.saveAsync({ format: SaveFormat.JPEG, compress, base64: true });
+      const base64 = saved.base64 ?? (await new File(saved.uri).base64());
+      try {
+        new File(saved.uri).delete();
+      } catch {
+        // temp file; the OS clears it anyway
+      }
+      const url = `data:image/jpeg;base64,${base64}`;
+      if (url.length <= MAX_IMAGE_CHARS) return url;
     }
+  } finally {
+    image.release();
+    context.release();
   }
-  return `data:image/jpeg;base64,${base64}`;
+  throw new ApiError("photo too large", "format");
 }
 
 /** Streams the estimate for one photo; `onEstimate` fires on every update until settled. */
 export async function estimateMeal(
-  input: { uri: string; type: MealType; hint?: string },
+  input: { uri: string; type: MealType; hint?: string; helper?: HelperId },
   onEstimate: (estimate: Estimate | null, raw: string) => void,
   signal: AbortSignal,
 ) {
@@ -123,7 +164,7 @@ export async function estimateMeal(
   if (signal.aborted) throw new ApiError("stopped", "aborted");
   const full = await stream(
     "/v1/meal",
-    { image, type: input.type, hint: input.hint, locale: locale() },
+    { image, type: input.type, hint: input.hint, helper: input.helper, locale: locale() },
     (text) => onEstimate(parseEstimate(text), text),
     signal,
     45_000,
@@ -137,15 +178,35 @@ export async function estimateMeal(
 export async function askZest(
   question: string,
   diary: DiaryContext,
-  onAnswer: (answer: ReturnType<typeof parseAnswer>) => void,
+  onAnswer: (answer: ReturnType<typeof parseAnswer>, correcting: boolean) => void,
   signal: AbortSignal,
+  helper?: HelperId,
+  history: { role: "user" | "assistant"; text: string }[] = [],
+  lastMeal?: Pick<Meal, "name" | "kcal" | "protein" | "carbs" | "fat" | "type">,
+  recipes: { id: string; name: string; type: string; kcal: number; protein: number; minutes: number }[] = [],
 ) {
   const full = await stream(
     "/v1/ask",
-    { question, diary: { ...diary, locale: locale() } },
-    (text) => onAnswer(parseAnswer(text)),
+    { question, helper, history, lastMeal, recipes, diary: { ...diary, locale: locale() } },
+    (text) => onAnswer(parseAnswer(text), isCorrection(text)),
     signal,
     40_000,
   );
-  return parseAnswer(`${full}\n`);
+  return { ...parseAnswer(`${full}\n`), correction: parseCorrection(`${full}\n`) };
+}
+
+/** Three dishes for what is left of today, streamed line by line. */
+export async function suggestRecipes(
+  diary: DiaryContext,
+  onIdeas: (ideas: RecipeIdea[]) => void,
+  signal: AbortSignal,
+) {
+  const full = await stream(
+    "/v1/recipe",
+    { diary: { ...diary, locale: locale() } },
+    (text) => onIdeas(parseRecipes(text.includes("\n") ? text.slice(0, text.lastIndexOf("\n")) : "")),
+    signal,
+    40_000,
+  );
+  return parseRecipes(full);
 }

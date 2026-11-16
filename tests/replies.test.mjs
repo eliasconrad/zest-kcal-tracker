@@ -4,6 +4,7 @@ import {
   createEventParser,
   isDiaryQuestion,
   parseAnswer,
+  parseCorrection,
   parseEstimate,
 } from "../src/cookbooks/zest/data/replies.ts";
 import { diaryContext } from "../src/cookbooks/zest/data/context.ts";
@@ -49,6 +50,7 @@ test("answer parser hides a half-arrived marker and extracts follow-ups", () => 
     text: "Try a light soup.",
     followups: [],
     pendingMarker: true,
+    dishes: [],
   });
   const done = parseAnswer("Try a light soup.\n>> Soup ideas? | Protein today? | Show my week\n");
   assert.equal(done.text, "Try a light soup.");
@@ -77,4 +79,40 @@ test("diary context carries only numbers and names, never photos", () => {
   assert.deepEqual(context.yesterday, { total: 420, count: 1 });
   assert.deepEqual(context.week, { total: 1060, loggedDays: 2 });
   assert.equal(JSON.stringify(context).includes("secret"), false);
+});
+
+test("photos shrink to the long edge in either orientation", async () => {
+  const { fitLongEdge } = await import("../src/cookbooks/zest/data/replies.ts");
+  assert.deepEqual(fitLongEdge(3024, 4032, 1280), { width: 960, height: 1280 });
+  assert.deepEqual(fitLongEdge(4032, 3024, 1280), { width: 1280, height: 960 });
+  assert.equal(fitLongEdge(800, 600, 1280), null);
+});
+
+test("follow-ups are found when the model keeps them on the last line", () => {
+  const done = parseAnswer("Try the tofu. >> More protein? | A soup?\n");
+  assert.equal(done.text, "Try the tofu.");
+  assert.deepEqual(done.followups, ["More protein?", "A soup?"]);
+  assert.equal(parseAnswer("Try the tofu. >").text, "Try the tofu.");
+});
+
+test("a correction reads like a meal line, anything else is not one", () => {
+  const fix = parseCorrection("~ Bowl with oats | 420 | 18 | 58 | 12\nAdded about 40 g oats, now 420 kcal.\n");
+  assert.equal(fix.name, "Bowl with oats");
+  assert.equal(fix.kcal, 420);
+  assert.equal(fix.carbs, 58);
+  assert.equal(fix.note, "Added about 40 g oats, now 420 kcal.");
+  const asked = parseCorrection("~ Bowl | 420 | 18 | 58 | 12\nAdded oats.\n\n>> More protein? | A soup?\n");
+  assert.equal(asked.note, "Added oats.");
+  assert.deepEqual(asked.followups, ["More protein?", "A soup?"]);
+  assert.equal(parseCorrection("Try a soup.\n"), null);
+  assert.equal(parseCorrection("~ Bowl | 42"), null);
+});
+
+test("dish lines leave the prose and a half-arrived one stays hidden", () => {
+  const done = parseAnswer("Try the soup.\n\n# r12\n# Toast | 300 | 12 | 40 | 9 | 10\n\n>> More? | Less?\n");
+  assert.equal(done.text, "Try the soup.");
+  assert.deepEqual(done.dishes, ["r12", "Toast | 300 | 12 | 40 | 9 | 10"]);
+  assert.deepEqual(done.followups, ["More?", "Less?"]);
+  assert.equal(parseAnswer("Try the soup.\n# r1").text, "Try the soup.");
+  assert.equal(parseAnswer("Plain answer").dishes.length, 0);
 });

@@ -1,9 +1,14 @@
-appId: io.appllama.zestkcaltracker
+appId: eu.eliasconrad.zest
 name: First launch onboarding, computed guide and profile sheet
 ---
 - launchApp:
     clearState: true
+- extendedWaitUntil:
+    visible: "Snap it. Zest does the sums."
+    timeout: 10000
+- tapOn: "Get started"
 - assertVisible: "What should I call you?"
+# The lemon pops out of the sheet 1.6 s after launch; its first line follows.
 # The lemon pops out of the sheet 1.6 s after launch; its first line follows.
 - extendedWaitUntil:
     visible: "Zest says: Hi! I’m Zest."
@@ -16,15 +21,19 @@ name: First launch onboarding, computed guide and profile sheet
 - extendedWaitUntil:
     visible: "What are you here for?"
     timeout: 5000
-- assertVisible: "Zest says: Nice to meet you, Mia!"
+- assertVisible: "Zest says: This sets your daily guide."
 - tapOn: "Lose weight"
 - tapOn: "Continue"
 - assertVisible: "A little about you"
 - tapOn: "Female"
-- tapOn: "Birth year"
-- eraseText: 4
-- inputText: "1994"
+- tapOn: "Birth day"
+- inputText: "12"
 # The keyboard toolbar moves focus; the next field is otherwise under the keyboard.
+- tapOn: "Next"
+- inputText: "5"
+- tapOn: "Next"
+- inputText: "1994"
+- assertVisible: "32 years"
 - tapOn: "Next"
 - eraseText: 3
 - inputText: "168"
@@ -54,6 +63,21 @@ name: First launch onboarding, computed guide and profile sheet
 - tapOn: "Steady, 0.5 kilograms a week"
 - assertVisible: "About 12 weeks.*"
 - tapOn: "Continue"
+# What the plan and the model need beyond the body.
+- assertVisible: "Do you follow a way of eating?"
+- tapOn: "Vegetarian"
+- tapOn: "Continue"
+- assertVisible: "Anything your body says no to?"
+- tapOn: "Peanuts"
+- tapOn: "Continue"
+- assertVisible: "Which meals are usually yours?"
+- tapOn: "Snack"
+- tapOn: "Continue"
+- assertVisible: "What got in the way before?"
+- tapOn: "Cravings"
+- tapOn: "Continue"
+- assertVisible: "Want a nudge at mealtimes?"
+- tapOn: "Not now"
 # The account step: e-mail into the profile, the password into the keychain.
 - assertVisible: "Keep your diary yours"
 - tapOn: "E-mail"
@@ -79,9 +103,19 @@ name: First launch onboarding, computed guide and profile sheet
     timeout: 12000
 # The final button is hold-to-commit (1.3 s); Maestro's long press holds longer than that.
 - longPressOn: "Start logging"
+# The soft paywall follows the plan; its way out appears after a moment.
+- extendedWaitUntil:
+    visible: "Close paywall"
+    timeout: 10000
+- assertVisible: "Let’s get you to 64 kg."
+- assertVisible: "Restore"
+- tapOn: "Close paywall"
 # The greeting is one two-line text; (?s) lets the regex span the line break.
 # The greeting is "Good morning/afternoon/evening" or "Still up" after midnight.
-- assertVisible: "(?s)(Good|Still up).*Mia\\..*"
+- extendedWaitUntil:
+    visible: "(?s)(Good|Still up).*Mia\\..*"
+    timeout: 5000
+- assertVisible: "Zest says: Cravings get logged, not judged."
 - tapOn: "Your profile"
 - assertVisible: "32 years · Lose weight"
 - assertVisible: "0 day logging streak, 0 of 7 days this week"
@@ -94,6 +128,11 @@ name: First launch onboarding, computed guide and profile sheet
 - scrollUntilVisible:
     element: "Goal: Lose weight. Edit"
     direction: DOWN
+- scrollUntilVisible:
+    element: "Way of eating: Vegetarian. Edit"
+    direction: DOWN
+- assertVisible: "Avoid: Peanuts. Edit"
+- assertVisible: "Reminders: Off. Edit"
 # Hosted SwiftUI controls may retain their pre-animation AX frame; the close
 # target sits at the top trailing corner, as in diary.yaml.
 - tapOn:

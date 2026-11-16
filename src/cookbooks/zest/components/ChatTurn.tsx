@@ -1,8 +1,12 @@
+import { useCallback, useState } from "react";
 import { Text, View } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 import { Thinking } from "./Thinking";
 import { VisualAnswer } from "./VisualAnswer";
+import { StreamedText } from "./StreamedText";
+import { DishCard } from "./DishCard";
+import type { Dish } from "../data/recipeRules";
 import { MealReply, REPLY_EASE } from "./MealReply";
 import { MealImage } from "../data/photos";
 import { Symbol, Touch } from "./ui/Touch";
@@ -17,33 +21,45 @@ export function ChatTurn({
   reduced,
   onChoose,
   onEdit,
+  onCorrect,
+  onOpenRecipe,
+  onLogDish,
   onCalendar,
   onAsk,
+  onRetry,
+  onManual,
+  thinkingLine = "Hmm, something tasty.",
 }: {
   turn: Turn;
   meals: Meal[];
   guide: number;
   reduced: boolean;
+  /** The helper's own line beside the dots while a photo is with the model. */
+  thinkingLine?: string;
   onChoose: (turn: Turn, type: MealType) => void;
   onEdit: (meal: Meal) => void;
+  onCorrect?: () => void;
+  onOpenRecipe?: (recipeId: string) => void;
+  onLogDish?: (dish: Dish) => void;
   onCalendar: () => void;
   /** Sends a tapped follow-up question as if typed. */
   onAsk?: (question: string) => void;
+  /** A failed estimate: send the same photo again. */
+  onRetry?: (turn: Turn) => void;
+  /** A failed estimate: type the name and number instead. */
+  onManual?: (turn: Turn) => void;
 }) {
   const streaming = turn.state === "thinking" && !!turn.text;
   return (
     <Animated.View
-      key={
-        turn.kind === "text" ? `${turn.id}-${turn.state ?? "sent"}` : turn.id
-      }
+      key={turn.id}
       entering={
         turn.kind === "text" && !reduced
           ? FadeIn.delay(320).duration(140)
           : undefined
       }
-      layout={
-        (turn.kind === "question" || turn.kind === "meal") && !reduced
-          ? LinearTransition.duration(280).easing(REPLY_EASE)
+      layout={!reduced && turn.kind !== "photo" && turn.role === "assistant"
+          ? LinearTransition.duration(240).easing(REPLY_EASE)
           : undefined
       }
       style={[
@@ -100,6 +116,51 @@ export function ChatTurn({
             {turn.text}
           </Text>
         </View>
+      ) : turn.kind === "question" && turn.state === "failed" ? (
+        <View>
+          <Text
+            accessibilityLiveRegion="polite"
+            style={{ fontSize: 17, lineHeight: 24, color: theme.ink }}
+          >
+            {turn.text}
+          </Text>
+          <View style={{ flexDirection: "row", gap: 8, marginTop: 14 }}>
+            <Touch
+              label="Try the photo again"
+              onPress={() => onRetry?.(turn)}
+              style={{
+                height: 44,
+                paddingHorizontal: 18,
+                borderRadius: 22,
+                backgroundColor: theme.heavy,
+                justifyContent: "center",
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 15,
+                  fontWeight: "600",
+                  color: theme.onHeavy,
+                }}
+              >
+                Try again
+              </Text>
+            </Touch>
+            <Touch
+              label="Type the meal in"
+              onPress={() => onManual?.(turn)}
+              style={{
+                height: 44,
+                paddingHorizontal: 18,
+                borderRadius: 22,
+                backgroundColor: "#F3F3F0",
+                justifyContent: "center",
+              }}
+            >
+              <Text style={{ fontSize: 15, color: theme.ink }}>Type it in</Text>
+            </Touch>
+          </View>
+        </View>
       ) : turn.kind === "question" && turn.state === "thinking" ? (
         <Thinking />
       ) : turn.kind === "question" || turn.kind === "meal" ? (
@@ -131,7 +192,7 @@ export function ChatTurn({
                   <Thinking />
                   {turn.live && (
                     <Text style={{ fontSize: 13, color: theme.muted }}>
-                      Hmm, something tasty.
+                      {thinkingLine}
                     </Text>
                   )}
                 </View>
@@ -142,95 +203,123 @@ export function ChatTurn({
                 if (saved) onEdit(saved);
               }}
               onCalendar={onCalendar}
+              onCorrect={turn.photo ? onCorrect : undefined}
             />
           );
         })()
       ) : turn.state === "thinking" && !streaming ? (
         <Thinking />
       ) : (
-        <View>
-          {turn.answer ? (
-            <VisualAnswer answer={turn.answer} />
-          ) : (
-            <Text
-              selectable
-              accessibilityLiveRegion={streaming ? "polite" : "none"}
-              style={{
-                fontSize: 20,
-                lineHeight: 28,
-                letterSpacing: -0.25,
-                color: theme.ink,
-              }}
-            >
-              {turn.text}
-            </Text>
-          )}
-          {streaming && (
-            <View style={{ marginTop: 8 }}>
-              <Thinking />
-            </View>
-          )}
-          {turn.state === "complete" && !!turn.followups?.length && onAsk && (
-            <View style={{ marginTop: 14 }}>
-              {turn.followups.map((question, index) => (
-                <Touch
-                  key={question}
-                  label={`Ask: ${question}`}
-                  onPress={() => onAsk(question)}
-                  style={{
-                    minHeight: 44,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 10,
-                    paddingVertical: 8,
-                    borderTopWidth: index === 0 ? 0 : 1,
-                    borderTopColor: theme.line,
-                  }}
-                >
-                  <Symbol
-                    name="arrow.turn.down.right"
-                    size={13}
-                    color={theme.muted}
-                  />
-                  <Text
-                    style={{ flex: 1, fontSize: 15, color: theme.ink }}
-                    numberOfLines={2}
-                  >
-                    {question}
-                  </Text>
-                </Touch>
-              ))}
-            </View>
-          )}
-          {turn.state === "stopped" && (
-            <Text
-              style={{
-                color: theme.muted,
-                marginTop: 10,
-                fontSize: 13,
-              }}
-            >
-              Response stopped.
-            </Text>
-          )}
-          {turn.state === "complete" && (
-            <Touch
-              label="Copy Zest’s answer"
-              onPress={() => void Clipboard.setStringAsync(turn.text ?? "")}
-              style={{
-                width: 44,
-                height: 44,
-                justifyContent: "center",
-                alignItems: "center",
-                alignSelf: "flex-end",
-                marginTop: 0,
-              }}
-            >
-              <Symbol name="square.on.square" size={16} color={theme.muted} />
-            </Touch>
-          )}
-        </View>
+        <AnswerBody
+          key={turn.id}
+          turn={turn}
+          reduced={reduced}
+          onAsk={onAsk}
+          onOpenRecipe={onOpenRecipe}
+          onLogDish={onLogDish}
+        />
       )}
     </Animated.View>
+  );
+}
+
+/** An answer: words first, then what belongs under them, so nothing jumps while it reads. */
+function AnswerBody({
+  turn,
+  reduced,
+  onAsk,
+  onOpenRecipe,
+  onLogDish,
+}: {
+  turn: Turn;
+  reduced: boolean;
+  onAsk?: (question: string) => void;
+  onOpenRecipe?: (recipeId: string) => void;
+  onLogDish?: (dish: Dish) => void;
+}) {
+  const [shown, setShown] = useState(!turn.live);
+  const onShown = useCallback(() => setShown(true), []);
+  const finished = turn.state === "complete" && shown;
+  return (
+    <View>
+      {turn.answer ? (
+        <VisualAnswer answer={turn.answer} />
+      ) : (
+        <StreamedText
+          text={turn.text ?? ""}
+          live={!!turn.live}
+          reduced={reduced}
+          onShown={onShown}
+          style={{
+            fontSize: 20,
+            lineHeight: 28,
+            letterSpacing: -0.25,
+            color: theme.ink,
+          }}
+        />
+      )}
+      {finished &&
+        onLogDish &&
+        turn.dishes?.map((dish, index) => (
+          <DishCard
+            key={dish.name}
+            dish={dish}
+            order={index}
+            reduced={reduced}
+            onOpen={onOpenRecipe}
+            onLog={onLogDish}
+          />
+        ))}
+      {finished && !!turn.followups?.length && onAsk && (
+        <Animated.View
+          entering={reduced ? undefined : FadeIn.delay(turn.dishes?.length ? 180 : 0).duration(220)}
+          style={{ marginTop: 14 }}
+        >
+          {turn.followups.map((question, index) => (
+            <Touch
+              key={question}
+              label={`Ask: ${question}`}
+              onPress={() => onAsk(question)}
+              style={{
+                minHeight: 44,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 10,
+                paddingVertical: 8,
+                borderTopWidth: index === 0 ? 0 : 1,
+                borderTopColor: theme.line,
+              }}
+            >
+              <Symbol name="arrow.turn.down.right" size={13} color={theme.muted} />
+              <Text style={{ flex: 1, fontSize: 15, color: theme.ink }} numberOfLines={2}>
+                {question}
+              </Text>
+            </Touch>
+          ))}
+        </Animated.View>
+      )}
+      {turn.state === "stopped" && (
+        <Text style={{ color: theme.muted, marginTop: 10, fontSize: 13 }}>
+          Response stopped.
+        </Text>
+      )}
+      {finished && (
+        <Animated.View entering={reduced ? undefined : FadeIn.duration(200)}>
+          <Touch
+            label="Copy Zest’s answer"
+            onPress={() => void Clipboard.setStringAsync(turn.text ?? "")}
+            style={{
+              width: 44,
+              height: 44,
+              justifyContent: "center",
+              alignItems: "center",
+              alignSelf: "flex-end",
+            }}
+          >
+            <Symbol name="square.on.square" size={16} color={theme.muted} />
+          </Touch>
+        </Animated.View>
+      )}
+    </View>
   );
 }

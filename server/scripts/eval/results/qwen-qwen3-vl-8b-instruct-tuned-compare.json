@@ -1,0 +1,172 @@
+{
+  "summary": {
+    "model": "qwen/qwen3-vl-8b-instruct",
+    "prompt": "tuned",
+    "dishes": 30,
+    "parsed": 30,
+    "kcalMaeRaw": 156,
+    "kcalMaeCalibrated": 138,
+    "kcalBiasRaw": 146,
+    "kcalMapePercent": 65,
+    "proteinMae": 9,
+    "carbsMae": 17,
+    "fatMae": 6,
+    "costPer1000Scans": 0.197,
+    "meanTokens": [
+      940,
+      47
+    ]
+  },
+  "rows": [
+    {
+      "id": "dish_1558550218",
+      "truth": 230.001999,
+      "text": "Apple, almonds and grapes | 340 | 4 | 60 | 12\nAbout 150 g apple, 30 g almonds, 50 g grapes. A light snack."
+    },
+    {
+      "id": "dish_1568044634",
+      "truth": 413.19339,
+      "text": "Watermelon, sweet potato, egg, sauce | 420 | 12 | 60 | 16\nAbout 150 g watermelon, 100 g sweet potato, 120 g egg, 30 g sauce. Refreshing combo."
+    },
+    {
+      "id": "dish_1563565454",
+      "truth": 350.788818,
+      "text": "Salad with chicken and corn | 480 | 30 | 30 | 20\nAbout 150 g chicken, 100 g corn, 100 g greens. Light and fresh."
+    },
+    {
+      "id": "dish_1565724620",
+      "truth": 473.953308,
+      "text": "Chicken, broccoli and roasted veg | 585 | 38 | 38 | 24\nAbout 150 g chicken, 150 g broccoli, 150 g roasted veg. A colorful plate."
+    },
+    {
+      "id": "dish_1565797723",
+      "truth": 202.928879,
+      "text": "Fruit and egg salad | 380 | 12 | 30 | 14\nAbout 150 g mixed fruit, 100 g egg, 100 g greens. Light and fresh."
+    },
+    {
+      "id": "dish_1558380181",
+      "truth": 374.936005,
+      "text": "Apple, grapes and almonds | 340 | 2 | 45 | 15\nAbout 150 g apple, 100 g grapes, 50 g almonds. A sweet mix."
+    },
+    {
+      "id": "dish_1562875273",
+      "truth": 495.910278,
+      "text": "Chicken, green beans, salad, pizza | 780 | 50 | 70 | 38\nAbout 150 g chicken, 100 g green beans, 100 g salad, 100 g pizza. A varied plate."
+    },
+    {
+      "id": "dish_1562963289",
+      "truth": 349.917969,
+      "text": "Pizza and salad | 585 | 24 | 66 | 26\nAbout 110 g pizza and 100 g salad. Crispy edges."
+    },
+    {
+      "id": "dish_1562690112",
+      "truth": 428.202332,
+      "text": "Sausage, bacon and salad | 620 | 28 | 24 | 36\nAbout 150 g sausage, 80 g bacon, 100 g salad. A hearty lunch."
+    },
+    {
+      "id": "dish_1562946006",
+      "truth": 535.984009,
+      "text": "Scrambled eggs and meatballs | 480 | 20 | 10 | 38\nAbout 150 g eggs and 6 meatballs. A hearty lunch."
+    },
+    {
+      "id": "dish_1563220767",
+      "truth": 265.894379,
+      "text": "Grilled chicken pieces | 280 | 30 | 0 | 10\nAbout 150 g of grilled chicken. Light and satisfying."
+    },
+    {
+      "id": "dish_1560456853",
+      "truth": 405.703369,
+      "text": "Caesar salad with rice and broccoli | 585 | 32 | 14 | 32\nAbout 100 g chicken, 200 g rice, 150 g broccoli. A colorful mix."
+    },
+    {
+      "id": "dish_1560526514",
+      "truth": 183.252747,
+      "text": "Salad with strawberries and potatoes | 380 | 12 | 32 | 16\nAbout 150 g mixed greens, 50 g strawberries, 100 g potatoes. Fresh and light."
+    },
+    {
+      "id": "dish_1562173247",
+      "truth": 290.550018,
+      "text": "Fried egg with sauce | 320 | 12 | 16 | 16\nAbout 150 g fried egg with a light sauce. A simple lunch."
+    },
+    {
+      "id": "dish_1563219035",
+      "truth": 410.209686,
+      "text": "Pizza slice, rice and veggies | 620 | 24 | 78 | 24\nAbout 100 g pizza, 150 g rice, 100 g veggies. A hearty lunch."
+    },
+    {
+      "id": "dish_1562777099",
+      "truth": 303.718628,
+      "text": "Scrambled eggs with potatoes and berries | 480 | 20 | 30 | 20\nAbout 150 g eggs, 100 g potatoes, 50 g berries. A colorful mix."
+    },
+    {
+      "id": "dish_1565811390",
+      "truth": 205.092285,
+      "text": "Lentils, chicken and greens | 520 | 32 | 58 | 18\nAbout 150 g lentils, 100 g chicken, 100 g greens. Light and filling."
+    },
+    {
+      "id": "dish_1562603598",
+      "truth": 175.259506,
+      "text": "Fruit and bacon | 420 | 12 | 40 | 16\nAbout 150 g fruit and 2 strips of bacon. A sweet and savory mix."
+    },
+    {
+      "id": "dish_1566933226",
+      "truth": 245.449509,
+      "text": "Chicken drumstick with yellow rice | 520 | 28 | 64 | 16\nAbout 120 g chicken and 150 g yellow rice. A hearty portion."
+    },
+    {
+      "id": "dish_1558725403",
+      "truth": 289.050018,
+      "text": "Almonds | 600 | 15 | 10 | 45\nAbout 50 g almonds. A crunchy snack."
+    },
+    {
+      "id": "dish_1561148042",
+      "truth": 370.755463,
+      "text": "Fish, green beans, salad | 520 | 32 | 32 | 24\nAbout 150 g fish, 100 g beans, 100 g salad. Light and fresh."
+    },
+    {
+      "id": "dish_1561576737",
+      "truth": 357.472565,
+      "text": "Roasted veggies and salad | 420 | 18 | 36 | 18\nAbout 150 g roasted veggies, 100 g salad with dressing."
+    },
+    {
+      "id": "dish_1566847043",
+      "truth": 434.877106,
+      "text": "Squash and meat | 420 | 28 | 24 | 16\nAbout 150 g meat and 150 g sliced squash. Light and savory."
+    },
+    {
+      "id": "dish_1558725786",
+      "truth": 113.527,
+      "text": "Corn on the cob | 180 | 3 | 40 | 3\nAbout 200 g of two corn cobs, lightly cooked. Sweet and simple."
+    },
+    {
+      "id": "dish_1562183151",
+      "truth": 108.392403,
+      "text": "Steamed veggies | 280 | 6 | 24 | 12\nAbout 150 g mixed veggies, lightly dressed. Light and fresh."
+    },
+    {
+      "id": "dish_1565210009",
+      "truth": 263.816223,
+      "text": "Chicken with broccoli and green beans | 480 | 36 | 36 | 16\nAbout 150 g chicken, 100 g broccoli, 100 g green beans. A balanced lunch."
+    },
+    {
+      "id": "dish_1563897087",
+      "truth": 102.440002,
+      "text": "Broccoli and cauliflower | 150 | 3 | 18 | 8\nAbout 120 g broccoli and 80 g cauliflower. Light and crunchy."
+    },
+    {
+      "id": "dish_1562777566",
+      "truth": 263.003998,
+      "text": "Toast with jam | 220 | 5 | 30 | 5\nAbout 60 g toast and 30 g jam. A sweet start."
+    },
+    {
+      "id": "dish_1560973958",
+      "truth": 145.313232,
+      "text": "Arugula with lentils | 380 | 18 | 36 | 14\nAbout 100 g arugula, 120 g lentils, light dressing. Fresh and light."
+    },
+    {
+      "id": "dish_1561580406",
+      "truth": 203.281494,
+      "text": "Pasta with chicken and greens | 585 | 32 | 64 | 11\nAbout 150 g pasta, 100 g chicken, 50 g greens. Creamy and filling."
+    }
+  ]
+}

@@ -4,10 +4,14 @@ import {
   persist,
   type StateStorage,
 } from "zustand/middleware";
+import type { MealType } from "../data/diary.ts";
+import { defaultHelper, type HelperId } from "../data/helpers.ts";
 import {
   plan,
   type Activity,
+  type Diet,
   type Goal,
+  type Obstacle,
   type Pace,
   type Plan,
   type Sex,
@@ -23,6 +27,8 @@ export type Profile = {
   email: string;
   sex: Sex;
   birthYear: number;
+  /** ISO date; empty until the onboarding asks. `birthYear` follows it. */
+  birthDate: string;
   heightCm: number;
   weightKg: number;
   /** Only meaningful for lose/gain; equals weightKg otherwise. */
@@ -31,11 +37,26 @@ export type Profile = {
   activity: Activity;
   pace: Pace;
   units: Units;
+  diet: Diet;
+  /** Picked from `allergens`; kept off anything the model suggests. */
+  allergies: string[];
+  /** Anything the list misses, in the person's own words. */
+  allergyNote: string;
+  /** The meals this person usually eats; the camera's default stays inside them. */
+  usualMeals: MealType[];
+  /** What got in the way before. Only ever changes the lemon's lines. */
+  pastObstacles: Obstacle[];
+  /** Meals with a daily local reminder. */
+  reminders: MealType[];
+  /** Recipe ids, from the recipes sheet. */
+  favouriteRecipes: string[];
   /** When set, replaces the computed daily guide. */
   manualGuide?: number;
   weights: WeightEntry[];
   /** The last day the streak celebration was shown, so it plays once a day. */
   celebratedDay?: string;
+  /** Which of the six helpers sits on the composer; picked in setup, swapped by holding it. */
+  helper: HelperId;
 };
 
 export type ProfileState = Profile & {
@@ -51,6 +72,7 @@ export const defaultProfile: Profile = {
   email: "",
   sex: "unspecified",
   birthYear: new Date().getFullYear() - 30,
+  birthDate: "",
   heightCm: 170,
   weightKg: 70,
   targetWeightKg: 70,
@@ -58,7 +80,15 @@ export const defaultProfile: Profile = {
   activity: "light",
   pace: "steady",
   units: "metric",
+  diet: "none",
+  allergies: [],
+  allergyNote: "",
+  usualMeals: ["Breakfast", "Lunch", "Dinner"],
+  pastObstacles: [],
+  reminders: [],
+  favouriteRecipes: [],
   weights: [],
+  helper: defaultHelper,
 };
 
 /** The plan for a profile; the manual guide overrides only the calorie line. */
@@ -67,6 +97,7 @@ export function profilePlan(profile: Profile, now = new Date()): Plan {
     {
       sex: profile.sex,
       birthYear: profile.birthYear,
+      birthDate: profile.birthDate,
       heightCm: profile.heightCm,
       weightKg: profile.weightKg,
     },
@@ -74,6 +105,7 @@ export function profilePlan(profile: Profile, now = new Date()): Plan {
     profile.activity,
     profile.pace,
     now,
+    profile.diet,
   );
   if (!profile.manualGuide) return computed;
   const guide = profile.manualGuide;
@@ -102,6 +134,15 @@ export function createProfileStore(storage: StateStorage) {
       }),
       {
         name: "zest-profile",
+        // Version 1: the lemon is the default again. Everyone on the penguin got
+        // it as a default from one interim build, not by choosing it.
+        version: 1,
+        migrate: (stored, version) => {
+          const old = stored as Partial<Profile>;
+          return (version < 1 && old.helper === "pebble"
+            ? { ...old, helper: "zest" }
+            : old) as ProfileState;
+        },
         storage: createJSONStorage(() => storage),
         partialize: ({ save, logWeight, finishOnboarding, reset, ...profile }) => profile,
       },

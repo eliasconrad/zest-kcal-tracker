@@ -1,19 +1,102 @@
 {
   "expo": {
     "name": "Zest",
-    "slug": "zest-kcal-tracker-template",
-    "scheme": "zest-kcal-tracker",
+    "slug": "zest",
+    "scheme": "zest",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "icon": "./assets/images/icon.png",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "io.appllama.zestkcaltracker",
+      "bundleIdentifier": "eu.eliasconrad.zest",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSMotionUsageDescription": "Zest gently follows the movement of your phone."
-      }
+      },
+      "buildNumber": "1",
+      "usesAppleSignIn": true,
+      "privacyManifests": {
+        "NSPrivacyTracking": false,
+        "NSPrivacyTrackingDomains": [],
+        "NSPrivacyAccessedAPITypes": [
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": [
+              "CA92.1"
+            ]
+          },
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryFileTimestamp",
+            "NSPrivacyAccessedAPITypeReasons": [
+              "C617.1"
+            ]
+          },
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategorySystemBootTime",
+            "NSPrivacyAccessedAPITypeReasons": [
+              "35F9.1"
+            ]
+          },
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryDiskSpace",
+            "NSPrivacyAccessedAPITypeReasons": [
+              "E174.1"
+            ]
+          }
+        ],
+        "NSPrivacyCollectedDataTypes": [
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeEmailAddress",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeName",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeHealth",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypePhotosorVideos",
+            "NSPrivacyCollectedDataTypeLinked": false,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeUserID",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypePurchaseHistory",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          }
+        ]
+      },
+      "appleTeamId": "W767M6TSQ7"
     },
     "plugins": [
       "expo-router",
@@ -22,7 +105,7 @@
         {
           "photosPermission": "Choose a meal photo to add to your food diary.",
           "cameraPermission": "Take a photo of your meal to log it with Zest.",
-          "microphonePermission": false
+          "microphonePermission": "Zest listens while you dictate, so you can say what a photo missed."
         }
       ],
       [
@@ -38,7 +121,7 @@
         "expo-camera",
         {
           "cameraPermission": "Take a photo of your meal to log it with Zest.",
-          "microphonePermission": false,
+          "microphonePermission": "Zest listens while you dictate, so you can say what a photo missed.",
           "recordAudioAndroid": false
         }
       ],
@@ -48,8 +131,57 @@
           "configureAndroidBackup": false
         }
       ],
+      "expo-notifications",
       "./plugins/with-quoted-ios-paths",
-      "expo-localization"
+      "expo-localization",
+      "expo-iap",
+      "expo-apple-authentication",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/icon.png",
+          "imageWidth": 160,
+          "resizeMode": "contain",
+          "backgroundColor": "#F3F3F0"
+        }
+      ],
+      [
+        "expo-alternate-app-icons",
+        [
+          {
+            "name": "Pebble",
+            "ios": "./assets/images/icons/pebble.png"
+          },
+          {
+            "name": "Fig",
+            "ios": "./assets/images/icons/fig.png"
+          },
+          {
+            "name": "Mochi",
+            "ios": "./assets/images/icons/mochi.png"
+          },
+          {
+            "name": "Bao",
+            "ios": "./assets/images/icons/bao.png"
+          },
+          {
+            "name": "Olive",
+            "ios": "./assets/images/icons/olive.png"
+          },
+          {
+            "name": "Pip",
+            "ios": "./assets/images/icons/pip.png"
+          }
+        ]
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Zest listens while you dictate, so you can say what a photo missed.",
+          "speechRecognitionPermission": "Zest turns what you say into text, so you can correct a meal by voice."
+        }
+      ],
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true

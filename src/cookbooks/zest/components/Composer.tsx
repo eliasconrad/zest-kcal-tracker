@@ -2,6 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { Text, TextInput, View } from "react-native";
 import { z } from "zod";
 import { useAnimatedStyle, withTiming } from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
+import { getLocales } from "expo-localization";
+import {
+  ExpoSpeechRecognitionModule,
+  useSpeechRecognitionEvent,
+} from "expo-speech-recognition";
 import { GlassSurface } from "./ui/GlassSurface";
 import { Symbol, Touch } from "./ui/Touch";
 import { theme } from "../theme";
@@ -10,6 +16,9 @@ import type { Scene } from "../hooks/useScene";
 const message = z.string().trim().min(1).max(2000);
 export function ZestComposer({
   scene,
+  helperName,
+  hint,
+  focusKey = 0,
   busy,
   onSend,
   onStop,
@@ -18,6 +27,11 @@ export function ZestComposer({
   onHeight,
 }: {
   scene: Scene;
+  helperName: string;
+  /** Replaces the placeholder while the app is waiting for something specific. */
+  hint?: string;
+  /** Changing it brings the keyboard up, for a correction asked for on a receipt. */
+  focusKey?: number;
   busy: boolean;
   onSend: (text: string) => Promise<boolean>;
   onStop: () => void;
@@ -52,6 +66,9 @@ export function ZestComposer({
     height: composerHeight.get(),
     borderRadius: 28,
   }));
+  useEffect(() => {
+    if (focusKey > 0) input.current?.focus();
+  }, [focusKey]);
   const submit = async () => {
     if (sending.current) return;
     const parsed = message.safeParse(value.current);
@@ -66,6 +83,47 @@ export function ZestComposer({
     } finally {
       sending.current = false;
     }
+  };
+  // Dictation writes into the same field as the keyboard. Stopping it by hand
+  // sends what was said; when the recogniser stops by itself the text stays to edit.
+  const [listening, setListening] = useState(false);
+  const sendWhenDone = useRef(false);
+  const before = useRef("");
+  useSpeechRecognitionEvent("start", () => setListening(true));
+  useSpeechRecognitionEvent("result", (event) => {
+    const said = event.results[0]?.transcript ?? "";
+    const next = before.current ? `${before.current} ${said}` : said;
+    value.current = next;
+    setText(next);
+    scene.typing.set(1);
+  });
+  useSpeechRecognitionEvent("end", () => {
+    setListening(false);
+    if (sendWhenDone.current) {
+      sendWhenDone.current = false;
+      void submit();
+    }
+  });
+  useSpeechRecognitionEvent("error", () => {
+    sendWhenDone.current = false;
+    setListening(false);
+  });
+  const listen = async () => {
+    if (listening) {
+      sendWhenDone.current = !!value.current.trim();
+      ExpoSpeechRecognitionModule.stop();
+      return;
+    }
+    const { granted } = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+    if (!granted) return;
+    before.current = value.current.trim();
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    ExpoSpeechRecognitionModule.start({
+      lang: getLocales()[0]?.languageTag ?? "en-US",
+      interimResults: true,
+      continuous: true,
+      addsPunctuation: true,
+    });
   };
   // Keep the field and actions in the same native layout throughout keyboard
   // travel. Focus must not trigger a React commit or rearrange these controls.
@@ -89,7 +147,7 @@ export function ZestComposer({
           ref={input}
           value={text}
           accessibilityLabel="Message Zest"
-          placeholder="Ask about your day"
+          placeholder={listening ? "Listening…" : (hint ?? `Ask ${helperName}`)}
           placeholderTextColor={theme.faint}
           keyboardAppearance="light"
           autoCapitalize="sentences"
@@ -160,13 +218,21 @@ export function ZestComposer({
           </Touch>
         </View>
         <Touch
-          label={busy ? "Stop response" : "Send message"}
+          label={
+            busy
+              ? "Stop response"
+              : listening
+                ? "Stop and send"
+                : hasText
+                  ? "Send message"
+                  : "Dictate"
+          }
           onPress={
             busy
               ? onStop
-              : () => {
-                  if (hasText) void submit();
-                }
+              : listening || !hasText
+                ? () => void listen()
+                : () => void submit()
           }
           expand
           style={{
@@ -181,15 +247,14 @@ export function ZestComposer({
               width: 34,
               height: 34,
               borderRadius: 17,
-              backgroundColor: theme.heavy,
-              opacity: hasText || busy ? 1 : 0.22,
+              backgroundColor: listening ? theme.accent : theme.heavy,
               justifyContent: "center",
               alignItems: "center",
             }}
           >
             <Symbol
-              name={busy ? "stop.fill" : "arrow.up"}
-              size={busy ? 11 : 18}
+              name={busy || listening ? "stop.fill" : hasText ? "arrow.up" : "mic.fill"}
+              size={busy || listening ? 11 : hasText ? 18 : 16}
               color="white"
             />
           </View>

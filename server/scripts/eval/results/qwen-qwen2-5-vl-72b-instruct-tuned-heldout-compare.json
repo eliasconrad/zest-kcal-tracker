@@ -1,0 +1,172 @@
+{
+  "summary": {
+    "model": "qwen/qwen2.5-vl-72b-instruct",
+    "prompt": "tuned",
+    "dishes": 30,
+    "parsed": 30,
+    "kcalMaeRaw": 102,
+    "kcalMaeCalibrated": 108,
+    "kcalBiasRaw": 22,
+    "kcalMapePercent": 36,
+    "proteinMae": 9,
+    "carbsMae": 12,
+    "fatMae": 8,
+    "costPer1000Scans": 0.624,
+    "meanTokens": [
+      1026,
+      45
+    ]
+  },
+  "rows": [
+    {
+      "id": "dish_1568401233",
+      "truth": 490.393372,
+      "text": "Tuna salad with veggies | 420 | 30 | 36 | 12\nAbout 150 g tuna mix, 100 g sweet potato, 100 g carrots."
+    },
+    {
+      "id": "dish_1560961385",
+      "truth": 249.519989,
+      "text": "Scrambled eggs with potatoes | 450 | 20 | 40 | 18\nAbout 150 g eggs, 150 g potatoes, 100 g veggies, 50 g strawberries."
+    },
+    {
+      "id": "dish_1566850142",
+      "truth": 464.951172,
+      "text": "Salad with chicken | 350 | 25 | 28 | 10\nAbout 100 g chicken, 150 g mixed salad, some coleslaw."
+    },
+    {
+      "id": "dish_1567789230",
+      "truth": 689.428406,
+      "text": "Scrambled eggs with sausage | 450 | 25 | 20 | 20\nAbout 200 g eggs, 100 g sausage, and some greens."
+    },
+    {
+      "id": "dish_1561654756",
+      "truth": 256.980011,
+      "text": "Scrambled eggs with veggies | 350 | 18 | 28 | 12\nAbout 150 g eggs, 100 g mixed veggies, likely with some oil."
+    },
+    {
+      "id": "dish_1563909580",
+      "truth": 544.311523,
+      "text": "Burrito with sides | 650 | 25 | 80 | 20\nOne burrito, 150 g rice, 100 g greens, 100 g beans. Hearty lunch."
+    },
+    {
+      "id": "dish_1562012048",
+      "truth": 278.973877,
+      "text": "Fried fish | 300 | 25 | 10 | 15\nAbout 150 g fish fillet, battered. Likely some oil used."
+    },
+    {
+      "id": "dish_1559678457",
+      "truth": 624.236084,
+      "text": "Beef with grains and greens | 520 | 30 | 56 | 12\nAbout 100 g beef, 150 g grains, 100 g greens, some sauce."
+    },
+    {
+      "id": "dish_1558629444",
+      "truth": 225.459,
+      "text": "Almonds | 240 | 9 | 9 | 19\nAbout 30 g almonds on a plate. A healthy snack."
+    },
+    {
+      "id": "dish_1567526814",
+      "truth": 408.25,
+      "text": "Egg, tomato, sweet potato | 360 | 17 | 36 | 12\nAbout 150 g egg, 100 g tomato, 100 g sweet potato. Fresh and colorful."
+    },
+    {
+      "id": "dish_1560961012",
+      "truth": 191.699997,
+      "text": "Bagel with cream cheese | 320 | 10 | 36 | 14\nOne bagel, about 100 g, with a thick layer of cream cheese."
+    },
+    {
+      "id": "dish_1565640576",
+      "truth": 307.28656,
+      "text": "Chicken, rice, asparagus, salad | 450 | 30 | 40 | 14\nAbout 150 g chicken, 100 g rice, 100 g asparagus, 100 g salad."
+    },
+    {
+      "id": "dish_1562691409",
+      "truth": 225.98999,
+      "text": "Scrambled eggs and sweet potato | 350 | 15 | 25 | 15\nAbout 100 g eggs and 100 g sweet potato cubes."
+    },
+    {
+      "id": "dish_1566328724",
+      "truth": 275.549988,
+      "text": "Chicken chunks | 240 | 30 | 0 | 6\nAbout 100 g chicken, likely pan-fried. A lean protein choice."
+    },
+    {
+      "id": "dish_1558722780",
+      "truth": 142.838989,
+      "text": "Vegetable platter | 180 | 6 | 28 | 8\nAbout 250 g mixed vegetables, lightly seasoned. Colorful and fresh."
+    },
+    {
+      "id": "dish_1561739623",
+      "truth": 156.240005,
+      "text": "Vegetable stir-fry | 280 | 10 | 30 | 12\nAbout 150 g vegetables, some oil. Likely a light lunch."
+    },
+    {
+      "id": "dish_1561577177",
+      "truth": 234.606445,
+      "text": "Tofu, salad and pizza | 350 | 15 | 35 | 12\nAbout 100 g tofu, 100 g salad, and a square slice of pizza."
+    },
+    {
+      "id": "dish_1559849412",
+      "truth": 352.641022,
+      "text": "Almonds | 200 | 6 | 8 | 18\nAbout 30 almonds, roughly 30 g. A healthy snack."
+    },
+    {
+      "id": "dish_1562603626",
+      "truth": 201.759506,
+      "text": "\nFruit and pastries | 350 | 6 | 50 | 12\nAbout 150 g fruit and three small pastries. Sweet delight."
+    },
+    {
+      "id": "dish_1567537212",
+      "truth": 432.506653,
+      "text": "Beef with broccoli | 350 | 30 | 10 | 12\nAbout 150 g beef and 100 g broccoli. A healthy choice."
+    },
+    {
+      "id": "dish_1566587714",
+      "truth": 347.536987,
+      "text": "Chicken with greens | 350 | 30 | 20 | 10\nAbout 150 g chicken, 200 g greens. Likely some oil added."
+    },
+    {
+      "id": "dish_1558633221",
+      "truth": 176.878998,
+      "text": "Vegetable platter | 250 | 6 | 40 | 10\nAbout 200 g mixed vegetables and one apple. Fresh and colorful."
+    },
+    {
+      "id": "dish_1558376984",
+      "truth": 671.67804,
+      "text": "Fruit and nuts | 350 | 10 | 36 | 18\nAbout 150 g fruit, 30 g nuts, and some dates. A healthy mix."
+    },
+    {
+      "id": "dish_1562009182",
+      "truth": 306.229919,
+      "text": "Quinoa salad | 350 | 12 | 40 | 12\nAbout 150 g quinoa, greens, and roasted veggies. A colorful mix."
+    },
+    {
+      "id": "dish_1563302420",
+      "truth": 435.626282,
+      "text": "Chicken, potatoes and veggies | 450 | 35 | 30 | 15\nAbout 150 g chicken, 150 g potatoes, 100 g veggies. A hearty lunch."
+    },
+    {
+      "id": "dish_1563550614",
+      "truth": 132.824387,
+      "text": "Cottage cheese and potatoes | 320 | 18 | 40 | 8\nAbout 150 g cheese and 100 g potatoes, likely with some oil."
+    },
+    {
+      "id": "dish_1563395510",
+      "truth": 415.627411,
+      "text": "Chicken, veggies and bread | 450 | 30 | 30 | 18\nAbout 100 g chicken, 200 g mixed veggies, and 50 g bread."
+    },
+    {
+      "id": "dish_1565021104",
+      "truth": 291.309021,
+      "text": "Waffle with veggies | 450 | 15 | 56 | 14\nAbout 150 g waffle, 100 g veggie mix, 50 g sour cream."
+    },
+    {
+      "id": "dish_1566331914",
+      "truth": 589.501648,
+      "text": "Chicken, rice and salad | 550 | 30 | 60 | 16\nAbout 100 g chicken, 150 g rice, 100 g salad, some Brussels sprouts."
+    },
+    {
+      "id": "dish_1558122740",
+      "truth": 260.149994,
+      "text": "Salad with apple | 350 | 10 | 40 | 14\nAbout 100 g spinach, 100 g potatoes, 1 apple, 30 g bacon."
+    }
+  ]
+}

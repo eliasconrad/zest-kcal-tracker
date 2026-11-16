@@ -1,3 +1,4 @@
+import { CountUp } from "./ui/CountUp";
 import {
   createContext,
   useContext,
@@ -197,6 +198,7 @@ function MealReplyBody({
   onChoose,
   onEdit,
   onCalendar,
+  onCorrect,
 }: {
   prompt: string;
   selecting: boolean;
@@ -210,6 +212,8 @@ function MealReplyBody({
   onChoose: (type: MealType) => void;
   onEdit: () => void;
   onCalendar: () => void;
+  /** Only on a meal the model read: tell it what the photo did not show. */
+  onCorrect?: () => void;
 }) {
   const calendar = useReveal(complete, 460);
   return (
@@ -297,21 +301,36 @@ function MealReplyBody({
                   }}
                 />
                 <Reveal active={complete} delay={100}>
-                  <Text
-                    accessibilityLabel={`${meal.kcal} estimated kilocalories`}
-                    maxFontSizeMultiplier={1.1}
-                    numberOfLines={1}
-                    style={{
-                      fontSize: meal.kcal >= 10000 ? 43 : 54,
-                      lineHeight: 65,
-                      fontWeight: "500",
-                      letterSpacing: -2.6,
-                      color: theme.ink,
-                      fontVariant: ["tabular-nums"],
-                    }}
-                  >
-                    {meal.kcal}
-                  </Text>
+                  {complete ? (
+                    <CountUp
+                      value={meal.kcal}
+                      accessibilityLabel={`${meal.kcal} estimated kilocalories`}
+                      style={{
+                        fontSize: meal.kcal >= 10000 ? 43 : 54,
+                        lineHeight: 65,
+                        fontWeight: "500",
+                        letterSpacing: -2.6,
+                        color: theme.ink,
+                        fontVariant: ["tabular-nums"],
+                      }}
+                    />
+                  ) : (
+                    <Text
+                      accessibilityLabel={`${meal.kcal} estimated kilocalories`}
+                      maxFontSizeMultiplier={1.1}
+                      numberOfLines={1}
+                      style={{
+                        fontSize: meal.kcal >= 10000 ? 43 : 54,
+                        lineHeight: 65,
+                        fontWeight: "500",
+                        letterSpacing: -2.6,
+                        color: theme.ink,
+                        fontVariant: ["tabular-nums"],
+                      }}
+                    >
+                      {meal.kcal}
+                    </Text>
+                  )}
                 </Reveal>
                 <Reveal active={complete} delay={210}>
                   <View
@@ -358,8 +377,40 @@ function MealReplyBody({
           </View>
           <View
             accessibilityElementsHidden={!calendar.visible}
-            style={{ alignSelf: "flex-start", marginTop: 16 }}
+            style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 16 }}
           >
+            {onCorrect && (
+              <Touch
+                label="Missed something"
+                onPress={onCorrect}
+                disabled={!calendar.visible}
+                expand
+              >
+                <GlassSurface
+                  interactive
+                  visible={calendar.visible}
+                  materialize={0.2}
+                  style={{
+                    height: 44,
+                    borderRadius: 22,
+                    paddingHorizontal: 13,
+                    justifyContent: "center",
+                  }}
+                >
+                  <Animated.View
+                    style={[
+                      { flexDirection: "row", alignItems: "center", gap: 6 },
+                      calendar.style,
+                    ]}
+                  >
+                    <Symbol name="mic" size={15} color={theme.ink} />
+                    <Text style={{ fontSize: 14, color: theme.ink }}>
+                      Missed something?
+                    </Text>
+                  </Animated.View>
+                </GlassSurface>
+              </Touch>
+            )}
             <Touch
               label="See calorie calendar"
               onPress={onCalendar}
@@ -373,19 +424,18 @@ function MealReplyBody({
                 style={{
                   height: 44,
                   borderRadius: 22,
-                  paddingHorizontal: 16,
+                  paddingHorizontal: 13,
                   justifyContent: "center",
                 }}
               >
                 <Animated.View
                   style={[
-                    { flexDirection: "row", alignItems: "center", gap: 8 },
+                    { flexDirection: "row", alignItems: "center", gap: 6 },
                     calendar.style,
                   ]}
                 >
-                  <Symbol name="calendar" size={17} color={theme.ink} />
+                  <Symbol name="calendar" size={15} color={theme.ink} />
                   <Text style={{ fontSize: 14, color: theme.ink }}>My day</Text>
-                  <Symbol name="arrow.up.right" size={12} color={theme.muted} />
                 </Animated.View>
               </GlassSurface>
             </Touch>

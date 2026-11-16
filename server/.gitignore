@@ -1,3 +1,6 @@
 node_modules/
 .wrangler/
 .dev.vars
+
+# Eval photos stay out of the repo; the manifest and results stay in.
+scripts/eval/data/

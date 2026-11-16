@@ -1,0 +1,28 @@
+appId: eu.eliasconrad.zest
+name: Mascot picker in the profile, voice and icon follow the pick
+---
+- launchApp:
+    clearState: true
+- openLink: "zest://?demo=1"
+- tapOn:
+    text: "Open|Öffnen"
+    optional: true
+- extendedWaitUntil:
+    visible: "Log a meal"
+    timeout: 10000
+- tapOn: "Your profile"
+- scrollUntilVisible:
+    element: "Mascot: Zest. Edit"
+    direction: DOWN
+- tapOn: "Mascot: Zest. Edit"
+- extendedWaitUntil:
+    visible: "Pick your mascot"
+    timeout: 5000
+- assertVisible: "Zest the lemon, The original"
+- assertVisible: "Pip the frog, Hype"
+- tapOn: "Fig the fox, Strict"
+- assertVisible: "“.*”"
+- tapOn: "Save"
+- extendedWaitUntil:
+    visible: "Mascot: Fig. Edit"
+    timeout: 5000
